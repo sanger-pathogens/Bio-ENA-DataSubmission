@@ -34,12 +34,12 @@ is(
 	'spreadsheet file correct'
 );
 
-# test appending
+# test writing with manifest header
 my $data = [['Carla', '27'], ['Becca', '22']];
-Bio::ENA::DataSubmission::Spreadsheet->new( data => $data, infile => "t/data/header.xls", outfile => "$tmp/append_test.xls")->write_xls;
+Bio::ENA::DataSubmission::Spreadsheet->new( data => $data, outfile => "$tmp/append_test.xls", add_manifest_header => 1)->write_xls;
 is(
 	read_file('t/data/test.xls'),
-	read_file("$tmp/append_test.xls"),
+	read_file("$tmp/header_test.xls"),
 	'spreadsheet file correct'
 );
 
