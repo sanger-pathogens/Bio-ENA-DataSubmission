@@ -16,8 +16,35 @@ my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::CommandLine::CompareMetadata');
 
-my @args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report.xls");
-my $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
+my ($obj, @args);
+
+#----------------------#
+# test illegal options #
+#----------------------#
+
+@args = ();
+$obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
+
+@args = ( '-o', 't/data/fakefile.txt');
+$obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
+
+@args = ('-f', 'not/a/file');
+$obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid input file path';
+
+@args = ('-f', 't/data/compare_manifest.xls', '-o', 'not/a/file');
+$obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid output file path';
+
+
+#--------------#
+# test methods #
+#--------------#
+
+@args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report.xls");
+$obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 
 # test parsing of XML
 my %exp = (
@@ -41,13 +68,20 @@ my %data2 = %data1;
 $data2['tax_id'] = '1111';
 $data2['host'] = 'Human';
 my @exp = ( 
-	['ERS001491', 'tax_id', '1111', '1496'],
-	['ERS001491', 'host', 'Human', 'Free living']
+	['ERS001491', '2007223', 'tax_id', '1111', '1496'],
+	['ERS001491', '2007223', 'host', 'Human', 'Free living']
 );
 is_deeply \@exp, $obj->_compare_metadata(\%data1, \%data2), 'Correct fields identified as incongruous';
 
 # test reporting
-
+my @errors = @exp;
+ok( $obj->_report, 'Report write ok' );
+ok( -e "$tmp/comparison_report.xls", 'Report exists' );
+is(
+	read_file("$tmp/comparison_report.xls"),
+	read_file('t/data/comparison_report.xls'),
+	'Report correct'
+);
 
 
 remove_tree($tmp);

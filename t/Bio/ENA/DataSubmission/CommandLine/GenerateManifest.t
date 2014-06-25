@@ -19,8 +19,41 @@ my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::CommandLine::GenerateManifest');
 
-# check correct ERS numbers, sample names
-my ( $obj, @args, @exp_ers );
+my ( @args, $obj, @exp_ers );
+
+#----------------------#
+# test illegal options #
+#----------------------#
+
+@args = ();
+$obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
+
+@args = ('-t');
+$obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+
+@args = ('-t', 'rex');
+$obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+
+@args = ('-i');
+$obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+
+@args = ('-i', 'pod');
+$obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+
+@args = ('-t', 'rex', '-i', '10665_2#81');
+$obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+
+#--------------#
+# test methods #
+#--------------#
+
+# check correct ERS numbers, sample names, supplier names
 
 # lane
 @exp_ers = ( ['ERS311393', '2047STDY5552104', 'RVI551'] );

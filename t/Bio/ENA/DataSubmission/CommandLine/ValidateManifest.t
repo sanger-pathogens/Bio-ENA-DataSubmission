@@ -18,6 +18,27 @@ use_ok('Bio::ENA::DataSubmission::CommandLine::ValidateManifest');
 
 my ($obj, @args);
 
+#----------------------#
+# test illegal options #
+#----------------------#
+
+@args = ();
+$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
+
+@args = ('--edit', '-r', 't/data/fakefile.txt');
+$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
+
+@args = ('-f', 'not/a/file');
+$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid input file path';
+
+@args = ('-f', 't/data/manifest_bad.xls', '-r', 'not/a/file');
+$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid output file path';
+
+
 #--------------------------#
 # Check validation reports #
 #--------------------------#
@@ -56,27 +77,6 @@ is(
 	read_file("$tmp/edited_manifest.xls"),
 	'manifest edited correctly'
 );
-
-#----------------------#
-# test illegal options #
-#----------------------#
-
-@args = ();
-$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
-
-@args = ('--edit', '-r', 't/data/fakefile.txt');
-$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
-
-@args = ('-f', 'not/a/file');
-$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid input file path';
-
-@args = ('-f', 't/data/manifest_bad.xls', '-r', 'not/a/file');
-$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid output file path';
-
 
 remove_tree($tmp);
 done_testing();
