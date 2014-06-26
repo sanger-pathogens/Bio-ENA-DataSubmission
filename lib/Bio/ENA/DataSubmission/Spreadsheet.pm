@@ -33,8 +33,6 @@ use Moose;
 
 use Spreadsheet::ParseExcel;
 use Spreadsheet::WriteExcel;
-use Path::Find;
-use Path::Find::Lanes;
 use Bio::ENA::DataSubmission::Exception;
 
 has 'infile'              => ( is => 'rw', isa => 'Str',      required => 0 );
@@ -72,15 +70,26 @@ sub write_xls{
 	my $outfile = $self->outfile;
 
 	# check sanity
-	(-e $outfile) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find file: $outfile\n" );
-	(-w $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
-	(@data) or Bio::ENA::DataSubmission::Exception::NoData->throw( error => "No data was supplied to the spreadsheet reader\n");
+	( -e $outfile ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find file: $outfile\n" );
+	( -w $outfile ) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
+	( @data ) or Bio::ENA::DataSubmission::Exception::NoData->throw( error => "No data was supplied to the spreadsheet reader\n");
 
 	my $workbook = Spreadsheet::WriteExcel->new($outfile);
 	my $worksheet = $workbook->add_worksheet();
 
-	$self->_write_header($workbook, $worksheet) if ($self->add_manifest_header);
+	my ($i, $j) = (0, 0);
+	if ($self->add_manifest_header){
+		$self->_write_header($workbook, $worksheet);
+		$i++;
+	}
 
+	foreach my $row ( @data ) {
+		foreach my $cell ( @{ $row } ) {
+			$worksheet->write( $i, $j, $cell );
+			$j++;
+		}
+		$i++;
+	}
 
 }
 
@@ -99,6 +108,7 @@ sub _write_header{
 					lab_host environmental_sample mating_type isolate strain*
 					sub_species sub_strain serovar*];
 
+	my $c = 0;
 	foreach my $h (@header){
 		if( $h =~ /\*$/ ){
 			$h =~ s/\*$//;
@@ -107,6 +117,7 @@ sub _write_header{
 		else{
 			$worksheet->write( 0, $c, $h );
 		}
+		$c++;
 	}
 }
 
