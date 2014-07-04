@@ -1,4 +1,4 @@
-package Bio::GFFValidator::Errors::BaseError;
+package Bio::ENA::DataSubmission::Validator::Error;
 # ABSTRACT: 
 
 =head1 SYNOPSIS
@@ -26,7 +26,7 @@ sub set_error_message {
 
 sub get_error_message {
 	my ($self) = @_;
-	return $self->value.": ".$self->message;
+	return $self->accession.": ".$self->message;
 }
 
 no Moose;

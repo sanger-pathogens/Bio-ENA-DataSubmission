@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-package Bio::ENA::DataSubmission;
+package Bio::ENA::DataSubmission::Bin::GenerateManifest;
 
 # ABSTRACT: 
 # PODNAME: 

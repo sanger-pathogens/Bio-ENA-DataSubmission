@@ -4,7 +4,7 @@ package Bio::ENA::DataSubmission::Validator::Error::CollectionDate;
 
 =head1 SYNOPSIS
 
-Checks that collection date is in correct format
+Checks that collection date is in correct format: YYYY-MM-DD, YYYY-MM or YYYY
 
 =cut
 
@@ -25,7 +25,7 @@ sub validate {
 		|| $date =~ m/\d{4}/
 	);
 
-	$self->set_error_message( $acc, "Incorrect collection_date format. Must match YYYY, YYYY-MM or YYYY-MM-DD" ) if ( $format );
+	$self->set_error_message( $acc, "Incorrect collection_date format. Must match YYYY, YYYY-MM or YYYY-MM-DD" ) unless ( $format );
 
 	return $self;
 }

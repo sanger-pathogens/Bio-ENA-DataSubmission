@@ -24,7 +24,7 @@ sub validate {
 		|| $country =~ m/[\w ]+: [\w ,]+/
 	);
 
-	$self->set_error_message( $acc, "Incorrect country format. Must match country: region, locality. E.G. United Kingdom: England, Norfolk, Blakeney Point" ) if ( $format );
+	$self->set_error_message( $acc, "Incorrect country format. Must match country: region, locality. E.G. United Kingdom: England, Norfolk, Blakeney Point" ) unless ( $format );
 
 	return $self;
 }

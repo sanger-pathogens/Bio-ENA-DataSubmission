@@ -29,22 +29,34 @@ use Moose;
 
 use Bio::ENA::DataSubmission::Exception;
 use XML::Simple;
+use LWP;
 
 has 'xml'     => ( is => 'rw', isa => 'Str',     required => 0 );
+has 'url'     => ( is => 'ro', isa => 'Str',     required => 0 );
 has 'data'    => ( is => 'rw', isa => 'HashRef', required => 0 );
 has 'xsd'     => ( is => 'ro', isa => 'Str',     required => 0 );
 has 'outfile' => ( is => 'rw', isa => 'Str',     required => 0 );
 
-sub validate{
+sub validate {
 
 }
 
-sub update{
+sub update {
 
 }
 
-sub parse{
+sub parse_from_file {
 
+}
+
+sub parse_from_url {
+	my $self = shift;
+
+	my $ua = LWP::UserAgent->new;
+	my $req = HTTP::Request->new( GET => $self->url );
+	my $res = $ua->request( $req );
+
+	return (XML::Simple->new()->XMLin( $res->content ));
 }
 
 __PACKAGE__->meta->make_immutable;
