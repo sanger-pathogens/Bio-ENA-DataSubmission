@@ -28,8 +28,9 @@ use Moose;
 
 use Path::Find;
 use Path::Find::Lanes;
+use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
-use Bio::ENA::DataSubmission::Spreadsheet
+use Bio::ENA::DataSubmission::Spreadsheet;
 
 has 'args'        => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -37,6 +38,7 @@ has 'type'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'id'          => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'     => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'sample_data' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'help'        => ( is => 'rw', isa => 'Bool',     required => 0 );
 
 sub BUILD {
 	my ( $self ) = @_;
@@ -46,11 +48,11 @@ sub BUILD {
 
 	GetOptionsFromArray(
 		$args,
-		't|type=s'  => \$type,
-		'i|id=s'    => \$id,
-		'o|outfile' => \$outfile,
-		'h|help'    => \$help
-	) or Bio::ENA::DataSubmission::Exception->throw( error => "" );
+		't|type=s'    => \$type,
+		'i|id=s'      => \$id,
+		'o|outfile=s' => \$outfile,
+		'h|help'      => \$help
+	);
 
 	$self->type($type)       if ( defined $type );
 	$self->id($id)           if ( defined $id );
@@ -78,21 +80,22 @@ sub run {
 
 	# sanity checks
 	$self->check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
-	if ( $self->type == 'file' ){
+	if ( $self->type eq 'file' ){
 		my $id = $self->id;
-		( -e $id ) or Bio::ENA::DataSubmission::Exception::FileDoesNotExist->throw( error => "File $id does not exist\n" );
+		( -e $id ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "File $id does not exist\n" );
 		( -r $id ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $id\n" );
 	}
-	( -w  $outfile ) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" );
+	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
 
 	# write data to spreadsheet
-	my $data = @{ $self->sample_data };
+	my $data = $self->sample_data;
 	my $manifest = Bio::ENA::DataSubmission::Spreadsheet->new(
 		data                => $data,
 		outfile             => $outfile,
 		add_manifest_header => 1
 	);
 	$manifest->write_xls;
+	1;
 }
 
 sub _build_sample_data {
@@ -130,7 +133,7 @@ sub _build_sample_data {
         	my $sample_acc = $sample->individual->acc;
 
         	my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
-        	my $supplier_name = $sample[1];
+        	my $supplier_name = $sample_data[0];
         	push( @data, [ $sample_acc, $sample_name, $supplier_name ] );
         }
 	}

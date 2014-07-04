@@ -70,8 +70,7 @@ sub write_xls{
 	my $outfile = $self->outfile;
 
 	# check sanity
-	( -e $outfile ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find file: $outfile\n" );
-	( -w $outfile ) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
+	#( -w $outfile ) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
 	( @data ) or Bio::ENA::DataSubmission::Exception::NoData->throw( error => "No data was supplied to the spreadsheet reader\n");
 
 	my $workbook = Spreadsheet::WriteExcel->new($outfile);
@@ -100,13 +99,13 @@ sub _write_header{
 	my %green = ( bg_color => 'lime' );
 	my $mandatory = $workbook->add_format(%green);
 
-	my @header = qq[sample_accession sanger_sample_name sample_alias tax_id* 
+	my @header = qw(sample_accession sanger_sample_name supplier_name sample_alias tax_id* 
 					scientific_name* common_name anonymized_name sample_title	
 					sample_description bio_material culture_collection	
 					specimen_voucher collected_by collection_date* country*
 					host* host_status* identified_by isolation_source* lat_lon
 					lab_host environmental_sample mating_type isolate strain*
-					sub_species sub_strain serovar*];
+					sub_species sub_strain serovar*);
 
 	my $c = 0;
 	foreach my $h (@header){
