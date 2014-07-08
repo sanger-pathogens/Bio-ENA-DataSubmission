@@ -12,7 +12,7 @@ use Moose;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
 has 'cell'      => ( is => 'ro', isa => 'Str', required => 1 );
-had 'id'        => ( is => 'ro', isa => 'Str', required => 1 );
+has 'id'        => ( is => 'ro', isa => 'Str', required => 1 );
 has 'accession' => ( is => 'ro', isa => 'Str', required => 1 );
 
 sub validate {

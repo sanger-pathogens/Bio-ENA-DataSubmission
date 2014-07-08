@@ -10,6 +10,8 @@ BEGIN {
 use Moose;
 use File::Slurp;
 use File::Path qw( remove_tree);
+use Cwd;
+use File::Temp;
 
 my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();
