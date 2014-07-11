@@ -90,12 +90,12 @@ is(
 # sanity checks
 
 $obj = Bio::ENA::DataSubmission::XML->new();
-throws_ok {$obj->parse} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
+throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml' );
-throws_ok {$obj->parse} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XML path';
+throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XML path';
 
-# parser checks
+# file parser checks
 
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml' );
 my %exp = (
@@ -111,7 +111,10 @@ my %exp = (
 	isolation_source => 'Food',
 	strain           => '2007223'
 );
-is_deeply $obj->parse, \%exp, 'XML parsed successfully';
+is_deeply $obj->parse_from_file, \%exp, 'XML parsed successfully';
+
+# URL parser checks
+
 
 remove_tree($tmp);
 done_testing();

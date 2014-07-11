@@ -9,7 +9,8 @@ BEGIN {
 
 use Moose;
 use File::Temp;
-use File::Slurp;
+use File::Compare;
+use Cwd;
 use File::Path qw( remove_tree);
 
 my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
@@ -17,7 +18,7 @@ my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::Spreadsheet');
 
-my $obj;
+my ($obj, $data);
 
 # test reading
 $obj = Bio::ENA::DataSubmission::Spreadsheet->new( infile => 't/data/test.xls');
@@ -26,20 +27,18 @@ is_deeply $obj->parse,
 	'Correct parsed file structure';
 
 # test writing
-my $data = [['name', 'age'], ['Carla', '27'], ['Becca', '22']];
+$data = [['name', 'age'], ['Carla', '27'], ['Becca', '22']];
 Bio::ENA::DataSubmission::Spreadsheet->new( data => $data, outfile => "$tmp/test.xls")->write_xls;
-is(
-	read_file('t/data/test.xls'),
-	read_file("$tmp/test.xls"),
-	'spreadsheet file correct'
+ok( 
+	compare( 't/data/test.xls', "$tmp/test.xls" ), 
+	'spreadsheet file correct' 
 );
 
 # test writing with manifest header
-my $data = [['Carla', '27'], ['Becca', '22']];
+$data = [['Carla', '27'], ['Becca', '22']];
 Bio::ENA::DataSubmission::Spreadsheet->new( data => $data, outfile => "$tmp/append_test.xls", add_manifest_header => 1)->write_xls;
-is(
-	read_file('t/data/test.xls'),
-	read_file("$tmp/header_test.xls"),
+ok(
+	compare( 't/data/test.xls', "$tmp/header_test.xls" ),
 	'spreadsheet file correct'
 );
 
