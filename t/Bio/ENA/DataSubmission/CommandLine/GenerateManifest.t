@@ -83,10 +83,16 @@ is_deeply $obj->sample_data, \@exp_ers, 'Correct file ERSs';
 @args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls");
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
 ok( $obj->run, 'Manifest generated' );
-ok(
-	compare( 't/data/exp_manifest.xls', "$tmp/manifest.xls" ),
+is_deeply( 
+	diff_xls('t/data/exp_manifest.xls', "$tmp/manifest.xls" ),
 	'Manifest file correct'
 );
-
 remove_tree($tmp);
 done_testing();
+
+sub diff_xls {
+	my ($x1, $x2) = @_;
+	my $x1_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x1 )->parse;
+	my $x2_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x2 )->parse;
+	return ( $x1_data, $x2_data );
+}

@@ -82,10 +82,8 @@ is_deeply \@exp, \@got, 'Correct fields identified as incongruous';
 my @errors = @exp;
 ok( $obj->_report(\@errors), 'Report write ok' );
 ok( -e "$tmp/comparison_report.xls", 'Report exists' );
-ok(
-	compare( 't/data/comparison_report.xls', "$tmp/comparison_report.xls" ),
-	'Report correct'
-);
+is_deeply( diff_xls('t/data/comparison_report.xls', "$tmp/comparison_report.xls"), 'Report correct' );
+
 
 # test reporting without any errors
 @args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report2.xls");
@@ -94,23 +92,14 @@ $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@ar
 my @no_errors;
 ok( $obj->_report(\@no_errors), 'Report write ok' );
 ok( -e "$tmp/comparison_report2.xls", 'Report exists' );
-ok(
-	compare( 't/data/comparison_report2.xls', "$tmp/comparison_report2.xls" ),
-	'Report correct'
-);
+is_deeply( diff_xls('t/data/comparison_report2.xls', "$tmp/comparison_report2.xls"), 'Report correct' );
 
-#remove_tree($tmp);
+remove_tree($tmp);
 done_testing();
 
-# sub parse_csv{
-# 	my $filename = shift;
-
-# 	my @data;
-# 	open(FH, $filename);
-# 	while ( my $line = <FH> ){
-# 		chomp $line;
-# 		my @parts = split(",", $line);
-# 		push(@data, \@parts);
-# 	}
-# 	return \@data;
-# }
+sub diff_xls {
+	my ($x1, $x2) = @_;
+	my $x1_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x1 )->parse;
+	my $x2_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x2 )->parse;
+	return ( $x1_data, $x2_data );
+}

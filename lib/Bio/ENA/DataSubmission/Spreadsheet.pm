@@ -59,7 +59,8 @@ sub parse{
 
     	for my $row ( $row_min .. $row_max ) {
         	for my $col ( $col_min .. $col_max ) {
-        		$data[$row][$col] = $worksheet->get_cell($row, $col)->value();
+        		my $cell = $worksheet->get_cell($row, $col);
+        		$data[$row][$col] = $cell->value() if ( defined $cell );
         	}
     	}
 	}

@@ -30,18 +30,19 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use Data::Dumper;
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::XML;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use Getopt::Long qw(GetOptionsFromArray);
 
-has 'args'     => ( is => 'ro', isa => 'ArrayRef', required => 1 );
+has 'args'     => ( is => 'ro', isa => 'ArrayRef',   required => 1 );
 
-has 'manifest' => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'schema'   => ( is => 'rw', isa => 'Str',      required => 0, default => 'data/ERC000028.xml' );
-has 'outfile'  => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'help'     => ( is => 'rw', isa => 'Bool',     required => 0 );
+has 'manifest' => ( is => 'rw', isa => 'Str',        required => 0 );
+has 'schema'   => ( is => 'rw', isa => 'Str',        required => 0, default => 'data/ERC000028.xml' );
+has 'outfile'  => ( is => 'rw', isa => 'Maybe[Str]', required => 0 );
+has 'help'     => ( is => 'rw', isa => 'Bool',       required => 0 );
 
 sub BUILD {
 	my ( $self ) = @_;
@@ -82,11 +83,13 @@ sub run{
 	( -e $manifest ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find $manifest\n" );
 	( -r $manifest ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $manifest\n" );
 	$outfile = "$manifest.report.xls" unless( defined( $outfile ) );
+	$self->outfile($outfile);
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
 
 	# loop through manifest and compare to XML from ENA
 	my @conflicts;
 	foreach my $entry ( $self->_parse_manifest ){
+		next unless ( defined $entry->{'sample_accession'} );
 		my $ena_meta = $self->_parse_xml( $entry->{'sample_accession'} );
 		push( @conflicts, $self->_compare_metadata( $entry, $ena_meta ) );
 	}
@@ -164,14 +167,15 @@ sub _report{
 	my ( $self, $c ) = @_;
 	my $outfile = $self->outfile;
 
-	my @data;
-	if( defined $c ){
-		@data = @{ $c };
+	Bio::ENA::DataSubmission::Exception::NoData->throw("No data supplied for reporting\n") unless ( defined $c );
+
+	my @data = @{ $c };
+	if ($#data >= 0){
 		unshift(@data, ['Accession', 'Sanger Sample Name', 'Field', 'Manifest', 'ENA']);
-		unshift(@data, ['Total conflicts', $#data]);
+		unshift(@data, ['Total Conflicts', $#data]);
 	}
 	else{
-		@data = (['Total conflicts', '0']);
+		unshift(@data, ['Total Conflicts', 0]);	
 	}
 	my $xls = Bio::ENA::DataSubmission::Spreadsheet->new( data => \@data, outfile => $outfile );
 	$xls->write_xls;
