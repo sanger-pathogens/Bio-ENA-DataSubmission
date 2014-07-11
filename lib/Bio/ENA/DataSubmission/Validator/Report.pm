@@ -23,18 +23,27 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
-has 'errors'              => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'outfile'             => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'errors'              => ( is => 'rw', isa => 'ArrayRef', required => 1 );
+has 'outfile'             => ( is => 'rw', isa => 'Str',      required => 1 );
 
 sub print {
 	my ($self) = @_;
+	my @error_list = @{ $self->errors };
 	
-	open( FH, $self->outfile );
+	open( FH, '>', $self->outfile );
 
-	for my $error ( @{ $self->errors } ){
+	# print summary
+	my $num_errors = scalar( @error_list );
+	my $result = $num_errors == 0 ? "PASS" : "FAIL";
+	print FH "Validation result: $result\tErrors: $num_errors\n";
+
+	# print errors
+	for my $error ( @error_list ){
 		my $error_message = $error->get_error_message;
 		print FH "$error_message\n";
 	}
+
+	close FH;
 
 }
 

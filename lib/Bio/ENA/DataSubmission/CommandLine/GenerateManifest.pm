@@ -153,7 +153,15 @@ sub _get_sample_from_lane {
 }
 
 sub usage_text {
-	return "USAGE TEXT\n";
+	return <<USAGE;
+Usage: validate_sample_manifest [options]
+
+	-t|type     lane|study|file|sample
+	-i|id       lane ID|study ID|file of lanes|file of samples|sample ID
+	-o|outfile  path for output manifest
+	-h|help     this help message
+
+USAGE
 }
 
 

@@ -1,4 +1,4 @@
-package Bio::ENA::DataSubmission::Validator::Error::TaxID;
+package Bio::ENA::DataSubmission::Validator::Error::SampleAccession;
 
 # ABSTRACT: Module for validation of accession from manifest
 
@@ -19,8 +19,9 @@ sub validate {
 	my $self = shift;
 	my $acc  = $self->accession;
 
-	unless ( $acc =~ m/ERS/ ){
+	unless ( $acc =~ m/^ERS/ || $acc =~ m/^SAMEA/ ){
 		$self->set_error_message( $acc, "Invalid accession - must take format ERSXXXXXX" );
+		return $self;
 	}
 	else {
 		# pull XML from ENA and verify that it isn't empty

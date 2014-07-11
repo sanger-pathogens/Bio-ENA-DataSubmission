@@ -11,6 +11,7 @@ Checks that given taxon ID is valid and corresponds to the given scientific name
 use Moose;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
+use lib "/software/pathogen/projects/update_pipeline/modules/";
 use NCBI::TaxonLookup;
 
 has 'tax_id'          => ( is => 'ro', isa => 'Str', required => 1 );
@@ -31,7 +32,7 @@ sub validate {
 		$self->set_error_message( $acc, "$tax_id is not a valid taxonomic ID" ) unless ( defined $taxon_lookup );
 	}
 	else {
-		$self->set_error_message( $acc, "$tax_id does not match given scientific name '$scientific_name'. $tax_id = $taxon_lookup" ) unless ( $scientific_name eq $taxon_lookup );
+		$self->set_error_message( $acc, "Taxon ID '$tax_id' does not match given scientific name '$scientific_name'. $tax_id = $taxon_lookup" ) unless ( $scientific_name eq $taxon_lookup );
 	}
 
 	return $self;

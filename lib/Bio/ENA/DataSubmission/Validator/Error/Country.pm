@@ -20,8 +20,8 @@ sub validate {
 	my $acc  = $self->accession;
 
 	my $format = (
-		   $country =~ m/[\w ]+/ 
-		|| $country =~ m/[\w ]+: [\w ,]+/
+		   $country =~ m/^[\w ]+$/ 
+		|| $country =~ m/^[\w ]+: [\w ,]+$/
 	);
 
 	$self->set_error_message( $acc, "Incorrect country format. Must match country: region, locality. E.G. United Kingdom: England, Norfolk, Blakeney Point" ) unless ( $format );

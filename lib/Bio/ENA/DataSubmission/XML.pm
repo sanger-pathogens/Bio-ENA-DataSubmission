@@ -31,6 +31,10 @@ use Bio::ENA::DataSubmission::Exception;
 use XML::Simple;
 use LWP;
 
+# BEGIN {
+#   $ENV{HTTP_PROXY} = 'http://wwwcache.sanger.ac.uk:3128';
+# }
+
 has 'xml'     => ( is => 'rw', isa => 'Str',     required => 0 );
 has 'url'     => ( is => 'ro', isa => 'Str',     required => 0 );
 has 'data'    => ( is => 'rw', isa => 'HashRef', required => 0 );
@@ -51,10 +55,14 @@ sub parse_from_file {
 
 sub parse_from_url {
 	my $self = shift;
+	my $url = $self->url;
 
 	my $ua = LWP::UserAgent->new;
-	my $req = HTTP::Request->new( GET => $self->url );
+	$ua->proxy(['http', 'https'], 'http://wwwcache.sanger.ac.uk:3128');
+	my $req = HTTP::Request->new( GET => $url );
 	my $res = $ua->request( $req );
+
+	$res->is_success or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw( error => "Could not connect to $url\n" );
 
 	return (XML::Simple->new()->XMLin( $res->content ));
 }

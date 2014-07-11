@@ -51,6 +51,8 @@ sub parse{
 	my $parser = Spreadsheet::ParseExcel->new();
 	my $workbook = $parser->parse($infile);
 
+	Bio::ENA::DataSubmission::Exception::EmptySpreadsheet->throw( error => "Spreadsheet $infile could not be parsed. Perhaps it's empty?\n" ) unless ( defined $workbook );
+
 	for my $worksheet ( $workbook->worksheets() ){
     	my ( $row_min, $row_max ) = $worksheet->row_range();
     	my ( $col_min, $col_max ) = $worksheet->col_range();
@@ -70,7 +72,7 @@ sub write_xls{
 	my $outfile = $self->outfile;
 
 	# check sanity
-	#( -w $outfile ) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
+	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
 	( @data ) or Bio::ENA::DataSubmission::Exception::NoData->throw( error => "No data was supplied to the spreadsheet reader\n");
 
 	my $workbook = Spreadsheet::WriteExcel->new($outfile);
@@ -83,13 +85,14 @@ sub write_xls{
 	}
 
 	foreach my $row ( @data ) {
+		$j = 0;
 		foreach my $cell ( @{ $row } ) {
 			$worksheet->write( $i, $j, $cell );
 			$j++;
 		}
 		$i++;
 	}
-
+	return 1;
 }
 
 sub _write_header{

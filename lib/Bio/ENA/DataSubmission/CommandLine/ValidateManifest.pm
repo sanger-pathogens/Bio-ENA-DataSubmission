@@ -50,7 +50,7 @@ has 'help'    => ( is => 'rw', isa => 'Bool',     required => 0 );
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $report, $outfile, $help );
+	my ( $file, $report, $outfile, $edit, $help );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -104,7 +104,7 @@ sub run {
 
 	my $parser = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $file );
 	my @manifest = @{ $parser->parse };
-	my @header = @{ shift $manifest };
+	my @header = @{ shift @manifest };
 
 	#------------#
 	# validation #
@@ -154,11 +154,13 @@ sub run {
 		push( @errors_found, $country_error ) if ( $country_error->triggered );
 
 		# lat lon
-		my $lat_lon_error = Bio::ENA::DataSubmission::Validator::Error::LatLon->new(
-			accession => $acc,
-			latlon    => $row[20]
-		)->validate;
-		push( @errors_found, $lat_lon_error ) if ( $lat_lon_error->triggered );
+		if( $row[20] ne '' ){
+			my $lat_lon_error = Bio::ENA::DataSubmission::Validator::Error::LatLon->new(
+				accession => $acc,
+				latlon    => $row[20]
+			)->validate;
+			push( @errors_found, $lat_lon_error ) if ( $lat_lon_error->triggered );
+		}
 	}
 
 	#--------------#
@@ -168,17 +170,27 @@ sub run {
 	Bio::ENA::DataSubmission::Validator::Report->new(
 		errors  => \@errors_found,
 		outfile => $report
-	)->write_report;
+	)->print;
 
 	#-------------------------#
 	# edit/fix where possible #
 	#-------------------------#
 
 	
+	return (scalar(@errors_found) > 0) ? 0 : 1;
 }
 
 sub usage_text {
-	return "USAGE TEXT\n";
+	return <<USAGE;
+Usage: validate_sample_manifest [options]
+
+	-f|file       input manifest for validation
+	-r|report     output path for validation report
+	--edit        create additional manifest with mistakes fixed (where possible)
+	-o|outfile    output path for edited manifest
+	-h|help       this help message
+
+USAGE
 }
 
 

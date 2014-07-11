@@ -12,13 +12,13 @@ Base Error class from which other error classes will inherit.
 
 use Moose;
 
-has 'accession' => ( is => 'rw', isa => 'Str'); 
+has 'key'       => ( is => 'rw', isa => 'Str'); 
 has 'message'   => ( is => 'rw', isa => 'Str'); 
 has 'triggered' => ( is => 'rw', isa => 'Bool', default  => 0 ); 
 
 sub set_error_message {
 	my ( $self, $accession, $message ) = @_;
-	$self->accession( $accession );
+	$self->key( $accession );
 	$self->message( $message );
 	$self->triggered( 1 );
 	return $self;
@@ -26,7 +26,7 @@ sub set_error_message {
 
 sub get_error_message {
 	my ($self) = @_;
-	return $self->accession.": ".$self->message;
+	return $self->key.": ".$self->message;
 }
 
 no Moose;

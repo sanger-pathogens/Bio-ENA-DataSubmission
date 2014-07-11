@@ -38,7 +38,7 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies
 
 @args = ('-f', 't/data/manifest_bad.xls', '-r', 'not/a/file');
 $obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid output file path';
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid output file path';
 
 
 #--------------------------#
@@ -56,7 +56,7 @@ is(
 );
 
 # validate bad spreadsheet
-@args = ('-f', 't/data/manifest_bad.xls', '-r', "$tmp/pass.txt");
+@args = ('-f', 't/data/manifest_bad.xls', '-r', "$tmp/fail.txt");
 $obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
 is $obj->run, 0, 'bad spreadsheet failed';
 is(

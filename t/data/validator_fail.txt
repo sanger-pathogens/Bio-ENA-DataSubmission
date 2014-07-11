@@ -1,0 +1,5 @@
+Validation result: FAIL	Errors: 4
+ERS311560: Taxon ID '1773' does not match given scientific name 'Clostridium difficile'. 1773 = Mycobacterium tuberculosis
+ERS311560: Incorrect collection_date format. Must match YYYY, YYYY-MM or YYYY-MM-DD
+ERS311560: Incorrect country format. Must match country: region, locality. E.G. United Kingdom: England, Norfolk, Blakeney Point
+ERS311560: Lat/Lon format incorrect. Please use XX.XX/XX.XX E.G. 53.71/-6.35
