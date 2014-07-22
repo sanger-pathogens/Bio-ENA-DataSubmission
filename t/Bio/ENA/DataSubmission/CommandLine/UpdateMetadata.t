@@ -8,8 +8,10 @@ BEGIN {
 }
 
 use Moose;
-use File::Slurp;
+use File::Compare;
 use File::Path qw( remove_tree);
+use Cwd;
+use File::Temp;
 
 my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();
@@ -43,31 +45,39 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies
 #--------------#
 
 @args = ('--test', '-f', 't/data/update_manifest.xls', '-o', "$tmp/update_report.xls");
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _xml_dest => $tmp );
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => $tmp, _email_to => 'cc21@sanger.ac.uk' );
 
-# test update of XML
-ok( $obj->_update_xmls, 'XML update successful' );
-ok ( -e "$tmp/ERS001491.xls" );
-is(
-	read_file("$tmp/ERS001491.xls"),
-	read_file('t/data/ERS001491.xls'),
-	'ERS001491 XML correct'
-);
-ok ( -e "$tmp/ERS002783.xls" );
-is(
-	read_file("$tmp/ERS002783.xls"),
-	read_file('t/data/ERS002783.xls'),
-	'ERS002783 XML correct'
+# sample XML updating
+ok( $obj->_updated_xml, 'XML update successful' );
+ok( -e "$tmp/sample.xml", 'XML exists' );
+ok(
+	compare( 't/data/updated.xml', "$tmp/sample.xml" ),
+	'Updated XML file correct'
 );
 
-# test generation of submission XML
-ok( $obj->generate_submission, 'Submission XML generation successful');
-ok( -e "$tmp/submission.xml");
-is(
-	read_file("$tmp/submission.xml"),
-	read_file('t/data/submission.xml'),
+# submission XML generation
+ok( $obj->_generate_submission, 'Sumission XML generated successfully' );
+ok( -e "$tmp/submission.xml", 'XML exists' );
+ok(
+	compare( 't/data/submission.xml', "$tmp/submission.xml" ),
 	'Submission XML correct'
 );
 
+# Validation with XSD
+
+# 1. validate correct XMLs
+ok( $obj->_validate_with_xsd, 'Validation successful' );
+
+# 2. validate with incorrect sample XML
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_sample/', _email_to => 'cc21@sanger.ac.uk' );
+throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
+
+# 3. validate with incorrect submission XML
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_submission/', _email_to => 'cc21@sanger.ac.uk' );
+throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
+
+# run
+
 remove_tree($tmp);
 done_testing();
+

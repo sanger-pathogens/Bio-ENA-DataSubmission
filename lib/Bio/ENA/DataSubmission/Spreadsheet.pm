@@ -38,7 +38,20 @@ use Bio::ENA::DataSubmission::Exception;
 has 'infile'              => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'             => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'data'                => ( is => 'rw', isa => 'ArrayRef', required => 0 );
-has 'add_manifest_header' => ( is => 'ro', isa => 'Bool',     required => 0, default => 0 );
+has 'add_manifest_header' => ( is => 'ro', isa => 'Bool',     required => 0, default =>    0 );
+has '_header'             => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+
+sub _build__header {
+	# maybe this can adapt to different schemas at some point
+	my @header = qw(sample_accession sanger_sample_name supplier_name sample_alias tax_id* 
+					scientific_name* common_name anonymized_name sample_title	
+					sample_description bio_material culture_collection	
+					specimen_voucher collected_by collection_date* country*
+					host* host_status* identified_by isolation_source* lat_lon
+					lab_host environmental_sample mating_type isolate strain*
+					sub_species sub_strain serovar*);
+	return \@header;
+}
 
 sub parse{
 	my ($self) = @_;
@@ -102,14 +115,7 @@ sub _write_header{
 
 	my %green = ( bg_color => 'lime' );
 	my $mandatory = $workbook->add_format(%green);
-
-	my @header = qw(sample_accession sanger_sample_name supplier_name sample_alias tax_id* 
-					scientific_name* common_name anonymized_name sample_title	
-					sample_description bio_material culture_collection	
-					specimen_voucher collected_by collection_date* country*
-					host* host_status* identified_by isolation_source* lat_lon
-					lab_host environmental_sample mating_type isolate strain*
-					sub_species sub_strain serovar*);
+	my @header = @{ $self->_header };
 
 	my $c = 0;
 	foreach my $h (@header){
@@ -122,6 +128,22 @@ sub _write_header{
 		}
 		$c++;
 	}
+}
+
+sub parse_manifest{
+	my $self = shift;
+
+	my @manifest = @{ $self->parse };
+	my @header = @{ shift @manifest };
+
+	my @data;
+	foreach my $row ( @manifest ){
+		push( @data, {} );
+		for my $c ( 0..$#{$row} ){
+			$data[-1]->{$header[$c]} = $row->[$c];
+		}
+	}
+	return \@data;
 }
 
 __PACKAGE__->meta->make_immutable;

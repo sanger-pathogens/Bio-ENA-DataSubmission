@@ -10,6 +10,8 @@ BEGIN {
 use Moose;
 use File::Slurp;
 use File::Path qw( remove_tree);
+use Cwd;
+use File::Temp;
 
 my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();
@@ -115,6 +117,19 @@ is_deeply $obj->parse_from_file, \%exp, 'XML parsed successfully';
 
 # URL parser checks
 
+# Metadata parsing test
+my %exp = (
+	tax_id           => '1496',
+	scientific_name  => '[Clostridium] difficile',
+	common_name      => 'Clostridium difficile',
+	sample_title     => '[Clostridium] difficile',
+	collection_date  => '2007',
+	country          => 'USA: AZ',
+	specific_host    => 'Free living',
+	isolation_source => 'Food',
+	strain           => '2007223'
+);
+is_deeply $obj->parse_xml_metadata('ERS001491'), \%exp, 'XML parsed correctly';
 
 remove_tree($tmp);
 done_testing();
