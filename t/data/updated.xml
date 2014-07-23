@@ -1,88 +1,112 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<ROOT request="ERS001491&amp;display=xml">
-<SAMPLE alias="2007223-sc-2010-05-07-2811" accession="ERS001491" center_name="The Wellcome Trust Sanger Institute">
-     <IDENTIFIERS>
-          <PRIMARY_ID>ERS001491</PRIMARY_ID>
-          <EXTERNAL_ID namespace="BioSample">SAMEA872764</EXTERNAL_ID>
-          <SUBMITTER_ID namespace="SC">2007223-sc-2010-05-07-2811</SUBMITTER_ID>
-     </IDENTIFIERS>
-     <TITLE>[Clostridium] difficile</TITLE>
-     <SAMPLE_NAME>
-          <COMMON_NAME>Clostridium difficile</COMMON_NAME>
-          <TAXON_ID>1496</TAXON_ID>
-          <SCIENTIFIC_NAME>[Clostridium] difficile</SCIENTIFIC_NAME>
-     </SAMPLE_NAME>
-     <SAMPLE_LINKS>
-          <SAMPLE_LINK>
-               <XREF_LINK>
-                    <DB>ENA-STUDY</DB>
-                    <ID>ERP000093</ID>
-               </XREF_LINK>
-          </SAMPLE_LINK>
-          <SAMPLE_LINK>
-               <XREF_LINK>
-                    <DB>ENA-EXPERIMENT</DB>
-                    <ID>ERX008678</ID>
-               </XREF_LINK>
-          </SAMPLE_LINK>
-          <SAMPLE_LINK>
-               <XREF_LINK>
-                    <DB>ENA-RUN</DB>
-                    <ID>ERR022121</ID>
-               </XREF_LINK>
-          </SAMPLE_LINK>
-          <SAMPLE_LINK>
-               <XREF_LINK>
-                    <DB>ENA-SUBMISSION</DB>
-                    <ID>ERA000229</ID>
-               </XREF_LINK>
-          </SAMPLE_LINK>
-          <SAMPLE_LINK>
-               <XREF_LINK>
-                    <DB>ENA-FASTQ-FILES</DB>
-                    <ID>http://www.ebi.ac.uk/ena/data/view/reports/sra/fastq_files/ERS001491</ID>
-               </XREF_LINK>
-          </SAMPLE_LINK>
-          <SAMPLE_LINK>
-               <XREF_LINK>
-                    <DB>ENA-SUBMITTED-FILES</DB>
-                    <ID>http://www.ebi.ac.uk/ena/data/view/reports/sra/submitted_files/ERS001491</ID>
-               </XREF_LINK>
-          </SAMPLE_LINK>
-     </SAMPLE_LINKS>
-     <SAMPLE_ATTRIBUTES>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>country</TAG>
-               <VALUE>UK: Cambridgeshire</VALUE>
-          </SAMPLE_ATTRIBUTE>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>collection_date</TAG>
-               <VALUE>2007</VALUE>
-          </SAMPLE_ATTRIBUTE>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>isolation_source</TAG>
-               <VALUE>Food</VALUE>
-          </SAMPLE_ATTRIBUTE>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>specific_host</TAG>
-               <VALUE>Free living</VALUE>
-          </SAMPLE_ATTRIBUTE>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>pubmed_id</TAG>
-               <VALUE>20368420</VALUE>
-          </SAMPLE_ATTRIBUTE>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>strain</TAG>
-               <VALUE>s1234</VALUE>
-          </SAMPLE_ATTRIBUTE>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>ENA-SPOT-COUNT</TAG>
-               <VALUE>2466188</VALUE>
-          </SAMPLE_ATTRIBUTE>
-          <SAMPLE_ATTRIBUTE>
-               <TAG>ENA-BASE-COUNT</TAG>
-               <VALUE>283611620</VALUE>
-          </SAMPLE_ATTRIBUTE>
-     </SAMPLE_ATTRIBUTES>
-</SAMPLE>
-</ROOT>
+<SAMPLE_SET>
+     <SAMPLE accession="ERS001491">
+          <IDENTIFIERS>
+               <PRIMARY_ID>ERS001491</PRIMARY_ID>
+               <EXTERNAL_ID namespace="BioSample">SAMEA872764</EXTERNAL_ID>
+               <SUBMITTER_ID namespace="SC">2007223-sc-2010-05-07-2811</SUBMITTER_ID>
+          </IDENTIFIERS>
+          <TITLE>[Clostridium] difficile</TITLE>
+          <SAMPLE_NAME>
+               <COMMON_NAME>Clostridium difficile</COMMON_NAME>
+               <TAXON_ID>1496</TAXON_ID>
+               <SCIENTIFIC_NAME>Clostridium difficile</SCIENTIFIC_NAME>
+          </SAMPLE_NAME>
+          <SAMPLE_ATTRIBUTES>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>country</TAG>
+                    <VALUE>UK: Essex</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>collection_date</TAG>
+                    <VALUE>2007</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>isolation_source</TAG>
+                    <VALUE>Wound</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>specific_host</TAG>
+                    <VALUE>Human</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>pubmed_id</TAG>
+                    <VALUE>20368420</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>strain</TAG>
+                    <VALUE>2007223</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>ENA-SPOT-COUNT</TAG>
+                    <VALUE>2466188</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>ENA-BASE-COUNT</TAG>
+                    <VALUE>283611620</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>host_status</TAG>
+                    <VALUE>Diseased</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>serovar</TAG>
+                    <VALUE>666</VALUE>
+               </SAMPLE_ATTRIBUTE>
+          </SAMPLE_ATTRIBUTES>
+     </SAMPLE>
+     <SAMPLE accession="ERS002783">
+          <IDENTIFIERS>
+               <PRIMARY_ID>ERS002783</PRIMARY_ID>
+               <EXTERNAL_ID namespace="BioSample">SAMEA677572</EXTERNAL_ID>
+               <SUBMITTER_ID namespace="SC">3PN00133-sc-2010-05-07-10268</SUBMITTER_ID>
+          </IDENTIFIERS>
+          <TITLE>Streptococcus pneumoniae</TITLE>
+          <SAMPLE_NAME>
+               <COMMON_NAME>Streptococcus pneumoniae</COMMON_NAME>
+               <TAXON_ID>1313</TAXON_ID>
+               <SCIENTIFIC_NAME>Streptococcus pneumoniae</SCIENTIFIC_NAME>
+          </SAMPLE_NAME>
+          <SAMPLE_ATTRIBUTES>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>country</TAG>
+                    <VALUE>United Kingdom</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>collection_date</TAG>
+                    <VALUE>2005</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>serovar</TAG>
+                    <VALUE>23F</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>specific_host</TAG>
+                    <VALUE>Homo sapiens</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>pubmed_id</TAG>
+                    <VALUE>21273480</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>strain</TAG>
+                    <VALUE>3PN00133</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>ENA-SPOT-COUNT</TAG>
+                    <VALUE>10064422</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>ENA-BASE-COUNT</TAG>
+                    <VALUE>1161642276</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>host_status</TAG>
+                    <VALUE>Diseased</VALUE>
+               </SAMPLE_ATTRIBUTE>
+               <SAMPLE_ATTRIBUTE>
+                    <TAG>isolation_source</TAG>
+                    <VALUE>Throat</VALUE>
+               </SAMPLE_ATTRIBUTE>
+          </SAMPLE_ATTRIBUTES>
+     </SAMPLE>
+</SAMPLE_SET>

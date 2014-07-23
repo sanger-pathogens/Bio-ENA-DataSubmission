@@ -49,8 +49,8 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
 @args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report.xls");
 $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 
-# test parsing of XML
-my %exp = (
+# compare metadata
+my %data1 = (
 	tax_id           => '1496',
 	scientific_name  => '[Clostridium] difficile',
 	common_name      => 'Clostridium difficile',
@@ -61,10 +61,6 @@ my %exp = (
 	isolation_source => 'Food',
 	strain           => '2007223'
 );
-is_deeply $obj->_parse_xml('ERS001491'), \%exp, 'XML parsed correctly';
-
-# compare metadata
-my %data1 = %exp;
 $data1{'sample_accession'} = "ERS001491";
 $data1{'sanger_sample_name'} = "2007223";
 my %data2 = %data1;
