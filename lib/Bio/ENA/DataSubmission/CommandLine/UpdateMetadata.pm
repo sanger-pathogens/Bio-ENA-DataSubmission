@@ -34,11 +34,12 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use Getopt::Long qw(GetOptionsFromArray);
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
-use Email::MIME;
-use Email::Sender::Simple qw(sendmail);
+#use Email::MIME;
+#use Email::Sender::Simple qw(sendmail);
 
 has 'args'           => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -59,7 +60,7 @@ sub _build__output_dest{
 	my @timestamp = localtime(time);
 	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
 	my $user = getpwuid( $< );
-	$dir .= "$user_$day";
+	$dir .= $user . '_' . $day;
 
 	Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" ) unless( mkdir $dir );
 	return $dir;
@@ -110,12 +111,9 @@ sub run {
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
 
 	# first, validate the manifest
-	my @args = ( '-f', $manifest, '-r', "$tmp/validator_report.txt" );
+	my @args = ( '-f', $manifest, '-r', $outfile );
 	my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-	if( $validator->run == 0 ){ # manifest failed validation
-		system("mv $tmp/validator_report.txt $outfile");
-		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n");
-	}
+	Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 
 	# generate updated sample XML
 	$self->_updated_xml;
@@ -130,7 +128,7 @@ sub run {
 	$self->_record_spreadsheet;
 
 	# email Rob
-	$self->_email;
+	# $self->_email;
 
 }
 
@@ -142,6 +140,7 @@ sub _updated_xml {
 
 	# parse manifest and loop through samples
 	my $manifest_handler = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $manifest );
+	my @manifest = @{ $manifest_handler->parse_manifest };
 	my @updated_samples;
 	foreach my $sample (@manifest){
 		my $new_sample = Bio::ENA::DataSubmission::XML->new()->update( $sample );
@@ -153,7 +152,7 @@ sub _updated_xml {
 
 sub _generate_submission {
 	my $self = shift;
-	my $dest = $self->_xml_dest;
+	my $dest = $self->_output_dest;
 	my $root = $self->_data_root;
 
 	my $sub = "$root/submission.xml";
@@ -162,11 +161,11 @@ sub _generate_submission {
 
 sub _validate_with_xsd {
 	my $self = shift;
-	my $dest = $self->_xml_dest;
+	my $dest = $self->_output_dest;
 
 	my $xsd_root = $self->_data_root;
 
-	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/sample.xml", xsd => "$xsd_root/sample.xsd" )
+	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/sample.xml", xsd => "$xsd_root/sample.xsd" );
 	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed\n" ) unless ( $sample_validator->validate );
 
 	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/sample.xml", xsd => "$xsd_root/submission.xsd" );
@@ -183,25 +182,36 @@ sub _record_spreadsheet {
 	system("cp $manifest $dest/manifest.xls");
 }
 
-sub _email {
-	my $self = shift;
-	my $dest = $self->_output_dest;
-	my $to = $self->_email_to;
+# sub _email {
+# 	my $self = shift;
+# 	my $dest = $self->_output_dest;
+# 	my $to = $self->_email_to;
 
-	my $message = Email::MIME->create(
-    	header_str => [
-        	From    => 'cc21@sanger.ac.uk',
-        	To      => $to,
-        	Subject => 'ENA Metadata Update Request',
-    	],
-    	attributes => {
-        	encoding => 'quoted-printable',
-        	charset  => 'ISO-8859-1',
-    	},
-    	body_str => "Hi,\n\nSome sample metadata are ready to update with the ENA. The files are located @ $dest\n\nThanks,\nCarla",
-	);
+# 	my $message = Email::MIME->create(
+#     	header_str => [
+#         	From    => 'cc21@sanger.ac.uk',
+#         	To      => $to,
+#         	Subject => 'ENA Metadata Update Request',
+#     	],
+#     	attributes => {
+#         	encoding => 'quoted-printable',
+#         	charset  => 'ISO-8859-1',
+#     	},
+#     	body_str => "Hi,\n\nSome sample metadata are ready to update with the ENA. The files are located @ $dest\n\nThanks,\nCarla",
+# 	);
 
-	sendmail($message);
+# 	sendmail($message);
+# }
+
+sub usage_text {
+	return <<USAGE;
+Usage: update_sample_manifest [options]
+
+	-f|file       input manifest for update
+	-o|outfile    output path for validation report
+	-h|help       this help message
+
+USAGE
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -32,6 +32,7 @@ use XML::Simple;
 use XML::LibXML;
 use LWP;
 use Switch;
+use Data::Dumper;
 
 has 'xml'     => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'url'     => ( is => 'rw', isa => 'Str',      required => 0 );
@@ -111,7 +112,7 @@ sub _update_fields {
 		my @attrs = @{ $xml->{SAMPLE_ATTRIBUTES}->{SAMPLE_ATTRIBUTE} };
 		foreach my $a ( 0..$#attrs){
 			if ( $attrs[$a]->{TAG} eq $key ){
-				$xml->{SAMPLE_ATTRIBUTES}->{SAMPLE_ATTRIBUTE}->[$a] = $value;
+				$xml->{SAMPLE_ATTRIBUTES}->{SAMPLE_ATTRIBUTE}->[$a]->{VALUE} = $value;
 				$found = 1;
 				last;
 			}
@@ -120,7 +121,7 @@ sub _update_fields {
 
 	# if still not found, add it
 	unless ( $found ){
-		push( @$xml->{SAMPLE_ATTRIBUTES}->{SAMPLE_ATTRIBUTE}, {'TAG' => $key, 'VALUE' => $value} )
+		push( @{ $xml->{SAMPLE_ATTRIBUTES}->{SAMPLE_ATTRIBUTE} }, {'TAG' => $key, 'VALUE' => $value} )
 	}
 
 }
@@ -154,9 +155,9 @@ sub write {
 	my $outfile = $self->outfile;
 	my $data    = $self->data;
 
-	( -w $outfile ) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write file: $outfile" );
+	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write file: $outfile\n" );
 
-	my $writer = XML::Simple->new( RootName => $self->root, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>' );
+	my $writer = XML::Simple->new( RootName => $self->root, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>', NoAttr => 1 );
 	my $out = $writer->XMLout( $data );
 	open( OUT, '>', $outfile );
 	print OUT $out;

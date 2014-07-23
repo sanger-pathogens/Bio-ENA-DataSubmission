@@ -13,7 +13,7 @@ use File::Path qw( remove_tree);
 use Cwd;
 use File::Temp;
 
-my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
+my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 0 );
 my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::CommandLine::UpdateMetadata');
@@ -38,14 +38,14 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies
 
 @args = ('-f', 't/data/compare_manifest.xls', '-o', 'not/a/file');
 $obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid output file path';
+throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid output file path';
 
 #--------------#
 # test methods #
 #--------------#
 
 @args = ('--test', '-f', 't/data/update_manifest.xls', '-o', "$tmp/update_report.xls");
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => $tmp, _email_to => 'cc21@sanger.ac.uk' );
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => $tmp, _data_root => './data', _email_to => 'cc21@sanger.ac.uk' );
 
 # sample XML updating
 ok( $obj->_updated_xml, 'XML update successful' );
@@ -69,15 +69,15 @@ ok(
 ok( $obj->_validate_with_xsd, 'Validation successful' );
 
 # 2. validate with incorrect sample XML
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_sample/', _email_to => 'cc21@sanger.ac.uk' );
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_sample/', _data_root => './data', _email_to => 'cc21@sanger.ac.uk' );
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
 # 3. validate with incorrect submission XML
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_submission/', _email_to => 'cc21@sanger.ac.uk' );
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_submission/', _data_root => './data', _email_to => 'cc21@sanger.ac.uk' );
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
 # run
 
-remove_tree($tmp);
+#remove_tree($tmp);
 done_testing();
 
