@@ -41,6 +41,7 @@ has 'xsd'     => ( is => 'ro', isa => 'Str',      required => 0 );
 has 'outfile' => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'root'    => ( is => 'ro', isa => 'Str',      required => 0, default    => 'root' );
 has '_fields' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has '_elements' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 
 sub _build__fields {
 	# this will change with schema eventually
@@ -50,6 +51,14 @@ sub _build__fields {
 					lab_host environmental_sample mating_type isolate strain
 					sub_species sub_strain serovar);
 	return \@f;
+}
+
+sub _build__elements {
+	my @elements = (
+		'SAMPLE/TITLE',
+		'SAMPLE/SAMPLE_ATTRIBUTES/SAMPLE_ATTRIBUTE/*'
+	);
+	return \@elements;
 }
 
 sub validate {
@@ -147,7 +156,7 @@ sub parse_from_url {
 
 	$res->is_success or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw( error => "Could not connect to $url\n" );
 
-	return (XML::Simple->new()->XMLin( $res->content ));
+	return (XML::Simple->new( ForceArray => 1 )->XMLin( $res->content ));
 }
 
 sub write {
@@ -158,10 +167,17 @@ sub write {
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write file: $outfile\n" );
 
 	my $writer = XML::Simple->new( RootName => $self->root, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>', NoAttr => 0 );
+	
 	my $out = $writer->XMLout( $data );
 	open( OUT, '>', $outfile );
 	print OUT $out;
 	close OUT;
+}
+
+sub _format_tree {
+	my ($self, $tree) = @_;
+
+
 }
 
 sub parse_xml_metadata{
