@@ -35,6 +35,7 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
+use Data::Dumper;
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
@@ -147,6 +148,7 @@ sub _updated_xml {
 		push( @updated_samples, $new_sample );
 	}
 	my %new_xml = ( 'SAMPLE' => \@updated_samples );
+	print Dumper \%new_xml;
 	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/sample.xml", root => 'SAMPLE_SET' )->write;
 }
 

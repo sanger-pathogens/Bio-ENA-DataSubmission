@@ -157,7 +157,7 @@ sub write {
 
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write file: $outfile\n" );
 
-	my $writer = XML::Simple->new( RootName => $self->root, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>', NoAttr => 1 );
+	my $writer = XML::Simple->new( RootName => $self->root, XMLDecl => '<?xml version="1.0" encoding="UTF-8"?>', NoAttr => 0 );
 	my $out = $writer->XMLout( $data );
 	open( OUT, '>', $outfile );
 	print OUT $out;
