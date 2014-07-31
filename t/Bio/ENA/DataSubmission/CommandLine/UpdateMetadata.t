@@ -49,9 +49,9 @@ $obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@arg
 
 # sample XML updating
 ok( $obj->_updated_xml, 'XML update successful' );
-ok( -e "$tmp/sample.xml", 'XML exists' );
+ok( -e "$tmp/samples.xml", 'XML exists' );
 ok(
-	compare( 't/data/updated.xml', "$tmp/sample.xml" ),
+	compare( 't/data/updated.xml', "$tmp/samples.xml" ) == 0,
 	'Updated XML file correct'
 );
 
@@ -59,7 +59,7 @@ ok(
 ok( $obj->_generate_submission, 'Sumission XML generated successfully' );
 ok( -e "$tmp/submission.xml", 'XML exists' );
 ok(
-	compare( 't/data/submission.xml', "$tmp/submission.xml" ),
+	compare( 't/data/submission.xml', "$tmp/submission.xml" ) == 0,
 	'Submission XML correct'
 );
 
@@ -76,8 +76,6 @@ throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::Valid
 $obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_submission/', _data_root => './data', _email_to => 'cc21@sanger.ac.uk' );
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
-# run
-
-#remove_tree($tmp);
+remove_tree($tmp);
 done_testing();
 

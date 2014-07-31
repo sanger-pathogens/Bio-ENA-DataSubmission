@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ROOT>
+<SAMPLE_SET>
 <SAMPLE accession="ERS000011" >
+    <DESCRIPTION>Solexa sequencing of Saccharomyces
+    paradoxus strain W7 random 200 bp library</DESCRIPTION>
     <TITLE>Saccharomyces paradoxus W7</TITLE>
     <SAMPLE_NAME>
         <TAXON_ID>580234</TAXON_ID>
         <COMMON_NAME>Saccharomyces paradoxus</COMMON_NAME>
         <ANONYMIZED_NAME>Saccharomyces paradoxus</ANONYMIZED_NAME>
     </SAMPLE_NAME>
-    <DESCRIPTION>Solexa sequencing of Saccharomyces
-    paradoxus strain W7 random 200 bp library</DESCRIPTION>
     <SAMPLE_ATTRIBUTES>
         <SAMPLE_ATTRIBUTE>
             <TAG>strain</TAG>
@@ -39,4 +39,4 @@
         </SAMPLE_ATTRIBUTE>
     </SAMPLE_ATTRIBUTES>
 </SAMPLE>
-</ROOT>
+</SAMPLE_SET>

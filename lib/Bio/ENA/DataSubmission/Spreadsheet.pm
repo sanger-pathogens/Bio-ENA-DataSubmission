@@ -140,7 +140,8 @@ sub parse_manifest{
 	foreach my $row ( @manifest ){
 		push( @data, {} );
 		for my $c ( 0..$#{$row} ){
-			$data[-1]->{$header[$c]} = $row->[$c];
+			my $key = $header[$c] eq 'host' ? 'specific_host' : $header[$c];
+			$data[-1]->{$key} = $row->[$c];
 		}
 	}
 	return \@data;

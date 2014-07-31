@@ -87,6 +87,7 @@ is_deeply(
 	diff_xls('t/data/exp_manifest.xls', "$tmp/manifest.xls" ),
 	'Manifest file correct'
 );
+
 remove_tree($tmp);
 done_testing();
 

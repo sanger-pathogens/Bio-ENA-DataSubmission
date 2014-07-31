@@ -109,7 +109,7 @@ my %exp = (
 	sample_title     => '[Clostridium] difficile',
 	collection_date  => '2007',
 	country          => 'USA: AZ',
-	host             => 'Free living',
+	specific_host    => 'Free living',
 	isolation_source => 'Food',
 	strain           => '2007223'
 );

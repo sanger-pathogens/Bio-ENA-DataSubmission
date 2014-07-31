@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ROOT>
+<SAMPLE_SET>
 <SAMPLE accession="ERS000011" >
     <TITLE>Saccharomyces paradoxus W7</TITLE>
     <SAMPLE_NAME>
@@ -39,4 +39,4 @@
         </SAMPLE_ATTRIBUTE>
     </SAMPLE_ATTRIBUTES>
 </SAMPLE>
-</ROOT>
+</SAMPLE_SET>

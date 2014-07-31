@@ -36,6 +36,7 @@ no warnings 'uninitialized';
 use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
 use Data::Dumper;
+use File::Copy qw(copy);
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
@@ -52,7 +53,9 @@ has 'outfile'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'test'           => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'           => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => '../../../../../data' );
-has '_email_to'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'rmd@sanger.ac.uk' );
+has '_email_to'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'datahose@sanger.ac.uk' );
+has '_current_user'  => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_auth_users'    => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 
 sub _build__output_dest{
 	my $self = shift;
@@ -60,11 +63,29 @@ sub _build__output_dest{
 
 	my @timestamp = localtime(time);
 	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
-	my $user = getpwuid( $< );
+	my $user = $self->_current_user;
 	$dir .= $user . '_' . $day;
 
 	Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" ) unless( mkdir $dir );
 	return $dir;
+}
+
+sub _build__current_user {
+	my $self = shift;
+	return getpwuid( $< );
+}
+
+sub _build__auth_users {
+	my $self = shift;
+
+	my $dir = $self->_output_root;
+	open( my $users, '<', "$dir/approved_users" );
+	my @u;
+	while( my $line = <$users> ){
+		my @parts = split('\t', $line);
+		push(@u, $parts[0]) if defined( $parts[0] );
+	}
+	return \@u;
 }
 
 sub BUILD {
@@ -89,12 +110,20 @@ sub BUILD {
 	$self->help($help)       if ( defined $help );
 }
 
-sub check_inputs{
+sub _check_inputs {
     my $self = shift; 
     return(
         $self->manifest
         && !$self->help
     );
+}
+
+sub _check_user {
+	my $self = shift;
+	my $user = $self->_current_user;
+	my @auth = @{ $self->_auth_users };
+
+	return ( grep {$_ eq $user} @auth );
 }
 
 sub run {
@@ -104,7 +133,8 @@ sub run {
 	my $outfile  = $self->outfile;
 
 	# sanity checks
-	$self->check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
+	$self->_check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
+	$self->_check_user or Bio::ENA::DataSubmission::Exception::UnauthorisedUser->throw( error => "You are not on the approved list of users for this script\n" );
 	( -e $manifest ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find $manifest\n" );
 	( -r $manifest ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $manifest\n" );
 	$outfile = "$manifest.report.xls" unless( defined( $outfile ) );
@@ -148,8 +178,7 @@ sub _updated_xml {
 		push( @updated_samples, $new_sample );
 	}
 	my %new_xml = ( 'SAMPLE' => \@updated_samples );
-	print Dumper \%new_xml;
-	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/sample.xml", root => 'SAMPLE_SET' )->write;
+	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/samples.xml", root => 'SAMPLE_SET' )->write;
 }
 
 sub _generate_submission {
@@ -158,7 +187,7 @@ sub _generate_submission {
 	my $root = $self->_data_root;
 
 	my $sub = "$root/submission.xml";
-	system("cp $sub $dest/submission.xml");
+	copy $sub, "$dest/submission.xml";
 }
 
 sub _validate_with_xsd {
@@ -167,11 +196,13 @@ sub _validate_with_xsd {
 
 	my $xsd_root = $self->_data_root;
 
-	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/sample.xml", xsd => "$xsd_root/sample.xsd" );
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed\n" ) unless ( $sample_validator->validate );
+	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/samples.xml", xsd => "$xsd_root/sample.xsd" );
+	eval { $sample_validator->validate };
+	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n$@\n" ) unless ( $@ eq '' );
 
-	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/sample.xml", xsd => "$xsd_root/submission.xsd" );
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed\n" ) unless ( $submission_validator->validate );
+	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/submission.xml", xsd => "$xsd_root/submission.xsd" );
+	eval { $submission_validator->validate };
+	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed\n" ) unless ( $@ eq '' );
 
 	return 1;
 }
@@ -181,7 +212,7 @@ sub _record_spreadsheet {
 	my $manifest = $self->manifest;
 	my $dest = $self->_output_dest;
 
-	system("cp $manifest $dest/manifest.xls");
+	copy $manifest, "$dest/manifest.xls";
 }
 
 # sub _email {
