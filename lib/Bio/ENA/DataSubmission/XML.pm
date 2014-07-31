@@ -35,13 +35,14 @@ use LWP;
 use Switch;
 use Data::Dumper;
 
-has 'xml'     => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'url'     => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'data'    => ( is => 'rw', isa => 'HashRef',  required => 0 );
-has 'xsd'     => ( is => 'ro', isa => 'Str',      required => 0 );
-has 'outfile' => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'root'    => ( is => 'ro', isa => 'Str',      required => 0, default    => 'root' );
-has '_fields' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'xml'               => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'url'               => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'data'              => ( is => 'rw', isa => 'HashRef',  required => 0 );
+has 'xsd'               => ( is => 'ro', isa => 'Str',      required => 0 );
+has 'outfile'           => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'root'              => ( is => 'ro', isa => 'Str',      required => 0, default    => 'root' );
+has '_fields'           => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'validation_report' => ( is => 'rw', isa => 'XML::LibXML::Error',  required => 0 );
 
 sub _build__fields {
 	# this will change with schema eventually
@@ -58,6 +59,7 @@ sub validate {
 	my $xml  = $self->xml;
 	my $xsd  = $self->xsd;
 
+	( defined $xml && defined $xsd ) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "Please provide an XML and XSD\n" );
 	( -e $xml ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Can't find file: $xml\n" );
 	( -r $xml ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Can't read file: $xml\n" );
 	( -e $xsd ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Can't find file: $xsd\n" );
@@ -66,13 +68,21 @@ sub validate {
 	my $p = XML::LibXML->new();
 	my $doc = $p->parse_file( $xml );
 	my $xsd_validator = XML::LibXML::Schema->new( location => $xsd );
-	return ( $xsd_validator->validate( $doc ) ) ? 0 : 1;
+	eval { $xsd_validator->validate( $doc ) };
+	if ($@) {
+		$self->validation_report( $@ );	
+		return 0;
+	}
+	return 1;
 }
 
 sub update {
 	my ( $self, $sample ) = @_;
 
+	(defined $sample ) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "Sample data not present\n" ); 
+
 	my $acc = $sample->{'sample_accession'};
+	(defined $acc ) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "Accession number data not present\n" ); 
 	$self->url("http://www.ebi.ac.uk/ena/data/view/$acc&display=xml");
 	my $xml = $self->parse_from_url;
 	
@@ -180,13 +190,13 @@ sub parse_xml_metadata{
 	my @fields = @{ $self->_fields };
 
 	my %data;
-	$data{'sample_title'} = $xml->[0]->{SAMPLE}->[0]->{TITLE}->[0] if (defined($xml->[0]->{SAMPLE}->[0]->{TITLE}->[0]));
-	my $sample_name = $xml->[0]->{SAMPLE}->[0]->{SAMPLE_NAME}->[0] if (defined($xml->[0]->{SAMPLE}->[0]->{SAMPLE_NAME}->[0]));
+	$data{'sample_title'} = $xml->{SAMPLE}->[0]->{TITLE}->[0] if (defined($xml->{SAMPLE}->[0]->{TITLE}->[0]));
+	my $sample_name = $xml->{SAMPLE}->[0]->{SAMPLE_NAME}->[0] if (defined($xml->{SAMPLE}->[0]->{SAMPLE_NAME}->[0]));
 	$data{'tax_id'} = $sample_name->{TAXON_ID}->[0] if (defined($sample_name->{TAXON_ID}->[0]));
 	$data{'common_name'} = $sample_name->{COMMON_NAME}->[0] if (defined($sample_name->{COMMON_NAME}->[0]));
 	$data{'scientific_name'} = $sample_name->{SCIENTIFIC_NAME}->[0] if (defined($sample_name->{SCIENTIFIC_NAME}->[0]));
 
-	my @attributes = @{ $xml->[0]->{SAMPLE}->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}->[0] } if (defined($xml->[0]->{SAMPLE}->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}->[0]));
+	my @attributes = @{ $xml->{SAMPLE}->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} } if (defined($xml->{SAMPLE}->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}->[0]));
 	foreach my $att ( @attributes ){
 		my $tag = $att->{TAG}->[0];
 		next unless( defined $tag );

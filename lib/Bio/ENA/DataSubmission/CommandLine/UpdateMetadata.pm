@@ -197,12 +197,10 @@ sub _validate_with_xsd {
 	my $xsd_root = $self->_data_root;
 
 	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/samples.xml", xsd => "$xsd_root/sample.xsd" );
-	eval { $sample_validator->validate };
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n$@\n" ) unless ( $@ eq '' );
+	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n" . $sample_validator->validation_report . "\n" ) unless ( $sample_validator->validate );
 
 	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/submission.xml", xsd => "$xsd_root/submission.xsd" );
-	eval { $submission_validator->validate };
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed\n" ) unless ( $@ eq '' );
+	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed. Errors:\n" . $submission_validator->validation_report . "\n" ) unless ( $submission_validator->validate );
 
 	return 1;
 }
