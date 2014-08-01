@@ -27,6 +27,7 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
+use lib "/software/pathogen/internal/prod/lib";
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::XMLSimple;
 use XML::Simple;
