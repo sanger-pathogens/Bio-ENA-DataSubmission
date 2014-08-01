@@ -39,6 +39,7 @@ use Data::Dumper;
 use File::Copy qw(copy);
 use Cwd 'abs_path';
 
+use lib "/software/pathogen/internal/prod/lib";
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
 use Email::MIME;

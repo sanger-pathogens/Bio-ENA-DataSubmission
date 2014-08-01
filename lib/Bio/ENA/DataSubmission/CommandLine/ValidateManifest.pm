@@ -26,6 +26,7 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
+use lib "/software/pathogen/internal/prod/lib";
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
