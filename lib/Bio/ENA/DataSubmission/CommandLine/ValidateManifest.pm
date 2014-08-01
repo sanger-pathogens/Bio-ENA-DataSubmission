@@ -38,6 +38,7 @@ use Bio::ENA::DataSubmission::Validator::Error::General;
 use Bio::ENA::DataSubmission::Validator::Error::LatLon;
 use Bio::ENA::DataSubmission::Validator::Error::SampleAccession;
 use Bio::ENA::DataSubmission::Validator::Error::TaxID;
+use Bio::ENA::DataSubmission::Validator::Error::MandatoryCells;
 
 has 'args'    => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -117,44 +118,57 @@ sub run {
 
 		# validate all generally
 		for my $c ( 0..$#row ) {
-			my $gen_error = Bio::ENA::DataSubmission::Validator::Error::General->new( 
-				accession => $acc,
-				cell      => $row[$c],
-				id        => $header[$c]
-			)->validate;
-			push( @errors_found, $gen_error ) if ( $gen_error->triggered );
+			my $cell = $row[$c];
+			if ( defined $cell ){
+				my $gen_error = Bio::ENA::DataSubmission::Validator::Error::General->new( 
+					accession => $acc,
+					cell      => $cell,
+					id        => $header[$c]
+				)->validate;
+				push( @errors_found, $gen_error ) if ( $gen_error->triggered );
+			}
 		}
 
 		# validate more specific cells separately
+
+		# mandatory cells
+		my $mandatory_error = Bio::ENA::DataSubmission::Validator::Error::MandatoryCells->new( row => \@row )->validate;
+		push( @errors_found, $mandatory_error ) if ( $mandatory_error->triggered );
 
 		# sample accession
 		my $acc_error = Bio::ENA::DataSubmission::Validator::Error::SampleAccession->new(accession => $acc)->validate;
 		push( @errors_found, $acc_error ) if ( $acc_error->triggered );
 
 		# taxon ID and scientific name
-		my $taxid_error = Bio::ENA::DataSubmission::Validator::Error::TaxID->new(
-			accession       => $acc,
-			tax_id          => $row[4],
-			scientific_name => $row[5]
-		)->validate;
-		push( @errors_found, $taxid_error ) if ( $taxid_error->triggered );
+		if ( $row[4] && $row[5] ){
+			my $taxid_error = Bio::ENA::DataSubmission::Validator::Error::TaxID->new(
+				accession       => $acc,
+				tax_id          => $row[4],
+				scientific_name => $row[5]
+			)->validate;
+			push( @errors_found, $taxid_error ) if ( $taxid_error->triggered );
+		}
 
 		# collection_date
-		my $cdate_error = Bio::ENA::DataSubmission::Validator::Error::CollectionDate->new(
-			accession       => $acc,
-			collection_date => $row[14]
-		)->validate;
-		push( @errors_found, $cdate_error ) if ( $cdate_error->triggered );
-		
+		if ( $row[14] ){
+			my $cdate_error = Bio::ENA::DataSubmission::Validator::Error::CollectionDate->new(
+				accession       => $acc,
+				collection_date => $row[14]
+			)->validate;
+			push( @errors_found, $cdate_error ) if ( $cdate_error->triggered );
+		}
+
 		# country
-		my $country_error = Bio::ENA::DataSubmission::Validator::Error::Country->new(
-			accession => $acc,
-			country   => $row[15]
-		)->validate;
-		push( @errors_found, $country_error ) if ( $country_error->triggered );
+		if ( $row[15] ){
+			my $country_error = Bio::ENA::DataSubmission::Validator::Error::Country->new(
+				accession => $acc,
+				country   => $row[15]
+			)->validate;
+			push( @errors_found, $country_error ) if ( $country_error->triggered );
+		}
 
 		# lat lon
-		if( $row[20] ne '' ){
+		if( $row[20] ){
 			my $lat_lon_error = Bio::ENA::DataSubmission::Validator::Error::LatLon->new(
 				accession => $acc,
 				latlon    => $row[20]

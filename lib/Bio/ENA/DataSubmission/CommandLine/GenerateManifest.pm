@@ -26,11 +26,13 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
+use Data::Dumper;
 use Path::Find;
 use Path::Find::Lanes;
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
+use List::MoreUtils qw(uniq);
 
 has 'args'        => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -126,18 +128,23 @@ sub _build_sample_data {
             next;
         }
 
+        my @acc_seen;
         for my $lane (@lanes) {
         	my $sample = $self->_get_sample_from_lane( $pathtrack, $lane );
         	next unless (defined $sample);
         	my $sample_name = $sample->name;
         	my $sample_acc = $sample->individual->acc;
 
+        	# handle duplicates - e.g. same data for plexed lanes
+        	next if( grep { $_ eq $sample_acc } @acc_seen );
+
         	my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
         	my $supplier_name = $sample_data[0];
+        	push( @acc_seen, $sample_acc );
         	push( @data, [ $sample_acc, $sample_name, $supplier_name ] );
         }
 	}
-
+	
 	return \@data;
 }
 

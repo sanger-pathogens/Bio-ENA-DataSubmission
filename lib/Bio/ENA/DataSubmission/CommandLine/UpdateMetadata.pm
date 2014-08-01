@@ -35,11 +35,14 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
+use Data::Dumper;
+use File::Copy qw(copy);
+use Cwd 'abs_path';
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
-#use Email::MIME;
-#use Email::Sender::Simple qw(sendmail);
+use Email::MIME;
+use Email::Sender::Simple qw(sendmail);
 
 has 'args'           => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -50,26 +53,48 @@ has 'manifest'       => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'test'           => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'           => ( is => 'rw', isa => 'Bool',     required => 0 );
-has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => '../../../../../data' );
-has '_email_to'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'rmd@sanger.ac.uk' );
+has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => 'data/' );
+has '_email_to'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'datahose@sanger.ac.uk' );
+has '_current_user'  => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_auth_users'    => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'no_validate'    => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 
 sub _build__output_dest{
 	my $self = shift;
-	my $dir = $self->_output_root;
+	my $dir = abs_path($self->_output_root);
 
 	my @timestamp = localtime(time);
 	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
-	my $user = getpwuid( $< );
-	$dir .= $user . '_' . $day;
+	my $time = sprintf("%02d:%02d", $timestamp[2], $timestamp[1]);
+	my $user = $self->_current_user;
+	$dir .= '/' . $user . '_' . $day . '_' . $time;
 
 	Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" ) unless( mkdir $dir );
 	return $dir;
 }
 
+sub _build__current_user {
+	my $self = shift;
+	return getpwuid( $< );
+}
+
+sub _build__auth_users {
+	my $self = shift;
+
+	my $dir = $self->_output_root;
+	open( my $users, '<', "$dir/approved_users" );
+	my @u;
+	while( my $line = <$users> ){
+		my @parts = split('\t', $line);
+		push(@u, $parts[0]) if defined( $parts[0] );
+	}
+	return \@u;
+}
+
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $schema, $outfile, $test, $help );
+	my ( $file, $schema, $outfile, $test, $no_validate, $help );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -78,22 +103,32 @@ sub BUILD {
 		's|schema=s'  => \$schema,
 		'o|outfile=s' => \$outfile,
 		'test'        => \$test,
+		'no_validate' => \$no_validate,
 		'h|help'      => \$help
 	);
 
-	$self->manifest($file)   if ( defined $file );
-	$self->schema($schema)   if ( defined $schema );
-	$self->outfile($outfile) if ( defined $outfile );
-	$self->test($test)       if ( defined $test );
-	$self->help($help)       if ( defined $help );
+	$self->manifest($file)           if ( defined $file );
+	$self->schema($schema)           if ( defined $schema );
+	$self->outfile($outfile)         if ( defined $outfile );
+	$self->test($test)               if ( defined $test );
+	$self->no_validate($no_validate) if ( defined $no_validate );
+	$self->help($help)               if ( defined $help );
 }
 
-sub check_inputs{
+sub _check_inputs {
     my $self = shift; 
     return(
         $self->manifest
         && !$self->help
     );
+}
+
+sub _check_user {
+	my $self = shift;
+	my $user = $self->_current_user;
+	my @auth = @{ $self->_auth_users };
+
+	return ( grep {$_ eq $user} @auth );
 }
 
 sub run {
@@ -103,7 +138,8 @@ sub run {
 	my $outfile  = $self->outfile;
 
 	# sanity checks
-	$self->check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
+	$self->_check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
+	$self->_check_user or Bio::ENA::DataSubmission::Exception::UnauthorisedUser->throw( error => "You are not on the approved list of users for this script\n" );
 	( -e $manifest ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find $manifest\n" );
 	( -r $manifest ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $manifest\n" );
 	$outfile = "$manifest.report.xls" unless( defined( $outfile ) );
@@ -111,10 +147,12 @@ sub run {
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
 
 	# first, validate the manifest
-	my @args = ( '-f', $manifest, '-r', $outfile );
-	my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
-
+	unless( $self->no_validate ){
+		my @args = ( '-f', $manifest, '-r', $outfile );
+		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
+		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
+	}
+	
 	# generate updated sample XML
 	$self->_updated_xml;
 
@@ -128,7 +166,7 @@ sub run {
 	$self->_record_spreadsheet;
 
 	# email Rob
-	# $self->_email;
+	$self->_email;
 
 }
 
@@ -147,7 +185,7 @@ sub _updated_xml {
 		push( @updated_samples, $new_sample );
 	}
 	my %new_xml = ( 'SAMPLE' => \@updated_samples );
-	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/sample.xml", root => 'SAMPLE_SET' )->write;
+	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/samples.xml", root => 'SAMPLE_SET' )->write;
 }
 
 sub _generate_submission {
@@ -156,7 +194,7 @@ sub _generate_submission {
 	my $root = $self->_data_root;
 
 	my $sub = "$root/submission.xml";
-	system("cp $sub $dest/submission.xml");
+	copy $sub, "$dest/submission.xml";
 }
 
 sub _validate_with_xsd {
@@ -165,11 +203,11 @@ sub _validate_with_xsd {
 
 	my $xsd_root = $self->_data_root;
 
-	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/sample.xml", xsd => "$xsd_root/sample.xsd" );
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed\n" ) unless ( $sample_validator->validate );
+	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/samples.xml", xsd => "$xsd_root/sample.xsd" );
+	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n" . $sample_validator->validation_report . "\n" ) unless ( $sample_validator->validate );
 
-	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/sample.xml", xsd => "$xsd_root/submission.xsd" );
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed\n" ) unless ( $submission_validator->validate );
+	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/submission.xml", xsd => "$xsd_root/submission.xsd" );
+	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed. Errors:\n" . $submission_validator->validation_report . "\n" ) unless ( $submission_validator->validate );
 
 	return 1;
 }
@@ -179,29 +217,29 @@ sub _record_spreadsheet {
 	my $manifest = $self->manifest;
 	my $dest = $self->_output_dest;
 
-	system("cp $manifest $dest/manifest.xls");
+	copy $manifest, "$dest/manifest.xls";
 }
 
-# sub _email {
-# 	my $self = shift;
-# 	my $dest = $self->_output_dest;
-# 	my $to = $self->_email_to;
+sub _email {
+	my $self = shift;
+	my $dest = $self->_output_dest;
+	my $to = $self->_email_to;
 
-# 	my $message = Email::MIME->create(
-#     	header_str => [
-#         	From    => 'cc21@sanger.ac.uk',
-#         	To      => $to,
-#         	Subject => 'ENA Metadata Update Request',
-#     	],
-#     	attributes => {
-#         	encoding => 'quoted-printable',
-#         	charset  => 'ISO-8859-1',
-#     	},
-#     	body_str => "Hi,\n\nSome sample metadata are ready to update with the ENA. The files are located @ $dest\n\nThanks,\nCarla",
-# 	);
+	my $message = Email::MIME->create(
+    	header_str => [
+        	From    => 'cc21@sanger.ac.uk',
+        	To      => $to,
+        	Subject => 'ENA Metadata Update Request',
+    	],
+    	attributes => {
+        	encoding => 'quoted-printable',
+        	charset  => 'ISO-8859-1',
+    	},
+    	body_str => "Hi,\n\nSome sample metadata are ready for update with the ENA. The files are located @ $dest\n\nThanks,\nCarla",
+	);
 
-# 	sendmail($message);
-# }
+	sendmail($message);
+}
 
 sub usage_text {
 	return <<USAGE;

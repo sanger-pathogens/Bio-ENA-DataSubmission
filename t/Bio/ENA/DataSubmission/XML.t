@@ -32,21 +32,21 @@ throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml');
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without XSD input';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xsd => 'data/study.xsd');
+$obj = Bio::ENA::DataSubmission::XML->new( xsd => 'data/sample.xsd');
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml', xsd => 'not/a/file.xsd' );
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XSD path';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml', xsd => 'data/study.xsd' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml', xsd => 'data/sample.xsd' );
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XML path';
 
 # validation checks
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_bad.xml', xsd => 'data/study.xsd' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_bad.xml', xsd => 'data/sample.xsd' );
 is $obj->validate, 0, 'Bad XML failed';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml', xsd => 'data/study.xsd' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml', xsd => 'data/sample.xsd' );
 is $obj->validate, 1, 'Good XML passed';
 
 #-----------------#
@@ -56,34 +56,14 @@ is $obj->validate, 1, 'Good XML passed';
 # sanity checks
 
 $obj = Bio::ENA::DataSubmission::XML->new();
-throws_ok {$obj->update} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
+throws_ok {$obj->update} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without sample input';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml');
-throws_ok {$obj->update} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without update data input';
+my %sample_sample;
+throws_ok {$obj->update( \%sample_sample )} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without sample input';
 
-$obj = Bio::ENA::DataSubmission::XML->new( data => { test => 1 } );
-throws_ok {$obj->update} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
-
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml', data => { test => 1 } );
-throws_ok {$obj->update} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XML path';
-
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', data => { test => 1 } );
-throws_ok {$obj->update} 'Bio::ENA::DataSubmission::Exception::TagNotFound', 'dies with invalid data keys';
 
 # update checks
-
-my %data = (
-	country => "UK: Cambridgeshire",
-	strain => "s1234"
-);
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', data => \%data, outfile => "$tmp/updated.xml" );
-ok( $obj->update, 'Update successful' );
-ok( -e "$tmp/updated.xml", 'Updated XML exists' );
-is(
-	read_file('t/data/updated.xml'),
-	read_file("$tmp/updated.xml"),
-	'Updated XML correct'
-);
+# Checked via UpdateMetadata.t
 
 #-----------------#
 # test XML parser #
@@ -95,25 +75,25 @@ $obj = Bio::ENA::DataSubmission::XML->new();
 throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml' );
-throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XML path';
+throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::CannotReadFile', 'dies with invalid XML path';
 
 # file parser checks
 
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml' );
-my %exp = (
-	sample_accession => 'ERS001491',
-	sample_alias     => '2007223-sc-2010-05-07-2811',
-	tax_id           => '1496',
-	scientific_name  => '[Clostridium] difficile',
-	common_name      => 'Clostridium difficile',
-	sample_title     => '[Clostridium] difficile',
-	collection_date  => '2007',
-	country          => 'USA: AZ',
-	host             => 'Free living',
-	isolation_source => 'Food',
-	strain           => '2007223'
-);
-is_deeply $obj->parse_from_file, \%exp, 'XML parsed successfully';
+my $exp = {
+        'SUBMISSION' => {
+            'ACTIONS' => {
+                'ACTION' => {
+                    'MODIFY' => {
+                        'source' => 'samples.xml',
+                        'schema' => 'sample'
+                    }
+                }
+            },
+            'alias' => 'ReleaseSubmissionUpdate'
+        }
+};
+is_deeply $obj->parse_from_file, $exp, 'XML parsed successfully';
 
 # URL parser checks
 

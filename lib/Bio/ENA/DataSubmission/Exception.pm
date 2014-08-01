@@ -19,6 +19,7 @@ use Exception::Class (
     Bio::ENA::DataSubmission::Exception::EmptySpreadsheet      => { description => 'Supplied spreadsheet appears to be empty' },
     Bio::ENA::DataSubmission::Exception::ValidationFail        => { description => 'Validation of the manifest failed' },
     Bio::ENA::DataSubmission::Exception::CannotCreateDirectory => { description => 'Cannot create directory' },
+    Bio::ENA::DataSubmission::Exception::UnauthorisedUser      => { description => 'User is not authorised to run script' },
 );
 
 1;

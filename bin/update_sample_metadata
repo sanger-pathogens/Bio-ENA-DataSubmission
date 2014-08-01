@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+
+package Bio::ENA::DataSubmission::Bin::UpdateMetadata;
+
+# ABSTRACT: 
+# PODNAME: 
+
+=head1 SYNOPSIS
+
+
+=cut
+
+BEGIN { unshift( @INC, '../lib' ) }
+BEGIN { unshift( @INC, './lib' ) }
+#BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
+
+use Bio::ENA::DataSubmission::CommandLine::UpdateMetadata;
+
+Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@ARGV )->run;
