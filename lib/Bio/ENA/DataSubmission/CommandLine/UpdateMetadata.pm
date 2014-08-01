@@ -37,11 +37,12 @@ use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
 use Data::Dumper;
 use File::Copy qw(copy);
+use Cwd 'abs_path';
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
-#use Email::MIME;
-#use Email::Sender::Simple qw(sendmail);
+use Email::MIME;
+use Email::Sender::Simple qw(sendmail);
 
 has 'args'           => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -52,19 +53,21 @@ has 'manifest'       => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'test'           => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'           => ( is => 'rw', isa => 'Bool',     required => 0 );
-has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => '../../../../../data' );
+has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => 'data/' );
 has '_email_to'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'datahose@sanger.ac.uk' );
 has '_current_user'  => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_auth_users'    => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'no_validate'    => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 
 sub _build__output_dest{
 	my $self = shift;
-	my $dir = $self->_output_root;
+	my $dir = abs_path($self->_output_root);
 
 	my @timestamp = localtime(time);
 	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
+	my $time = sprintf("%02d:%02d", $timestamp[2], $timestamp[1]);
 	my $user = $self->_current_user;
-	$dir .= $user . '_' . $day;
+	$dir .= '/' . $user . '_' . $day . '_' . $time;
 
 	Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" ) unless( mkdir $dir );
 	return $dir;
@@ -91,7 +94,7 @@ sub _build__auth_users {
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $schema, $outfile, $test, $help );
+	my ( $file, $schema, $outfile, $test, $no_validate, $help );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -100,14 +103,16 @@ sub BUILD {
 		's|schema=s'  => \$schema,
 		'o|outfile=s' => \$outfile,
 		'test'        => \$test,
+		'no_validate' => \$no_validate,
 		'h|help'      => \$help
 	);
 
-	$self->manifest($file)   if ( defined $file );
-	$self->schema($schema)   if ( defined $schema );
-	$self->outfile($outfile) if ( defined $outfile );
-	$self->test($test)       if ( defined $test );
-	$self->help($help)       if ( defined $help );
+	$self->manifest($file)           if ( defined $file );
+	$self->schema($schema)           if ( defined $schema );
+	$self->outfile($outfile)         if ( defined $outfile );
+	$self->test($test)               if ( defined $test );
+	$self->no_validate($no_validate) if ( defined $no_validate );
+	$self->help($help)               if ( defined $help );
 }
 
 sub _check_inputs {
@@ -142,10 +147,12 @@ sub run {
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
 
 	# first, validate the manifest
-	my @args = ( '-f', $manifest, '-r', $outfile );
-	my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-	Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
-
+	unless( $self->no_validate ){
+		my @args = ( '-f', $manifest, '-r', $outfile );
+		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
+		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
+	}
+	
 	# generate updated sample XML
 	$self->_updated_xml;
 
@@ -159,7 +166,7 @@ sub run {
 	$self->_record_spreadsheet;
 
 	# email Rob
-	# $self->_email;
+	$self->_email;
 
 }
 
@@ -213,26 +220,26 @@ sub _record_spreadsheet {
 	copy $manifest, "$dest/manifest.xls";
 }
 
-# sub _email {
-# 	my $self = shift;
-# 	my $dest = $self->_output_dest;
-# 	my $to = $self->_email_to;
+sub _email {
+	my $self = shift;
+	my $dest = $self->_output_dest;
+	my $to = $self->_email_to;
 
-# 	my $message = Email::MIME->create(
-#     	header_str => [
-#         	From    => 'cc21@sanger.ac.uk',
-#         	To      => $to,
-#         	Subject => 'ENA Metadata Update Request',
-#     	],
-#     	attributes => {
-#         	encoding => 'quoted-printable',
-#         	charset  => 'ISO-8859-1',
-#     	},
-#     	body_str => "Hi,\n\nSome sample metadata are ready to update with the ENA. The files are located @ $dest\n\nThanks,\nCarla",
-# 	);
+	my $message = Email::MIME->create(
+    	header_str => [
+        	From    => 'cc21@sanger.ac.uk',
+        	To      => $to,
+        	Subject => 'ENA Metadata Update Request',
+    	],
+    	attributes => {
+        	encoding => 'quoted-printable',
+        	charset  => 'ISO-8859-1',
+    	},
+    	body_str => "Hi,\n\nSome sample metadata are ready for update with the ENA. The files are located @ $dest\n\nThanks,\nCarla",
+	);
 
-# 	sendmail($message);
-# }
+	sendmail($message);
+}
 
 sub usage_text {
 	return <<USAGE;

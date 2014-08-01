@@ -11,16 +11,16 @@ Checks for newline characters in text
 use Moose;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
-has 'cell'      => ( is => 'ro', isa => 'Str', required => 1 );
-has 'id'        => ( is => 'ro', isa => 'Str', required => 1 );
-has 'accession' => ( is => 'ro', isa => 'Str', required => 1 );
+has 'cell'      => ( is => 'ro', isa => 'Maybe[Str]', required => 1 );
+has 'id'        => ( is => 'ro', isa => 'Maybe[Str]', required => 1 );
+has 'accession' => ( is => 'ro', isa => 'Maybe[Str]', required => 1 );
 
 sub validate {
 	my $self = shift;
 	my $acc  = $self->accession;
 	my $cell = $self->cell;
 	my $id   = $self->id;
-	
+
 	chomp $cell;
 	$cell =~ s/^\s+//;
 

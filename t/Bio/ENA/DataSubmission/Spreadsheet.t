@@ -42,7 +42,7 @@ is_deeply(
 	'spreadsheet file correct'
 );
 
-#remove_tree($tmp);
+remove_tree($tmp);
 done_testing();
 
 sub diff_xls {
