@@ -26,7 +26,7 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
-#use lib "/software/pathogen/internal/prod/lib";
+use lib "/software/pathogen/internal/prod/lib";
 use lib '../lib';
 use lib './lib';
 use Getopt::Long qw(GetOptionsFromArray);
@@ -116,7 +116,7 @@ sub run {
 
 	my @errors_found;
 	foreach my $r ( 0..$#manifest ){
-		next unless ( defined $manifest[$r] );
+		next unless ( defined $manifest[$r] && defined $row[0] );
 		my @row = @{ $manifest[$r] };
 		my $acc = $row[0];
 
