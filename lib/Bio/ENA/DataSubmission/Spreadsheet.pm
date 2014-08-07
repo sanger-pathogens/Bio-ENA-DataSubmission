@@ -78,7 +78,29 @@ sub parse{
         	}
     	}
 	}
+
+	@data = _cleanup_whitespace( \@data );
+
 	return \@data;
+}
+
+sub _cleanup_whitespace {
+	my ($self, $d) = @_;
+	my @data = @{ $d };
+
+	my @clean;
+	foreach my $row ( @data ){
+		my $keep = 0;
+		foreach my $cell ( @{ $row } ){
+			if ( $cell =~ /\S/ ){
+				$keep = 1;
+				last;
+			}
+		}
+		push( @clean, $row ) if ( $keep );
+	}
+
+	return \@clean;
 }
 
 sub write_xls{
