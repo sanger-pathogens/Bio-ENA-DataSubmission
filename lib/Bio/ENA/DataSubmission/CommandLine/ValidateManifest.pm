@@ -114,6 +114,7 @@ sub run {
 
 	my @errors_found;
 	foreach my $r ( 0..$#manifest ){
+		next unless ( defined $manifest[$r] );
 		my @row = @{ $manifest[$r] };
 		my $acc = $row[0];
 
