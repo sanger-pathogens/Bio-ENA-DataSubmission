@@ -30,6 +30,7 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use Data::Dumper;
 
 use lib "/software/pathogen/internal/prod/lib";
 use Spreadsheet::ParseExcel;
@@ -85,13 +86,15 @@ sub parse{
 }
 
 sub _cleanup_whitespace {
-	my ($self, $d) = @_;
+	my ($d) = @_;
 	my @data = @{ $d };
 
 	my @clean;
 	foreach my $row ( @data ){
+		next unless( defined $row );
 		my $keep = 0;
 		foreach my $cell ( @{ $row } ){
+			next unless( defined $cell );
 			if ( $cell =~ /\S/ ){
 				$keep = 1;
 				last;
@@ -100,7 +103,7 @@ sub _cleanup_whitespace {
 		push( @clean, $row ) if ( $keep );
 	}
 
-	return \@clean;
+	return @clean;
 }
 
 sub write_xls{
