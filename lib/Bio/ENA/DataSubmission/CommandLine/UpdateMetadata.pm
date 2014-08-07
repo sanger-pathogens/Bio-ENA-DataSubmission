@@ -55,7 +55,7 @@ has 'manifest'       => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'test'           => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'           => ( is => 'rw', isa => 'Bool',     required => 0 );
-has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => 'data/' );
+has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => '/software/pathogen/projects/Bio-ENA-DataSubmission/data/' );
 has '_email_to'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'datahose@sanger.ac.uk' );
 has '_current_user'  => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_auth_users'    => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
@@ -169,6 +169,7 @@ sub run {
 
 	# email Rob
 	$self->_email;
+	print "Your request has been sent to: " . $self->_email_to . "\n";
 
 }
 
