@@ -9,7 +9,7 @@ Checks for newline characters in text
 =cut
 
 use Moose;
-use Data:Dumper;
+use Data::Dumper;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
 has 'row'      => ( is => 'ro', isa => 'Maybe[ArrayRef]', required => 1 );
