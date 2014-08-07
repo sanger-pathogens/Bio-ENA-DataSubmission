@@ -16,4 +16,4 @@ BEGIN { unshift( @INC, './lib' ) }
 
 use Bio::ENA::DataSubmission::CommandLine::UpdateMetadata;
 
-Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@ARGV, _email_to => 'cc21@sanger.ac.uk' )->run;
+Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@ARGV )->run;
