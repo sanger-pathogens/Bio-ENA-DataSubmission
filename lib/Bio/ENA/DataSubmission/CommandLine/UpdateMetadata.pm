@@ -70,9 +70,9 @@ sub _build__output_dest{
 	my $dir = abs_path($self->_output_root);
 
 	my $user      = $self->_current_user;
-	my $timestamp = $self->_timestamp
-	$in_dir .= '/' . $user . '_' . $timestamp . "_input";
-	$out_dir .= '/' . $user . '_' . $timestamp . "_output";
+	my $timestamp = $self->_timestamp;
+	my $in_dir  = "$dir/" . $user . '_' . $timestamp . "_input";
+	my $out_dir = "$dir/" . $user . '_' . $timestamp . "_output";
 
 	make_path( $in_dir, {
 		mode => 0774,
@@ -213,6 +213,7 @@ sub _updated_xml {
 	my $test     = $self->test;
 	my $dest     = $self->_output_dest;
 	my $manifest = $self->manifest;
+	my $samples  = $self->_sample_xml;
 
 	# parse manifest and loop through samples
 	my $manifest_handler = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $manifest );
@@ -223,7 +224,7 @@ sub _updated_xml {
 		push( @updated_samples, $new_sample );
 	}
 	my %new_xml = ( 'SAMPLE' => \@updated_samples );
-	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/samples.xml", root => 'SAMPLE_SET' )->write;
+	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/$samples", root => 'SAMPLE_SET' )->write;
 }
 
 sub _generate_submission {
@@ -233,12 +234,15 @@ sub _generate_submission {
 	my $sample_xml = $self->_sample_xml;
 	my $submission_xml = $self->_submission_xml;
 
+	my $submission;
 	{
 		local $/ = undef;
 		open(my $sub_in, '<', "$root/submission.xml");
-		my $submission = <$sub_in>;
+		$submission = <$sub_in>;
 	}
 	$submission =~ s/samples\.xml/$sample_xml/;
+	my $alias = $self->_current_user . "_" . $self->_timestamp;
+	$submission =~ s/ReleaseSubmissionUpdate/$alias/;
 
 	open(my $sub_out, '>', "$dest/$submission_xml");
 	print $sub_out $submission;
@@ -250,11 +254,13 @@ sub _validate_with_xsd {
 	my $dest = $self->_output_dest;
 
 	my $xsd_root = $self->_data_root;
+	my $sample_xml = $self->_sample_xml;
+	my $submission_xml = $self->_submission_xml;
 
-	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/samples.xml", xsd => "$xsd_root/sample.xsd" );
+	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/$sample_xml", xsd => "$xsd_root/sample.xsd" );
 	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n" . $sample_validator->validation_report . "\n" ) unless ( $sample_validator->validate );
 
-	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/submission.xml", xsd => "$xsd_root/submission.xsd" );
+	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/$submission_xml", xsd => "$xsd_root/submission.xsd" );
 	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed. Errors:\n" . $submission_validator->validation_report . "\n" ) unless ( $submission_validator->validate );
 
 	return 1;
