@@ -81,7 +81,7 @@ sub _build__output_dest{
 	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $in_dir" );
 	
 	make_path( $out_dir, {
-		mode => 0644,
+		mode => 0777,
 		owner => 'trace'
 	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $out_dir" ) unless( mkdir $out_dir );
 
