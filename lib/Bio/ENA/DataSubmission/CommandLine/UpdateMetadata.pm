@@ -37,6 +37,7 @@ use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
 use Data::Dumper;
 use File::Copy qw(copy);
+use File::Path qw(make_path);
 use Cwd 'abs_path';
 
 use lib "/software/pathogen/internal/prod/lib";
@@ -46,33 +47,45 @@ use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
 use Email::MIME;
 use Email::Sender::Simple qw(sendmail);
 
-has 'args'           => ( is => 'ro', isa => 'ArrayRef', required => 1 );
+has 'args'            => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
-has '_output_root'   => ( is => 'rw', isa => 'Str',      required => 0, default => '/lustre/scratch108/pathogen/pathpipe/ena_updates/' );
-has '_output_dest'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-has 'schema'         => ( is => 'rw', isa => 'Str',      required => 0, default => 'ERC000028' );
-has 'manifest'       => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'outfile'        => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'test'           => ( is => 'rw', isa => 'Bool',     required => 0 );
-has 'help'           => ( is => 'rw', isa => 'Bool',     required => 0 );
-has '_data_root'     => ( is => 'rw', isa => 'Str',      required => 0, default => '/software/pathogen/projects/Bio-ENA-DataSubmission/data/' );
-has '_email_to'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'datahose@sanger.ac.uk' );
-has '_current_user'  => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-has '_auth_users'    => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
-has 'no_validate'    => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
+has '_output_root'    => ( is => 'rw', isa => 'Str',      required => 0, default => '/nfs/pathogen/ena_updates/' );
+has '_output_dest'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has 'schema'          => ( is => 'rw', isa => 'Str',      required => 0, default => 'ERC000028' );
+has 'manifest'        => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'outfile'         => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'test'            => ( is => 'rw', isa => 'Bool',     required => 0 );
+has 'help'            => ( is => 'rw', isa => 'Bool',     required => 0 );
+has '_data_root'      => ( is => 'rw', isa => 'Str',      required => 0, default => '/software/pathogen/projects/Bio-ENA-DataSubmission/data/' );
+has '_email_to'       => ( is => 'rw', isa => 'Str',      required => 0, default => 'datahose@sanger.ac.uk' );
+has '_current_user'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_auth_users'     => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
+has '_timestamp'      => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_sample_xml'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_submission_xml' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 
 sub _build__output_dest{
 	my $self = shift;
 	my $dir = abs_path($self->_output_root);
 
-	my @timestamp = localtime(time);
-	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
-	my $time = sprintf("%02d:%02d", $timestamp[2], $timestamp[1]);
-	my $user = $self->_current_user;
-	$dir .= '/' . $user . '_' . $day . '_' . $time;
+	my $user      = $self->_current_user;
+	my $timestamp = $self->_timestamp
+	$in_dir .= '/' . $user . '_' . $timestamp . "_input";
+	$out_dir .= '/' . $user . '_' . $timestamp . "_output";
 
-	Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" ) unless( mkdir $dir );
-	return $dir;
+	make_path( $in_dir, {
+		mode => 0774,
+		owner => $self->_current_user,
+		group => 'pathogen'
+	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $in_dir" );
+	
+	make_path( $out_dir, {
+		mode => 0644,
+		owner => 'trace'
+	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $out_dir" ) unless( mkdir $out_dir );
+
+	return $in_dir;
 }
 
 sub _build__current_user {
@@ -91,6 +104,28 @@ sub _build__auth_users {
 		push(@u, $parts[0]) if defined( $parts[0] );
 	}
 	return \@u;
+}
+
+sub _build__timestamp {
+	my @timestamp = localtime(time);
+	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
+	my $time = sprintf("%02d:%02d", $timestamp[2], $timestamp[1]);
+
+	return $day . '_' . $time;
+}
+
+sub _build__sample_xml {
+	my $self = shift;
+
+	my $time = $self->_timestamp;
+	return "samples_$time.xml";
+}
+
+sub _build__submission_xml {
+	my $self = shift;
+
+	my $time = $self->_timestamp;
+	return "submission_$time.xml";
 }
 
 sub BUILD {
@@ -195,9 +230,19 @@ sub _generate_submission {
 	my $self = shift;
 	my $dest = $self->_output_dest;
 	my $root = $self->_data_root;
+	my $sample_xml = $self->_sample_xml;
+	my $submission_xml = $self->_submission_xml;
 
-	my $sub = "$root/submission.xml";
-	copy $sub, "$dest/submission.xml";
+	{
+		local $/ = undef;
+		open(my $sub_in, '<', "$root/submission.xml");
+		my $submission = <$sub_in>;
+	}
+	$submission =~ s/samples\.xml/$sample_xml/;
+
+	open(my $sub_out, '>', "$dest/$submission_xml");
+	print $sub_out $submission;
+	close $sub_out;
 }
 
 sub _validate_with_xsd {

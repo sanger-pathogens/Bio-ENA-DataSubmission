@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:noNamespaceSchemaLocation="ftp://ftp.sra.ebi.ac.uk/meta/xsd/sra_1_5/SRA.submission.xsd">
-	<SUBMISSION alias="ReleaseSubmissionUpdate">
-        <ACTIONS>
-			<ACTION>
-				<MODIFY source="samples.xml" schema="sample" />
-			</ACTION>
-		</ACTIONS>
-    </SUBMISSION>
-</SUBMISSION_SET>
+<SUBMISSION alias="ReleaseSubmissionUpdate" center_name="SC">
+    <ACTIONS>
+		<ACTION>
+			<MODIFY source="samples.xml" schema="sample" />
+		</ACTION>
+	</ACTIONS>
+</SUBMISSION>
