@@ -45,21 +45,28 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
 #--------------#
 
 @args = ('--test', '-f', 't/data/update_manifest.xls', '-o', "$tmp/update_report.xls");
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => $tmp, _data_root => './data', _email_to => 'cc21@sanger.ac.uk' );
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( 
+	args => \@args,
+	_output_dest  => $tmp, 
+	_data_root    => './data', 
+	_email_to     => 'cc21@sanger.ac.uk',
+	_timestamp    => 'testtime',
+	_current_user => 'testuser'
+);
 
 # sample XML updating
 ok( $obj->_updated_xml, 'XML update successful' );
-ok( -e "$tmp/samples.xml", 'XML exists' );
+ok( -e "$tmp/samples_testtime.xml", 'XML exists' );
 ok(
-	compare( 't/data/updated.xml', "$tmp/samples.xml" ) == 0,
+	compare( 't/data/updated.xml', "$tmp/samples_testtime.xml" ) == 0,
 	'Updated XML file correct'
 );
 
 # submission XML generation
 ok( $obj->_generate_submission, 'Sumission XML generated successfully' );
-ok( -e "$tmp/submission.xml", 'XML exists' );
+ok( -e "$tmp/submission_testtime.xml", 'XML exists' );
 ok(
-	compare( 't/data/submission.xml', "$tmp/submission.xml" ) == 0,
+	compare( 't/data/submission.xml', "$tmp/submission_testtime.xml" ) == 0,
 	'Submission XML correct'
 );
 
@@ -69,13 +76,27 @@ ok(
 ok( $obj->_validate_with_xsd, 'Validation successful' );
 
 # 2. validate with incorrect sample XML
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_sample/', _data_root => './data', _email_to => 'cc21@sanger.ac.uk' );
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( 
+	args => \@args,
+	_output_dest    => 't/data/bad_sample/', 
+	_data_root      => './data', 
+	_email_to       => 'cc21@sanger.ac.uk', 
+	_sample_xml     => 'samples.xml', 
+	_submission_xml => 'submission.xml'
+);
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
 # 3. validate with incorrect submission XML
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@args, _output_dest => 't/data/bad_submission/', _data_root => './data', _email_to => 'cc21@sanger.ac.uk' );
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( 
+	args => \@args,
+	_output_dest    => 't/data/bad_submission/',
+	_data_root      => './data', 
+	_email_to       => 'cc21@sanger.ac.uk',
+	_sample_xml     => 'samples.xml', 
+	_submission_xml => 'submission.xml'
+);
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
-remove_tree($tmp);
+#remove_tree($tmp);
 done_testing();
 
