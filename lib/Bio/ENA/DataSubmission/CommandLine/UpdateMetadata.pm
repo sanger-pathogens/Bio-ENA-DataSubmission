@@ -64,6 +64,7 @@ has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default
 has '_timestamp'      => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_sample_xml'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_submission_xml' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+#has '_receipt_dest'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 
 sub _build__output_dest{
 	my $self = shift;
@@ -71,21 +72,17 @@ sub _build__output_dest{
 
 	my $user      = $self->_current_user;
 	my $timestamp = $self->_timestamp;
-	my $in_dir  = "$dir/" . $user . '_' . $timestamp . "_input";
-	my $out_dir = "$dir/" . $user . '_' . $timestamp . "_output";
+	$dir .= '/' . $user . '_' . $timestamp;
 
-	make_path( $in_dir, {
-		mode => 0774,
+	my $mode = 0774;
+	make_path( $dir, {
 		owner => $self->_current_user,
-		group => 'pathogen'
-	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $in_dir" );
-	
-	make_path( $out_dir, {
-		mode => 0777,
-		owner => 'trace'
-	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $out_dir" ) unless( mkdir $out_dir );
+		group => 'pathsub',
+		mode  => $mode
+	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" );
+	chmod $mode, $dir;
 
-	return $in_dir;
+	return $dir;
 }
 
 sub _build__current_user {
@@ -126,6 +123,16 @@ sub _build__submission_xml {
 
 	my $time = $self->_timestamp;
 	return "submission_$time.xml";
+}
+
+sub _build__receipt_dest {
+	my $self = shift;
+
+	my $root = $self->_output_root;
+	my $user = $self->_current_user;
+	my $time = $self->_timestamp;
+
+	return "$root/receipts/$user" . '_' . $time . "_receipt.xml";
 }
 
 sub BUILD {
@@ -276,23 +283,39 @@ sub _record_spreadsheet {
 
 sub _email {
 	my $self = shift;
-	my $dest = $self->_output_dest;
 	my $to = $self->_email_to;
+
+	my $alias = $self->_current_user . "_" . $self->_timestamp;
 
 	my $message = Email::MIME->create(
     	header_str => [
         	From    => 'cc21@sanger.ac.uk',
         	To      => $to,
-        	Subject => 'ENA Metadata Update Request',
+        	Subject => "ENA Metadata Update Request : $alias",
     	],
     	attributes => {
         	encoding => 'quoted-printable',
         	charset  => 'ISO-8859-1',
     	},
-    	body_str => "Hi,\n\nSome sample metadata are ready for update with the ENA. The files are located @ $dest\n\nThanks,\nCarla",
+    	body_str => $self->_email_body,
 	);
 
 	sendmail($message);
+}
+
+sub _email_body {
+	my $self = shift;
+	my $dest = $self->_output_dest;
+	#my $receipt = $self->_receipt_dest;
+
+	return <<BODY;
+Hi,
+
+Some sample metadata are ready for update with the ENA. The files are located @ $dest
+
+Thanks,
+path-help
+BODY
 }
 
 sub usage_text {
