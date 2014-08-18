@@ -32,7 +32,7 @@ no warnings 'uninitialized';
 use Moose;
 use Data::Dumper;
 
-use lib "/software/pathogen/internal/prod/lib";
+#use lib "/software/pathogen/internal/prod/lib";
 use Spreadsheet::ParseExcel;
 use Spreadsheet::WriteExcel;
 use Bio::ENA::DataSubmission::Exception;
@@ -162,10 +162,13 @@ sub parse_manifest{
 	my @manifest = @{ $self->parse };
 	my @header = @{ shift @manifest };
 
+	print Dumper \@header;
+
 	my @data;
 	foreach my $row ( @manifest ){
 		push( @data, {} );
 		for my $c ( 0..$#{$row} ){
+			print STDERR "!!!!!!!!!!!!!! header[$c]: " . $header[$c] . "\n";
 			my $key = $header[$c] eq 'host' ? 'specific_host' : $header[$c];
 			$data[-1]->{$key} = $row->[$c];
 		}

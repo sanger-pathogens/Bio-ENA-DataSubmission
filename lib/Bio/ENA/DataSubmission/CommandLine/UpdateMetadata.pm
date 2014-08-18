@@ -80,7 +80,7 @@ sub _build__output_dest{
 		group => 'pathsub',
 		mode  => $mode
 	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" );
-	chmod $mode, $dir;
+	chmod $mode, $dir; # sets correct permissions - make_path not working properly
 
 	return $dir;
 }
@@ -312,6 +312,8 @@ sub _email_body {
 Hi,
 
 Some sample metadata are ready for update with the ENA. The files are located @ $dest
+
+Please place the ENA XML receipt in the same directory.
 
 Thanks,
 path-help
