@@ -32,11 +32,9 @@ no warnings 'uninitialized';
 use Moose;
 use Data::Dumper;
 
-#use lib "/software/pathogen/internal/prod/lib";
+use lib "/software/pathogen/internal/prod/lib";
 use lib "../lib";
 use lib "./lib";
-
-shift @INC;
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::XML;
@@ -94,8 +92,6 @@ sub run{
 
 	# loop through manifest and compare to XML from ENA
 	my @conflicts;
-	print Dumper \@INC;
-	no lib "/software/pathogen/internal/prod/lib";
 	my $parser = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $manifest );
 	my $xml_handler = Bio::ENA::DataSubmission::XML->new();
 	foreach my $entry ( @{ $parser->parse_manifest } ){
