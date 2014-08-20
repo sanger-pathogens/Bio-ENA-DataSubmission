@@ -90,17 +90,21 @@ sub _cleanup_whitespace {
 	my @data = @{ $d };
 
 	my @clean;
+	my @header = @{ shift @data };
 	foreach my $row ( @data ){
 		next unless( defined $row );
 		my $keep = 0;
-		foreach my $cell ( @{ $row } ){
+		my @trimmed_row;
+		foreach my $c ( 0..$#header ){
+			my $cell = $row->[$c];
+			push(@trimmed_row, $cell);
 			next unless( defined $cell );
 			if ( $cell =~ /\S/ ){
 				$keep = 1;
 				last;
 			}
 		}
-		push( @clean, $row ) if ( $keep );
+		push( @clean, \@trimmed_row ) if ( $keep );
 	}
 
 	return @clean;

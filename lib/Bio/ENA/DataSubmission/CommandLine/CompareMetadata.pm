@@ -33,6 +33,9 @@ use Moose;
 use Data::Dumper;
 
 use lib "/software/pathogen/internal/prod/lib";
+use lib "../lib";
+use lib "./lib";
+
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::XML;
 use Bio::ENA::DataSubmission::Spreadsheet;
