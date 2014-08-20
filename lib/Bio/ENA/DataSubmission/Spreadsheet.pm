@@ -32,7 +32,7 @@ no warnings 'uninitialized';
 use Moose;
 use Data::Dumper;
 
-#use lib "/software/pathogen/internal/prod/lib";
+use lib "/software/pathogen/internal/prod/lib";
 use Spreadsheet::ParseExcel;
 use Spreadsheet::WriteExcel;
 use Bio::ENA::DataSubmission::Exception;
