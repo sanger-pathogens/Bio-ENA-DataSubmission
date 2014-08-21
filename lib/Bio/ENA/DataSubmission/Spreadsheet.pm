@@ -89,8 +89,8 @@ sub _cleanup_whitespace {
 	my ($d) = @_;
 	my @data = @{ $d };
 
-	my @clean;
 	my @header = @{ shift @data };
+	my @clean = ( \@header );
 	foreach my $row ( @data ){
 		next unless( defined $row );
 		my $keep = 0;
@@ -101,7 +101,6 @@ sub _cleanup_whitespace {
 			next unless( defined $cell );
 			if ( $cell =~ /\S/ ){
 				$keep = 1;
-				last;
 			}
 		}
 		push( @clean, \@trimmed_row ) if ( $keep );
@@ -174,6 +173,7 @@ sub parse_manifest{
 			$data[-1]->{$key} = $row->[$c];
 		}
 	}
+	#print Dumper \@data;
 	return \@data;
 }
 

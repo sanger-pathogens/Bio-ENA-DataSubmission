@@ -68,8 +68,8 @@ $data2{'tax_id'} = '1111';
 $data2{'specific_host'} = 'Human';
 
 my @exp = ( 
-	['ERS001491', '2007223', 'specific_host', 'Free living', 'Human'],
-	['ERS001491', '2007223', 'tax_id', '1496', '1111']
+	['ERS001491', '2007223', 'tax_id', '1496', '1111'],
+	['ERS001491', '2007223', 'specific_host', 'Free living', 'Human']
 );
 my @got = $obj->_compare_metadata(\%data1, \%data2);
 is_deeply \@exp, \@got, 'Correct fields identified as incongruous';
