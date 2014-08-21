@@ -173,7 +173,6 @@ sub parse_manifest{
 			$data[-1]->{$key} = $row->[$c];
 		}
 	}
-	#print Dumper \@data;
 	return \@data;
 }
 

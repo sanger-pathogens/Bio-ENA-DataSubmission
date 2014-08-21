@@ -119,9 +119,7 @@ sub _compare_metadata{
 		if( defined $man_v ){
 			chomp $man_v;
 			next if ($man_v eq '' || $ena_v eq '');
-			unless ( $ena_v eq $man_v ){
-				push( @conflicts, [$acc, $sample_name, $k, $man_v, $ena_v] );
-			}
+			push( @conflicts, [$acc, $sample_name, $k, $man_v, $ena_v] ) unless ( $ena_v eq $man_v );
 		}
 	}
 	return @conflicts;
