@@ -127,8 +127,6 @@ sub _update_fields {
 	unless( $found ){
 		my @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
 		foreach my $a ( 0..$#attrs){
-			#print STDERR "key: ";
-			#print Dumper $attrs[$a]->{TAG};
 			if ( $attrs[$a]->{TAG}->[0] eq $key ){
 				$xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}->[$a]->{VALUE} = [$value];
 				$found = 1;
@@ -201,6 +199,7 @@ sub parse_xml_metadata{
 	foreach my $att ( @attributes ){
 		my $tag = $att->{TAG}->[0];
 		next unless( defined $tag );
+		$tag = lc($tag);
 		$tag = "specific_host" if ( $tag eq 'host' );
 		$data{ $tag } = $att->{VALUE}->[0] if ( grep( /^$tag$/, @fields ) );
 	}
