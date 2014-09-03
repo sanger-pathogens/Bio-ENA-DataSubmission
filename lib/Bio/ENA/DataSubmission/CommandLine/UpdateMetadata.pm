@@ -106,7 +106,7 @@ sub _build__auth_users {
 sub _build__timestamp {
 	my @timestamp = localtime(time);
 	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
-	my $time = sprintf("%02d:%02d", $timestamp[2], $timestamp[1]);
+	my $time = sprintf("%02d-%02d", $timestamp[2], $timestamp[1]);
 
 	return $day . '_' . $time;
 }
@@ -284,13 +284,15 @@ sub _record_spreadsheet {
 sub _email {
 	my $self = shift;
 	my $to = $self->_email_to;
+	my $user = $self->_current_user;
 
-	my $alias = $self->_current_user . "_" . $self->_timestamp;
+	my $alias = $user . "_" . $self->_timestamp;
 
 	my $message = Email::MIME->create(
     	header_str => [
         	From    => 'cc21@sanger.ac.uk',
         	To      => $to,
+        	Cc      => $user . '@sanger.ac.uk',
         	Subject => "ENA Metadata Update Request : $alias",
     	],
     	attributes => {

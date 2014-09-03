@@ -95,5 +95,6 @@ sub diff_xls {
 	my ($x1, $x2) = @_;
 	my $x1_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x1 )->parse;
 	my $x2_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x2 )->parse;
+
 	return ( $x1_data, $x2_data );
 }

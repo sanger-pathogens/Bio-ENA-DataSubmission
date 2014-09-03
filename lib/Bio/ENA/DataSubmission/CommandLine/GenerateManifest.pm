@@ -39,7 +39,7 @@ has 'args'        => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
 has 'type'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'id'          => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'outfile'     => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'outfile'     => ( is => 'rw', isa => 'Str',      required => 0, default => 'manifest.xls' );
 has 'sample_data' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'help'        => ( is => 'rw', isa => 'Bool',     required => 0 );
 
@@ -112,8 +112,10 @@ sub _build_sample_data {
 
 	my $find = Path::Find->new();
 	my @pathogen_databases = $find->pathogen_databases;
+	my (@lanes, $pathtrack, $dbh, $root);
+
 	for my $database (@pathogen_databases){
-		my ( $pathtrack, $dbh, $root ) = $find->get_db_info($database);
+		( $pathtrack, $dbh, $root ) = $find->get_db_info($database);
 
         my $find_lanes = Path::Find::Lanes->new(
             search_type    => $self->type,
@@ -122,28 +124,36 @@ sub _build_sample_data {
             dbh            => $dbh,
             processed_flag => 0
         );
-        my @lanes = @{ $find_lanes->lanes };
+        @lanes = @{ $find_lanes->lanes };
 
-        unless (@lanes) {
+        if (@lanes) {
             $dbh->disconnect();
-            next;
+            last;
         }
+    }
 
-        my @acc_seen;
-        for my $lane (@lanes) {
-        	my $sample = $self->_get_sample_from_lane( $pathtrack, $lane );
-        	next unless (defined $sample);
-        	my $sample_name = $sample->name;
-        	my $sample_acc = $sample->individual->acc;
+    my @acc_seen;
+    for my $lane (@lanes) {
+        my $sample = $self->_get_sample_from_lane( $pathtrack, $lane );
+        next unless (defined $sample);
+        my $sample_name = $sample->name;
+        my $sample_acc = $sample->individual->acc;
 
-        	# handle duplicates - e.g. same data for plexed lanes
-        	next if( grep { $_ eq $sample_acc } @acc_seen );
+        # handle duplicates - e.g. same data for plexed lanes
+        next if( grep { $_ eq $sample_acc } @acc_seen );
 
-        	my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
-        	my $supplier_name = $sample_data[0];
-        	push( @acc_seen, $sample_acc );
-        	push( @data, [ $sample_acc, $sample_name, $supplier_name ] );
-        }
+        my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
+        my $supplier_name = $sample_data[0];
+        push( @acc_seen, $sample_acc );
+        push( @data, [ $sample_acc, $sample_name, $supplier_name ] );
+    }
+
+    # report lanes that weren't found if input is file
+    if ( $self->type eq 'file' ){
+	    my @missing = $self->_find_missing_ids(\@lanes, \@data);
+	    for my $m ( @missing ){
+	    	push( @data, [ $m, 'not found', 'not found' ] );
+	    }
 	}
 	
 	return \@data;
@@ -160,12 +170,63 @@ sub _get_sample_from_lane {
     return $sample;
 }
 
+sub _find_missing_ids {
+	my ( $self, $l, $d ) = @_;
+	my @lanes = @{ $l };
+	my @data = @{ $d };
+
+	open( my $fh, '<', $self->id );
+	my @ids = <$fh>;
+
+	# extract IDs from lane objects
+	my @got_ids;
+
+	# detect whether lane names or sample accessions
+    if ( $ids[0] =~ /#/ ){
+    	@got_ids = $self->_extract_lane_ids(\@lanes);
+    }
+    else {
+    	@got_ids = $self->_extract_accessions(\@data);
+    }
+
+    # find differences
+    my @missing;
+    for my $id (@ids){
+    	chomp $id;
+    	push( @missing, $id ) unless ( grep {$_ eq $id} @got_ids );
+    }
+
+    print STDERR "Missing data for:\n";
+    print STDERR join("\n", @missing) . "\n";
+    return @missing;
+}
+
+sub _extract_lane_ids {
+	my ( $self, $l ) = @_;
+
+	my @lane_ids;
+	for my $lane ( @{ $l } ){
+		push( @lane_ids, $lane->{name} );
+	}
+	return @lane_ids;
+}
+
+sub _extract_accessions {
+	my ( $self, $d ) = @_;
+
+	my @accs;
+	for my $datum ( @{ $d } ){
+		push( @accs, $datum->[0] );
+	}
+	return @accs;
+}
+
 sub usage_text {
 	return <<USAGE;
 Usage: validate_sample_manifest [options]
 
 	-t|type     lane|study|file|sample
-	-i|id       lane ID|study ID|file of lanes|file of samples|sample ID
+	-i|id       lane ID|study ID|file of lane IDs|file of sample accessions|sample ID
 	-o|outfile  path for output manifest
 	-h|help     this help message
 

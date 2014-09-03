@@ -13,7 +13,7 @@ use File::Path qw( remove_tree);
 use Cwd;
 use File::Temp;
 
-my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 0 );
+my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::CommandLine::UpdateMetadata');
@@ -97,6 +97,6 @@ $obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
 );
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
-#remove_tree($tmp);
+remove_tree($tmp);
 done_testing();
 
