@@ -15,6 +15,7 @@ use Exception::Class (
     Bio::ENA::DataSubmission::Exception::NoData                => { description => 'No data was supplied to the spreadsheet writer' },
     Bio::ENA::DataSubmission::Exception::CannotWriteFile       => { description => 'Supplied path does not have write access' },
     Bio::ENA::DataSubmission::Exception::CannotReadFile        => { description => 'Supplied path does not have read access' },
+    Bio::ENA::DataSubmission::Exception::CannotExecute         => { description => 'Supplied path cannot be executed' },
     Bio::ENA::DataSubmission::Exception::TagNotFound           => { description => 'Key does not match any tags in XML' },
     Bio::ENA::DataSubmission::Exception::EmptySpreadsheet      => { description => 'Supplied spreadsheet appears to be empty' },
     Bio::ENA::DataSubmission::Exception::ValidationFail        => { description => 'Validation of the manifest failed' },

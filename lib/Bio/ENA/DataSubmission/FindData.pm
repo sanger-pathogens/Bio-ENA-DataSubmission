@@ -34,11 +34,13 @@ use Path::Find::Lanes;
 has 'type' => ( is => 'rw', isa => 'Str', required => 1 );
 has 'id'   => ( is => 'rw', isa => 'Str', required => 1 );
 
+has '_vrtrack' => ( is => 'rw', isa => 'VRTrack::VRTrack' );
+has '_root'    => ( is => 'rw', isa => 'Str' );
+
 sub find {
 	my $self = shift;
 
-	my ( $pathtrack, $l ) = $self->_get_lanes_from_db;
-	my @lanes = @{ $l };
+	my @lanes = @{ $self->_get_lanes_from_db };
 
     my %data = (key_order => []);
     return \%data unless @lanes;
@@ -57,26 +59,29 @@ sub find {
     	# set key order as per file
     	open( my $fh, '<', $self->id );
     	my @ids = <$fh>;
+	chomp @ids;
     	$data{key_order} = \@ids;
 
     	# match returned lane objects to their ID
-    	my @found_ids = $self->_found_ids( $pathtrack, \@lanes );
+    	my @found_ids = $self->_found_ids( \@lanes );
     	for my $id ( @ids ){
     		$data{$id} = undef;
-    		my ($index) = grep { $found_ids[$_] $id } 0..$#found_ids;
+    		my ($index) = grep { $found_ids[$_] eq $id } 0..$#found_ids;
     		$data{$id} = $lanes[$index] if ( defined $index );
     	}
     }
 
-    return ($pathtrack, \%data);
+    return \%data;
 }
 
 sub _get_lanes_from_db {
+    my $self = shift;
 	my @lanes;
 	my $find = Path::Find->new();
 	my @pathogen_databases = $find->pathogen_databases;
+    my ( $pathtrack, $dbh, $root );
 	for my $database (@pathogen_databases){
-		my ( $pathtrack, $dbh, $root ) = $find->get_db_info($database);
+		( $pathtrack, $dbh, $root ) = $find->get_db_info($database);
 
         my $find_lanes = Path::Find::Lanes->new(
             search_type    => $self->type,
@@ -92,13 +97,17 @@ sub _get_lanes_from_db {
             last;
         }
     }
-    return ($pathtrack, \@lanes);
+
+    $self->_vrtrack($pathtrack);
+    $self->_root($root);
+
+    return \@lanes;
 }
 
 sub _found_ids {
-	my ( $self, $vrtrack, $l ) = @_;
+	my ( $self, $l ) = @_;
 	my @lanes = @{ $l };
-	my @data = @{ $d };
+	my $vrtrack = $self->_vrtrack;
 
 	open( my $fh, '<', $self->id );
 	my @ids = <$fh>;

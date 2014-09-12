@@ -116,7 +116,7 @@ sub write_xls{
 
 	# check sanity
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
-	( @data ) or Bio::ENA::DataSubmission::Exception::NoData->throw( error => "No data was supplied to the spreadsheet reader\n");
+	( defined $data[0] ) or Bio::ENA::DataSubmission::Exception::NoData->throw( error => "No data was supplied to the spreadsheet reader\n");
 
 	my $workbook = Spreadsheet::WriteExcel->new($outfile);
 	my $worksheet = $workbook->add_worksheet();
