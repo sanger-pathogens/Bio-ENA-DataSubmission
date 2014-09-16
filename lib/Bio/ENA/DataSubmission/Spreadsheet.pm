@@ -42,6 +42,7 @@ has 'outfile'             => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'data'                => ( is => 'rw', isa => 'ArrayRef', required => 0 );
 has 'add_manifest_header' => ( is => 'ro', isa => 'Bool',     required => 0, default =>    0 );
 has '_header'             => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has '_show_errors'        => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
 
 sub _build__header {
 	# maybe this can adapt to different schemas at some point
@@ -127,10 +128,23 @@ sub write_xls{
 		$i++;
 	}
 
+	# report cells ending in '!!' in red in spreadsheet
+	my ( %red, $warning );
+	if ( $self->_show_errors ) {
+		%red = ( bg_color => 'red' );
+		$warning = $workbook->add_format(%red);
+	}
+
 	foreach my $row ( @data ) {
 		$j = 0;
 		foreach my $cell ( @{ $row } ) {
-			$worksheet->write( $i, $j, $cell );
+			if ( $self->_show_errors && $cell =~ m/!!$/ ){
+				$cell =~ s/!!$//;
+				$worksheet->write( $i, $j, $cell, $warning );
+			}
+			else {
+				$worksheet->write( $i, $j, $cell );
+			}
 			$j++;
 		}
 		$i++;
@@ -142,7 +156,7 @@ sub _write_header{
 	my ( $self, $workbook, $worksheet ) = @_;
 	my $outfile = $self->outfile;
 
-	my %green = ( bg_color => 'lime' );
+	my %green = ( bg_color => 'lime', bold => 1 );
 	my $mandatory = $workbook->add_format(%green);
 	my @header = @{ $self->_header };
 

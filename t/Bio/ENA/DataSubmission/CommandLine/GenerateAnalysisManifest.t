@@ -76,7 +76,7 @@ is_deeply $obj->manifest_data, \@exp, 'Correct lane data';
 	['', 'FALSE', '52.42', '', 'SLX', '0', '', '', '', '', 'ERP001039', 'ERS311560', 'ERR363472', 'SC', 'current_date', 'current_date', ''], 
 	['', 'FALSE', '54.31', '', 'SLX', '0', '', '', '', '', 'ERP001039', 'ERS311393', 'ERR369155', 'SC', 'current_date', 'current_date', ''],
 	['', 'FALSE', '81.50', '', 'SLX', '0', '', '', '', '', 'ERP001039', 'ERS311489', 'ERR369164', 'SC', 'current_date', 'current_date', ''],
-        ['', 'FALSE', 'Not Found', '', 'SLX', '0', '', '', '', '', 'Not Found', 'Not Found', '11111_1#1', 'SC', 'current_date', 'current_date', '']
+        ['', 'FALSE', 'not found', '', 'SLX', '0', '', '', '', '', 'not found', 'not found', '11111_1#1', 'SC', 'current_date', 'current_date', '']
 );
 @args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls" );
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args, _current_date => 'current_date' );

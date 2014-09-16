@@ -49,13 +49,14 @@ has 'pubmed_id'        => ( is => 'rw', isa => 'Str',      required => 0, defaul
 has 'help'             => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_current_date'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_analysis_centre' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_show_errors'     => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
 
 sub _build__current_date {
 	my $self = shift;
 	print "Building current_date!\n";
 
 	my @timestamp = localtime(time);
-	my $day  = sprintf("%02d-%02d-%04d", $timestamp[3],$timestamp[4]+1,$timestamp[5]+1900);
+	my $day  = sprintf( "%04d-%02d-%02d", $timestamp[5]+1900, $timestamp[4]+1, $timestamp[3] );
 	return $day;
 }
 
@@ -66,7 +67,7 @@ sub _build__analysis_centre {
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $type, $id, $outfile, $empty, $pubmed_id, $help );
+	my ( $type, $id, $outfile, $empty, $pubmed_id, $no_errors, $help );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -76,15 +77,17 @@ sub BUILD {
 		'o|outfile=s'   => \$outfile,
 		'empty'         => \$empty,
 		'p|pubmed_id=s' => \$pubmed_id,
+		'no_errors'     => \$no_errors,
 		'h|help'        => \$help
 	);
 
-	$self->type($type)           if ( defined $type );
-	$self->id($id)               if ( defined $id );
-	$self->outfile($outfile)     if ( defined $outfile );
-	$self->empty($empty)         if ( defined $empty );
-	$self->pubmed_id($pubmed_id) if ( defined $pubmed_id );
-	$self->help($help)           if ( defined $help );
+	$self->type($type)               if ( defined $type );
+	$self->id($id)                   if ( defined $id );
+	$self->outfile($outfile)         if ( defined $outfile );
+	$self->empty($empty)             if ( defined $empty );
+	$self->pubmed_id($pubmed_id)     if ( defined $pubmed_id );
+	$self->_show_errors(!$no_errors) if ( defined $no_errors );
+	$self->help($help)               if ( defined $help );
 }
 
 sub check_inputs{
@@ -155,7 +158,8 @@ sub _build_manifest_data {
 sub _manifest_row{
 	my ($self, $f, $lane, $k) = @_;
 
-	my @row = ('', 'FALSE', 'Not Found', '', 'SLX', '0', '', '', '', '', 'Not Found', 'Not Found', 'Not Found', $self->_analysis_centre, $self->_current_date, $self->_current_date, $self->pubmed_id);
+	my @row = ('', 'FALSE', 'not found', '', 'SLX', '0', '', '', '', '', 'not found', 'not found', 'not found', $self->_analysis_centre, $self->_current_date, $self->_current_date, $self->pubmed_id);
+	@row = $self->_error_row(\@row) if ( $self->_show_errors );
 	unless ( defined $lane ) {
 	    $row[12] = $k;
 	    return \@row;
@@ -168,6 +172,17 @@ sub _manifest_row{
 	$row[12] = $self->_get_run_from_lane( $lane );
 
 	return \@row;
+}
+
+sub _error_row {
+	my ($self, $row) = @_;
+
+	my @new_row;
+	for my $cell ( @{ $row } ){
+		$cell =~ s/not found/not found!!/;
+		push( @new_row, $cell );
+	}
+	return @new_row;
 }
 
 sub _get_seq_tech_from_lane {
