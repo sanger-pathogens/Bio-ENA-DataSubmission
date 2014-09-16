@@ -12,7 +12,8 @@ use Moose;
 use Data::Dumper;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
-has 'row'      => ( is => 'ro', isa => 'Maybe[ArrayRef]', required => 1 );
+has 'row'       => ( is => 'ro', isa => 'Maybe[ArrayRef]', required => 1 );
+has 'mandatory' => ( is => 'ro', isa => 'ArrayRef',        required => 1 );
 
 sub validate {
 	my $self = shift;
@@ -22,7 +23,7 @@ sub validate {
 	my @row  = @{ $self->row };
 	
 	my $acc = $row[0];
-	my @man = ( 4, 5, 14, 15, 16, 17, 19, 25, 28 );
+	my @man = @{ $self->mandatory };
 
 	foreach my $i ( @man ){
 		unless ( defined $row[$i] ) {

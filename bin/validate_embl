@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+
+package Bio::ENA::DataSubmission::Bin::ValidateEMBL;
+
+# ABSTRACT: wrapper around embl-client.jar
+# PODNAME: 
+
+=head1 SYNOPSIS
+
+http://www.ebi.ac.uk/ena/software/flat-file-validator
+
+=cut
+
+BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
+BEGIN { unshift( @INC, '../lib' ) }
+BEGIN { unshift( @INC, './lib' ) }
+
+use Bio::ENA::DataSubmission::CommandLine::ValidateEMBL;
+
+Bio::ENA::DataSubmission::CommandLine::ValidateEMBL->new( args => \@ARGV )->run;

@@ -12,18 +12,18 @@ use Moose;
 use Data::Dumper;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
-has 'latlon'      => ( is => 'ro', isa => 'Str', required => 1 );
-has 'accession'   => ( is => 'ro', isa => 'Str', required => 1 );
+has 'latlon'       => ( is => 'ro', isa => 'Str', required => 1 );
+has 'identifier'   => ( is => 'ro', isa => 'Str', required => 1 );
 
 sub validate {
 	my $self   = shift;
-	my $acc    = $self->accession;
+	my $id    = $self->identifier;
 	my $latlon = $self->latlon;
 	
 	# check format first
 	my @ll = split( '/', $latlon );
 	unless ( $#ll == 1 ){
-		$self->set_error_message( $acc, "Lat/Lon format incorrect. Please use XX.XX/XX.XX E.G. 53.71/-6.35" );		
+		$self->set_error_message( $id, "Lat/Lon format incorrect. Please use XX.XX/XX.XX E.G. 53.71/-6.35" );		
 		return $self;
 	}
 
@@ -31,20 +31,20 @@ sub validate {
 	my ( $lat, $lon ) = @ll;
 	# check for numbers
 	unless( $lat =~ m/[\d\-\.]+/ ) {
-		$self->set_error_message( $acc, "Latitude does not appear to be a number" );
+		$self->set_error_message( $id, "Latitude does not appear to be a number" );
 		return $self;
 	}
 	unless( $lon =~ m/[\d\-\.]+/ ) {
-		$self->set_error_message( $acc, "Longitude does not appear to be a number" );
+		$self->set_error_message( $id, "Longitude does not appear to be a number" );
 		return $self;
 	}	
 	# check numbers are in valid ranges
 	unless ( $lat >= -90 && $lat <= 90 ){
-		$self->set_error_message( $acc, "Latitude should fall between +/- 90" );
+		$self->set_error_message( $id, "Latitude should fall between +/- 90" );
 		return $self;
 	}
 	unless ( $lon >= -180 && $lon <= 180 ){
-		$self->set_error_message( $acc, "Longitude should fall between +/- 180" );
+		$self->set_error_message( $id, "Longitude should fall between +/- 180" );
 		return $self;
 	}
 

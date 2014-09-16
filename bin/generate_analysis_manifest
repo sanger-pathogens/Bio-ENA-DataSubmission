@@ -1,0 +1,19 @@
+#!/usr/bin/env perl
+
+package Bio::ENA::DataSubmission::Bin::GenerateAnalysisManifest;
+
+# ABSTRACT: 
+# PODNAME: 
+
+=head1 SYNOPSIS
+
+
+=cut
+
+BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
+BEGIN { unshift( @INC, '../lib' ) }
+BEGIN { unshift( @INC, './lib' ) }
+
+use Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest;
+
+Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@ARGV )->run;

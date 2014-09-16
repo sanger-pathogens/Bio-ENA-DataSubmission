@@ -14,25 +14,25 @@ extends "Bio::ENA::DataSubmission::Validator::Error";
 use lib "/software/pathogen/projects/update_pipeline/modules/";
 use NCBI::TaxonLookup;
 
-has 'tax_id'          => ( is => 'ro', isa => 'Str', required => 1 );
-has 'scientific_name' => ( is => 'ro', isa => 'Str', required => 0 );
-has 'accession'       => ( is => 'ro', isa => 'Str', required => 1 );
+has 'tax_id'           => ( is => 'ro', isa => 'Str', required => 1 );
+has 'scientific_name'  => ( is => 'ro', isa => 'Str', required => 0 );
+has 'identifier'       => ( is => 'ro', isa => 'Str', required => 1 );
 
 sub validate {
 	my $self             = shift;
 	my $tax_id           = $self->tax_id;
 	my $scientific_name  = $self->scientific_name;
-	my $acc              = $self->accession;
+	my $id              = $self->identifier;
 
 	chomp $tax_id;
 	$tax_id = int( $tax_id );
 	my $taxon_lookup = NCBI::TaxonLookup->new( taxon_id => $tax_id )->common_name;
 
 	unless( defined $scientific_name ){
-		$self->set_error_message( $acc, "$tax_id is not a valid taxonomic ID" ) unless ( defined $taxon_lookup );
+		$self->set_error_message( $id, "$tax_id is not a valid taxonomic ID" ) unless ( defined $taxon_lookup );
 	}
 	else {
-		$self->set_error_message( $acc, "Taxon ID '$tax_id' does not match given scientific name '$scientific_name'. $tax_id = $taxon_lookup" ) unless ( $scientific_name eq $taxon_lookup );
+		$self->set_error_message( $id, "Taxon ID '$tax_id' does not match given scientific name '$scientific_name'. $tax_id = $taxon_lookup" ) unless ( $scientific_name eq $taxon_lookup );
 	}
 
 	return $self;
