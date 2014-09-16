@@ -1,10 +1,10 @@
-package Bio::ENA::DataSubmission::Validator::Error::SampleAccession;
+package Bio::ENA::DataSubmission::Validator::Error::ProjectAccession;
 
-# ABSTRACT: Module for validation of sample accession from manifest
+# ABSTRACT: Module for validation of ERP accession from manifest
 
 =head1 SYNOPSIS
 
-Checks that accession is a valid sample accession
+Checks that accession is a valid project accession
 
 =cut
 
@@ -21,14 +21,14 @@ sub validate {
 	my $acc  = $self->accession;
 	my $id   = $self->identifier;
 
-	unless ( $acc =~ m/^ERS/ || $acc =~ m/^SAMEA/ ){
-		$self->set_error_message( $id, "Invalid sample accession - must take format ERSXXXXXX" );
+	unless ( $acc =~ m/^ERP/ ){
+		$self->set_error_message( $id, "Invalid study accession - must take format ERPXXXXXX" );
 		return $self;
 	}
 	else {
 		# pull XML from ENA and verify that it isn't empty
 		my $xml = Bio::ENA::DataSubmission::XML->new( url => "http://www.ebi.ac.uk/ena/data/view/$acc&display=xml" )->parse_from_url;
-		$self->set_error_message( $id, "Invalid sample accession - could not be found at the ENA" ) unless ( defined $xml->{SAMPLE} );		
+		$self->set_error_message( $id, "Invalid study accession - could not be found at the ENA" ) unless ( defined $xml->{STUDY} );		
 	}
 
 	return $self;

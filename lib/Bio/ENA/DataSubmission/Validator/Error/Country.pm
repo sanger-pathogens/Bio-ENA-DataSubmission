@@ -12,12 +12,12 @@ use Moose;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
 has 'country'   => ( is => 'ro', isa => 'Str', required => 1 );
-has 'accession' => ( is => 'ro', isa => 'Str', required => 1 );
+has 'identifier' => ( is => 'ro', isa => 'Str', required => 1 );
 
 sub validate {
 	my $self = shift;
 	my $country = $self->country;
-	my $acc  = $self->accession;
+	my $acc  = $self->identifier;
 
 	my $format = (
 		   $country =~ m/^[\w ]+$/ 
