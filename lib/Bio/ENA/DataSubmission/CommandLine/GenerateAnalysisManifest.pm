@@ -27,7 +27,9 @@ no warnings 'uninitialized';
 use Moose;
 
 use lib "/software/pathogen/internal/prod/lib";
-use Data::Dumper;
+use lib "../lib";
+use lib "./lib";
+
 use Path::Find;
 use Path::Find::Lanes;
 use Path::Find::Filter;

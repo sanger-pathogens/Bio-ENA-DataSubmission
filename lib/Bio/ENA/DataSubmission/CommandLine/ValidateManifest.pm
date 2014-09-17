@@ -26,7 +26,9 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
-use lib "/software/pathogen/internal/prod/lib";
+use Data::Dumper;
+
+#use lib "/software/pathogen/internal/prod/lib";
 use lib '../lib';
 use lib './lib';
 use Getopt::Long qw(GetOptionsFromArray);
@@ -125,9 +127,9 @@ sub run {
 			my $cell = $row[$c];
 			if ( defined $cell ){
 				my $gen_error = Bio::ENA::DataSubmission::Validator::Error::General->new( 
-					accession => $acc,
-					cell      => $cell,
-					id        => $header[$c]
+					identifier => $acc,
+					cell       => $cell,
+					field      => $header[$c]
 				)->validate;
 				push( @errors_found, $gen_error ) if ( $gen_error->triggered );
 			}
@@ -193,8 +195,9 @@ sub run {
 	#--------------#
 
 	Bio::ENA::DataSubmission::Validator::Report->new(
-		errors  => \@errors_found,
-		outfile => $report
+	    errors  => \@errors_found,
+	    outfile => $report,
+	    infile => $self->file
 	)->print;
 
 	#-------------------------#

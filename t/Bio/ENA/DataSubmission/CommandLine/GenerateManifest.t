@@ -72,8 +72,9 @@ ok( $obj->run, 'Manifest generated' );
 is_deeply $obj->sample_data, \@exp_ers, 'Correct lane ERS';
 
 # file
-@exp_ers = ( ['ERS311560', '2047STDY5552273', 'UNC718'], ['ERS311393', '2047STDY5552104', 'RVI551'], ['ERS311489', '2047STDY5552201', 'UNC647']);
-@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls" );
+@exp_ers = ( ['ERS311560', '2047STDY5552273', 'UNC718'], ['ERS311393', '2047STDY5552104', 'RVI551'],
+	     ['ERS311489', '2047STDY5552201', 'UNC647'], ['11111_1#1','not found','not found']);
+@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls", '--no_errors' );
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
 ok( $obj->run );
 is_deeply $obj->sample_data, \@exp_ers, 'Correct file ERSs';

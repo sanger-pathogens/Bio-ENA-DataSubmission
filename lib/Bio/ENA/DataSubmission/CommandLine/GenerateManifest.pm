@@ -27,12 +27,15 @@ no warnings 'uninitialized';
 use Moose;
 
 use lib "/software/pathogen/internal/prod/lib";
-use Data::Dumper;
+use lib "../lib";
+use lib "./lib";
+
 use Path::Find;
 use Path::Find::Lanes;
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
+use Bio::ENA::DataSubmission::FindData;
 use List::MoreUtils qw(uniq);
 
 has 'args'        => ( is => 'ro', isa => 'ArrayRef', required => 1 );
@@ -44,7 +47,7 @@ has 'empty'       => ( is => 'rw', isa => 'Bool',     required => 0, default => 
 has 'sample_data' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'help'        => ( is => 'rw', isa => 'Bool',     required => 0 );
 
-has '_warehouse'   => ( is => 'rw', isa => 'DBI',      required => 0, lazy_build => 1 );
+has '_warehouse'   => ( is => 'rw', isa => 'DBI::db',  required => 0, lazy_build => 1 );
 has '_show_errors' => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
 
 sub _build__warehouse {
@@ -118,64 +121,6 @@ sub run {
 	1;
 }
 
-sub _build_sample_data_old {
-	my $self = shift;
-
-	my $warehouse_dbh = DBI->connect( "DBI:mysql:host=mcs7:port=3379;database=sequencescape_warehouse",
-        "warehouse_ro", undef, { 'RaiseError' => 1, 'PrintError' => 0 } )
-      or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw( error => "Failed to create connect to warehouse.\n");
-
-    my @data;
-
-	my $find = Path::Find->new();
-	my @pathogen_databases = $find->pathogen_databases;
-	my (@lanes, $pathtrack, $dbh, $root);
-
-	for my $database (@pathogen_databases){
-		( $pathtrack, $dbh, $root ) = $find->get_db_info($database);
-
-        my $find_lanes = Path::Find::Lanes->new(
-            search_type    => $self->type,
-            search_id      => $self->id,
-            pathtrack      => $pathtrack,
-            dbh            => $dbh,
-            processed_flag => 0
-        );
-        @lanes = @{ $find_lanes->lanes };
-
-        if (@lanes) {
-            $dbh->disconnect();
-            last;
-        }
-    }
-
-    my @acc_seen;
-    for my $lane (@lanes) {
-        my $sample = $self->_get_sample_from_lane( $pathtrack, $lane );
-        next unless (defined $sample);
-        my $sample_name = $sample->name;
-        my $sample_acc = $sample->individual->acc;
-
-        # handle duplicates - e.g. same data for plexed lanes
-        next if( grep { $_ eq $sample_acc } @acc_seen );
-
-        my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
-        my $supplier_name = $sample_data[0];
-        push( @acc_seen, $sample_acc );
-        push( @data, [ $sample_acc, $sample_name, $supplier_name ] );
-    }
-
-    # report lanes that weren't found if input is file
-    if ( $self->type eq 'file' ){
-	    my @missing = $self->_find_missing_ids(\@lanes, \@data);
-	    for my $m ( @missing ){
-	    	push( @data, [ $m, 'not found', 'not found' ] );
-	    }
-	}
-	
-	return \@data;
-}
-
 sub _build_sample_data {
 	my $self = shift;
 
@@ -193,7 +138,7 @@ sub _build_sample_data {
 	}
 
 	# handle duplicates - e.g. same data for plexed lanes
-    @manifest = $self->_remove_dups(\@manifest);
+	@manifest = $self->_remove_dups(\@manifest);
 
 	return \@manifest;
 }
@@ -204,15 +149,17 @@ sub _manifest_row{
 	# blank row for returning on errors
 	my @row = ( $k, 'not found', 'not found' );
 	@row = $self->_error_row(\@row) if ( $self->_show_errors );
+
 	return \@row unless ( defined $lane );
 
 	# build data, so long as it's available
-	my $sample = $self->_get_sample_from_lane( $pathtrack, $lane );
-    return \@row unless (defined $sample);
-    my $sample_name = $sample->name;
-    my $sample_acc = $sample->individual->acc;
-    my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
-    my $supplier_name = $sample_data[0];
+	my $sample = $self->_get_sample_from_lane( $f->_vrtrack, $lane );
+	return \@row unless (defined $sample);
+	my $sample_name = $sample->name;
+	my $sample_acc = $sample->individual->acc;
+	my $warehouse_dbh = $self->_warehouse;
+	my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
+	my $supplier_name = $sample_data[0];
 	
 	return [ $sample_acc, $sample_name, $supplier_name ];
 }
