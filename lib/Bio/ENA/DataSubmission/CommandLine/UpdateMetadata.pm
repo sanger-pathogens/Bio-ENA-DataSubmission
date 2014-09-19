@@ -227,7 +227,7 @@ sub _updated_xml {
 	my @manifest = @{ $manifest_handler->parse_manifest };
 	my @updated_samples;
 	foreach my $sample (@manifest){
-		my $new_sample = Bio::ENA::DataSubmission::XML->new()->update( $sample );
+		my $new_sample = Bio::ENA::DataSubmission::XML->new()->update_sample( $sample );
 		push( @updated_samples, $new_sample );
 	}
 	my %new_xml = ( 'SAMPLE' => \@updated_samples );

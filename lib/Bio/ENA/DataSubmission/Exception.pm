@@ -21,6 +21,7 @@ use Exception::Class (
     Bio::ENA::DataSubmission::Exception::ValidationFail        => { description => 'Validation of the manifest failed' },
     Bio::ENA::DataSubmission::Exception::CannotCreateDirectory => { description => 'Cannot create directory' },
     Bio::ENA::DataSubmission::Exception::UnauthorisedUser      => { description => 'User is not authorised to run script' },
+    Bio::ENA::DataSubmission::Exception::FTPError              => { description => 'Error occurred during FTP upload' },
 );
 
 1;

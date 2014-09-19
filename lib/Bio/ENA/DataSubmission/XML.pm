@@ -35,15 +35,18 @@ use XML::LibXML;
 use LWP;
 use Switch;
 use Data::Dumper;
+use Digest::MD5 qw(md5_hex);
+use File::Slurp;
 
-has 'xml'               => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'url'               => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'data'              => ( is => 'rw', isa => 'HashRef',  required => 0 );
-has 'xsd'               => ( is => 'ro', isa => 'Str',      required => 0 );
-has 'outfile'           => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'root'              => ( is => 'ro', isa => 'Str',      required => 0, default    => 'root' );
-has '_fields'           => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
-has 'validation_report' => ( is => 'rw', isa => 'XML::LibXML::Error',  required => 0 );
+has 'xml'                => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'url'                => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'data'               => ( is => 'rw', isa => 'HashRef',  required => 0 );
+has 'xsd'                => ( is => 'ro', isa => 'Str',      required => 0 );
+has 'outfile'            => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'root'               => ( is => 'ro', isa => 'Str',      required => 0, default    => 'root' );
+has '_fields'            => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'validation_report'  => ( is => 'rw', isa => 'XML::LibXML::Error',  required => 0 );
+has '_analysis_template' => ( is => 'rw', isa => 'Str',      required => 0, default => '/Users/cc21/Development/repos/Bio-ENA-DataSubmission/data/analysis.xml'  );
 
 sub _build__fields {
 	# this will change with schema eventually
@@ -77,7 +80,7 @@ sub validate {
 	return 1;
 }
 
-sub update {
+sub update_sample {
 	my ( $self, $sample ) = @_;
 
 	(defined $sample ) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "Sample data not present\n" ); 
@@ -142,14 +145,60 @@ sub _update_fields {
 
 }
 
+sub update_analysis {
+	my ( $self, $row ) = @_;
+
+	# read in template
+	my $template = $self->parse_from_file( $self->_analysis_template );
+
+	# insert data
+	# mandatory data
+	$template->{alias}                                                         = $row->[0];
+	$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{NAME}->[0]     = $row->[0];
+	$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{PARTIAL}->[0]  = $row->[1];
+	$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{COVERAGE}->[0] = $row->[2];
+	$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{PROGRAM}->[0]  = $row->[3];
+	$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{PLATFORM}->[0] = $row->[4];
+	$template->{FILES}->[0]->{FILE}->[0]->{filename}                           = $row->[6];
+	$template->{FILES}->[0]->{FILE}->[0]->{filetype}                           = $row->[7];
+	$template->{DESCRIPTION}->[0]                                              = $row->[9];
+	$template->{STUDY_REF}->[0]->{refname}                                     = $row->[10];
+	$template->{SAMPLE_REF}->[0]->{accession}                                  = $row->[11];
+	$template->{analysis_center}                                               = $row->[13];
+	$template->{center_name}                                                   = $row->[13];
+	$template->{STUDY_REF}->[0]->{refcenter}                                   = $row->[13];
+	$template->{SAMPLE_REF}->[0]->{refcenter}                                  = $row->[13];
+
+	# optional data
+	if ( defined $row->[5] ){
+		$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{MINUMUM_GAP}->[0] = $row->[5];
+	}
+	else {
+		delete $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{MINUMUM_GAP};
+	}
+
+	if ( defined $row->[8] ){
+		$template->{TITLE}->[0] = $row->[8];
+	}
+	else {
+		delete $template->{TITLE};
+	}
+
+	# add file checksum
+	my $checksum = md5_hex( read_file( $row->[6] ) );
+	$template->{FILES}->[0]->{FILE}->[0]->{checksum} = $checksum;
+
+	return $template;
+}
+
 sub parse_from_file {
-	my $self = shift;
-	my $xml = $self->xml;
+	my ( $self, $xml ) = @_;
+	$xml = $self->xml unless ( defined $xml );
 
 	(defined $xml) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "XML file must be passed to read\n" );
 	(-e $xml && -r $xml) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $xml\n" );
 
-	return XML::Simple->new()->XMLin($xml);
+	return XML::Simple->new( ForceArray => 1 )->XMLin($xml);
 }
 
 sub parse_from_url {

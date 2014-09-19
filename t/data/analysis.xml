@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET>
+  <ANALYSIS alias="test_genome_1" center_name="SC" analysis_center="SC" analysis_date="2014-09-01"> 
+    <TITLE>Assembly of test genome 1</TITLE>
+    <DESCRIPTION>
+      We assembled some crap! Who cares?
+    </DESCRIPTION>
+    <STUDY_REF refname="ERP001039" refcenter="SC"/>
+    <SAMPLE_REF accession="ERS311560" refcenter="SC"/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ASSEMBLY>
+        <NAME>test_genome_1</NAME>
+        <PARTIAL>false</PARTIAL>
+        <COVERAGE>52.42</COVERAGE>
+        <PROGRAM>velvet</PROGRAM>
+        <PLATFORM>SLX</PLATFORM>
+        <MIN_GAP_LENGTH >0</MIN_GAP_LENGTH>
+      </SEQUENCE_ASSEMBLY>
+    </ANALYSIS_TYPE>
+    <FILES>
+      <FILE filename="testfile1.fasta.gz" filetype="fasta" checksum_method="MD5" checksum="im_a_checksum"/>
+    </FILES>
+  </ANALYSIS>
+  <ANALYSIS alias="test_genome_2" center_name="SC" analysis_center="SC" analysis_date="2014-09-01"> 
+    <TITLE>Assembly of test genome 2</TITLE>
+    <DESCRIPTION>
+      Assembly of a steaming pile
+    </DESCRIPTION>
+    <STUDY_REF refname="ERP001039" refcenter="SC"/>
+    <SAMPLE_REF accession="ERS311489" refcenter="SC"/>
+    <ANALYSIS_TYPE>
+      <SEQUENCE_ASSEMBLY>
+        <NAME>test_genome_2</NAME>
+        <PARTIAL>true</PARTIAL>
+        <COVERAGE>81.5</COVERAGE>
+        <PROGRAM>velvet</PROGRAM>
+        <PLATFORM>SLX</PLATFORM>
+        <MIN_GAP_LENGTH >0</MIN_GAP_LENGTH>
+      </SEQUENCE_ASSEMBLY>
+    </ANALYSIS_TYPE>
+    <FILES>
+      <FILE filename="testfile2.fasta.gz" filetype="fasta" checksum_method="MD5" checksum="im_a_checksum"/>
+    </FILES>
+  </ANALYSIS>
+</ANALYSIS_SET>
