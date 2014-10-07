@@ -23,12 +23,14 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 use Net::FTP;
+use File::Basename;
 
-has 'server'   => ( is => 'rw', isa => 'Str',      required => 0, default => 'webin.ebi.ac.uk' );
-has 'username' => ( is => 'rw', isa => 'Str',      required => 0, default => '' );
-has 'password' => ( is => 'rw', isa => 'Str',      required => 0, default => '' );
-has 'files'    => ( is => 'ro', isa => 'ArrayRef', required => 1 );
-has 'error'    => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'server'    => ( is => 'rw', isa => 'Str',      required => 0, default => 'webin.ebi.ac.uk' );
+has 'username'  => ( is => 'rw', isa => 'Str',      required => 0, default => 'Webin-38858' );
+has 'password'  => ( is => 'rw', isa => 'Str',      required => 0, default => 'holy_schisto' );
+has 'files'     => ( is => 'ro', isa => 'ArrayRef', required => 1 );
+has 'directory' => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'error'     => ( is => 'rw', isa => 'Str',      required => 0 );
 
 sub upload {
 	my $self = shift;
@@ -46,7 +48,8 @@ sub upload {
 	}
 
 	# open FTP connection
-	unless ( my $ftp = Net::FTP->new( $server ) ){
+	my $ftp;
+	unless ( $ftp = Net::FTP->new( $server ) ){
 		$self->error( "Cannot connect to $server" );
 		return 0;
 	}
@@ -59,8 +62,17 @@ sub upload {
 
 	$ftp->binary(); # set mode
 
+	# create target directory unless it already exists
+	my $dest; # destination on the server
+	if ( defined $self->directory ){
+		$dest = $self->directory;
+		$ftp->mkdir( $self->directory );
+	}
+
 	for my $file ( @{ $self->files } ){
-		unless ( $ftp->put( $file ) ){
+		my $target = $file;
+		$target = $self->_server_target( $file );
+		unless ( $ftp->put( $file, $target ) ){
 			$self->error( "Failed to upload $file\n" );
 			return 0;
 		}
@@ -72,6 +84,14 @@ sub upload {
 	}
 
 	return 1;
+}
+
+sub _server_target {
+	my ( $self, $local ) = @_;
+
+	my ( $filename, $directories, $suffix ) = fileparse( $local );
+	return $self->directory . "/$filename" if ( defined $self->directory );
+	return $filename;
 }
 
 __PACKAGE__->meta->make_immutable;

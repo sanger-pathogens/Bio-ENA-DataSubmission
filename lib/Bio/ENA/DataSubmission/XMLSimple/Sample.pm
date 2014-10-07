@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use XML::Simple;
 
-package Bio::ENA::DataSubmission::XMLSimple;
+package Bio::ENA::DataSubmission::XMLSimple::Sample;
 use base 'XML::Simple';
 
 use Data::Dumper;

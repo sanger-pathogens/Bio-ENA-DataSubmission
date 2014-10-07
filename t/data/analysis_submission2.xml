@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION alias="testuser_testtime_release_2050-01-01" center_name="SC">
+  <ACTIONS>
+    <ACTION>
+      <ADD schema="analysis" source="analysis_B.xml" />
+    </ACTION>
+    <ACTION>
+      <HOLD HoldUntilDate="2050-01-01" />
+    </ACTION>
+  </ACTIONS>
+</SUBMISSION>

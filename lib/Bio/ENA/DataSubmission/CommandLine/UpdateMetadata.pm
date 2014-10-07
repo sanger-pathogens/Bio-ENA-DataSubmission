@@ -231,7 +231,7 @@ sub _updated_xml {
 		push( @updated_samples, $new_sample );
 	}
 	my %new_xml = ( 'SAMPLE' => \@updated_samples );
-	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/$samples", root => 'SAMPLE_SET' )->write;
+	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/$samples" )->write_sample;
 }
 
 sub _generate_submission {

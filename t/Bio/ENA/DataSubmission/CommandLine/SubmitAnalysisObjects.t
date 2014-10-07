@@ -49,51 +49,45 @@ $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new(
 	args         => \@args,
 	_checksum    => 'im_a_checksum',
 	_output_dest => $tmp,
-	_timestamp   => 'testtime'
 );
 
 # sample XML updating
 ok( $obj->_update_analysis_xml, 'XML update successful' );
-ok( -e "$tmp/analysis_testtime.xml", 'XML exists' );
+ok( -e "$tmp/analysis_2014-10-01.xml", 'XML exists' );
 ok(
-	compare( 't/data/updated.xml', "$tmp/analysis_testtime.xml" ) == 0,
+	compare( 't/data/analysis_updated.xml', "$tmp/analysis_2014-10-01.xml" ) == 0,
 	'Updated XML file correct'
 );
 
+# test release date comparison
+ok( !$obj->_later_than_today( '2000-01-01' ), 'Date comparison correct' );
+ok(  $obj->_later_than_today( '2050-01-01' ), 'Date comparison correct');
+
 # submission XML generation
-ok( $obj->_generate_submission, 'Sumission XML generated successfully' );
-ok( -e "$tmp/submission_testtime.xml", 'XML exists' );
+# test with different release dates!
+$obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( 
+	args          => \@args,
+	_current_user => 'testuser',
+	_timestamp    => 'testtime',
+	_output_dest  => $tmp,
+	_no_upload    => 1,
+	_no_validate  => 1
+);
+my $files = { '2014-01-01' => "$tmp/analysis_A.xml", '2050-01-01' => "$tmp/analysis_B.xml" };
+ok( $obj->_generate_submissions( $files ), 'Submission XMLs generated successfully' );
+ok( -e "$tmp/submission_2014-01-01.xml", 'XML exists' );
+ok( -e "$tmp/submission_2050-01-01.xml", 'XML exists' );
 ok(
-	compare( 't/data/submission.xml', "$tmp/submission_testtime.xml" ) == 0,
+	compare( 't/data/analysis_submission1.xml', "$tmp/submission_2014-01-01.xml" ) == 0,
+	'Submission XML correct'
+);
+ok(
+	compare( 't/data/analysis_submission2.xml', "$tmp/submission_2050-01-01.xml" ) == 0,
 	'Submission XML correct'
 );
 
-# Validation with XSD
+# test full run
 
-# 1. validate correct XMLs
-ok( $obj->_validate_with_xsd, 'Validation successful' );
-
-# 2. validate with incorrect sample XML
-$obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( 
-	args => \@args,
-	_output_dest    => 't/data/bad_sample/', 
-	_data_root      => './data', 
-	_email_to       => 'cc21@sanger.ac.uk', 
-	_sample_xml     => 'samples.xml', 
-	_submission_xml => 'submission.xml'
-);
-throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
-
-# 3. validate with incorrect submission XML
-$obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( 
-	args => \@args,
-	_output_dest    => 't/data/bad_submission/',
-	_data_root      => './data', 
-	_email_to       => 'cc21@sanger.ac.uk',
-	_sample_xml     => 'samples.xml', 
-	_submission_xml => 'submission.xml'
-);
-throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
 remove_tree($tmp);
 done_testing();

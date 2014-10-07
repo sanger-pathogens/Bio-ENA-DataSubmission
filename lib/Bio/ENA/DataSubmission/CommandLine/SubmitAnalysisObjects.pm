@@ -31,6 +31,7 @@ no warnings 'uninitialized';
 use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
 use Data::Dumper;
+use File::Basename;
 use File::Copy qw(copy);
 use File::Path qw(make_path);
 use Cwd 'abs_path';
@@ -38,10 +39,12 @@ use Cwd 'abs_path';
 use lib "/software/pathogen/internal/prod/lib";
 use lib '../lib';
 use lib './lib';
+use Bio::ENA::DataSubmission;
 use Bio::ENA::DataSubmission::Exception;
-use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
-use Email::MIME;
-use Email::Sender::Simple qw(sendmail);
+use Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest;
+use DateTime;
+use Digest::MD5 qw(md5_hex);
+use File::Slurp;
 
 has 'args'            => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -50,13 +53,18 @@ has '_output_dest'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_bu
 has 'analysis_type'   => ( is => 'rw', isa => 'Str',      required => 0, default => 'sequence_assembly' );
 has 'manifest'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'         => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'test'            => ( is => 'rw', isa => 'Bool',     required => 0 );
+has 'test'            => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 has 'help'            => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_current_user'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_auth_users'     => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
+has '_no_upload'      => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 has '_timestamp'      => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_manifest_data'  => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+#has '_data_root'      => ( is => 'rw', isa => 'Str',      required => 0, default => '/software/pathogen/projects/Bio-ENA-DataSubmission/data/' );
+has '_data_root'      => ( is => 'rw', isa => 'Str',      required => 0, default => '/Users/cc21/Development/repos/Bio-ENA-DataSubmission/data' );
+has '_server_dest'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_release_dates'  => ( is => 'rw', isa => 'ArrayRef', required => 0, default => [] );
 
 sub _build__output_dest{
 	my $self = shift;
@@ -66,13 +74,14 @@ sub _build__output_dest{
 	my $timestamp = $self->_timestamp;
 	$dir .= '/' . $user . '_' . $timestamp;
 
-	my $mode = 0774;
-	make_path( $dir, {
-		owner => $self->_current_user,
-		group => 'pathsub',
-		mode  => $mode
-	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" );
-	chmod $mode, $dir; # sets correct permissions - make_path not working properly
+	make_path( $dir );
+	# my $mode = 0774;
+	# make_path( $dir, {
+	# 	owner => $self->_current_user,
+	# 	group => 'pathsub',
+	# 	mode  => $mode
+	# }) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" );
+	# chmod $mode, $dir; # sets correct permissions - make_path not working properly
 
 	return $dir;
 }
@@ -110,10 +119,19 @@ sub _build__manifest_data {
 	return $manifest_handler->parse_manifest;
 }
 
+sub _build__server_dest {
+	my $self = shift;
+
+	return '/' . $self->analysis_type . '/' . $self->_current_user . '_' . $self->_timestamp;
+}
+
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $outfile, $test, $analysis_type, $no_validate, $help );
+	my ( 
+		$file, $outfile, $test, $analysis_type,
+		$no_validate, $no_upload, $help 
+	);
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -134,6 +152,20 @@ sub BUILD {
 	$self->help($help)                   if ( defined $help );
 }
 
+sub _check_inputs {
+	my $self = shift;
+
+	return (
+		$self->manifest && !$self->help
+	);
+}
+
+sub _check_user {
+	my $self = shift;
+
+	return 1;
+}
+
 sub run {
 	my $self = shift;
 
@@ -152,24 +184,29 @@ sub run {
 	# first, validate the manifest
 	unless( $self->no_validate ){
 		my @args = ( '-f', $manifest, '-r', $outfile );
-		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
+		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 	}
 
 	# Place files in ENA dropbox via FTP
-	my $files = $self->_parse_filelist;
-	my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files );
-	$uploader->upload or Bio::ENA::DataSubmission::Exception::FTPError->throw( error => $uploader->error );
+	unless( defined $self->_no_upload ){
+		my $files = $self->_parse_filelist;
+		my $dest  = $self->_server_dest; 
+		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest );
+		$uploader->upload or Bio::ENA::DataSubmission::Exception::FTPError->throw( error => $uploader->error );
+	}
 
 	# generate analysis XML
-	$self->_update_analysis_xml;
+	my $analysis_files = $self->_update_analysis_xml;
 
 	# generate submission XML
-	
+	$self->_generate_submissions( $analysis_files );
 
 	# validate XMLs with XSDs
+	$self->_validate_with_xsd( $analysis_files );
 	
 	# submit all files for each submission via ENA REST API
+	$self->_submit( $analysis_files );
 
 	# get confirmation XML
 
@@ -193,18 +230,156 @@ sub _update_analysis_xml {
 	my $test     = $self->test;
 	my $dest     = $self->_output_dest;
 	my $manifest = $self->manifest;
-	my $analysis = $self->_analysis_xml;
 
 	# parse manifest and loop
 	my $manifest_handler = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $manifest );
 	my @manifest = @{ $manifest_handler->parse_manifest };
-	my @updated_data;
+	my %updated_data;
 	foreach my $row (@manifest){
+		$row->{checksum} = md5_hex( read_file( $row->{file} ) ); # add MD5 checksum
+		$row->{file} = $self->_server_path( $row->{file} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new()->update_analysis( $row );
-		push( @updated_data, $analysis_xml );
+		my $release_date = $row->{release_date};
+		# split data based on release dates. release date set in submission XML
+		$updated_data{$release_date} = [] unless ( defined $updated_data{$release_date} );
+		push( @{ $updated_data{$release_date} }, $analysis_xml );
 	}
-	my %new_xml = ( 'ANALYSIS' => \@updated_samples );
-	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/$analysis", root => 'ANALYSIS_SET' )->write;
+
+	my %files;
+	for my $k ( keys %updated_data ){
+		my %new_xml = ( 'ANALYSIS' => $updated_data{$k} );
+		my $outfile = $self->_analysis_xml( $k );
+		Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => $outfile )->write_analysis;
+		$files{$k} = $outfile;
+	}
+	return \%files;
+}
+
+sub _server_path {
+	my ( $self, $local ) = @_;
+	my $s_dest = $self->_server_dest;
+
+	my ( $filename, $directories, $suffix ) = fileparse( $local );
+	return "$s_dest/$filename";
+}
+
+sub _analysis_xml {
+	my ( $self, $id ) = @_;
+	my $dest = $self->_output_dest;
+
+	return "$dest/analysis_$id.xml";
+}
+
+sub _submission_xml {
+	my ( $self, $id ) = @_;
+	my $dest = $self->_output_dest;
+
+	return "$dest/submission_$id.xml";
+}
+
+sub _receipt_xml {
+	my ( $self, $id ) = @_;
+	my $dest = $self->_output_dest;
+
+	return "$dest/receipt_$id.xml";
+}
+
+sub _generate_submissions {
+	my ( $self, $files ) = @_;
+	my %filelist = %{ $files };
+
+	my $sub_template = Bio::ENA::DataSubmission::XML->new( xml => $self->_data_root . "/submission.xml" )->parse_from_file;	
+
+	for my $date ( keys %filelist ){
+		my ( $filename, $directories, $suffix ) = fileparse( $filelist{$date}, ('.xml') );
+		my $file = "$filename$suffix"; # remove directories
+
+		my @actions = ( { ADD => [ { source => $file, schema => 'analysis' } ] } );
+		if ( $self->_later_than_today( $date ) ){
+			# hold until release date
+			push( @actions, { HOLD => [ { HoldUntilDate => $date } ] } );
+		}
+		else {
+			# release immediately
+			push( @actions, { RELEASE => [ {} ] } );
+		}
+
+		# construct XML data structure
+		my $sub_template = { 
+			ACTIONS     => [{ ACTION => \@actions }],
+			alias       => $self->_current_user . '_' . $self->_timestamp . "_release_$date",
+			center_name => 'SC'
+		};
+		
+		# write to file
+		my $outfile = $self->_submission_xml( $date );
+		Bio::ENA::DataSubmission::XML->new( data => $sub_template, outfile =>  $outfile )->write_submission;
+	}
+	return 1;
+}
+
+sub _later_than_today {
+	my ( $self, $date ) = @_;
+
+	chomp $date;
+	my @date_data = split( '-', $date );
+	my $release_date = DateTime->new( 
+		year  => $date_data[0], 
+		month => $date_data[1], 
+		day   => $date_data[2] 
+	);
+	my $today = DateTime->today;
+
+	my $diff = $release_date->subtract_datetime( $today );
+
+	return 1 if ( $diff->{months} > 0 || $diff->{days} > 0 );
+	return 0;
+}
+
+sub _validate_with_xsd {
+	my ( $self, $filelist ) = @_;
+	my $dest = $self->_output_dest;
+	my $xsd_root = $self->_data_root;
+
+	for my $analysis_xml ( values %{ $filelist } ){
+		my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => $analysis_xml, xsd => "$xsd_root/analysis.xsd" );
+		Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n" . $sample_validator->validation_report . "\n" ) unless ( $sample_validator->validate );
+
+		my $submission_xml = $analysis_xml;
+		$submission_xml =~ s/analysis_/submission_/;
+		my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => $submission_xml, xsd => "$xsd_root/submission.xsd" );
+		Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed. Errors:\n" . $submission_validator->validation_report . "\n" ) unless ( $submission_validator->validate );
+	}
+
+	return 1;
+}
+
+sub _submit {
+	my ( $self, $filelist ) = @_;
+
+	for my $date ( keys %{ $filelist } ){
+		my $sub_obj = Bio::ENA::DataSubmission->new(
+			submission => $self->_submission_xml( $date ),
+			analysis   => $self->_analysis_xml( $date ),
+			receipt    => $self->_receipt_xml( $date ),
+			test       => $self->test
+		);
+		#$sub_obj->submit;
+		print $sub_obj->_submission_cmd . "\n";
+	}
+}
+
+sub usage_text {
+	return <<USAGE;
+Usage: submit_analysis_objects [options]
+
+	-f|file    
+	-o|outfile     Output file for report (  )
+	-t|type        Default = sequence_assembly
+	--no_validate  Do not run manifest validation step
+	-h|help'       This help message
+
+USAGE
 }
 
 __PACKAGE__->meta->make_immutable;
