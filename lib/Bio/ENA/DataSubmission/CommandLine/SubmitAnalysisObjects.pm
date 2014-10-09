@@ -42,6 +42,7 @@ use lib './lib';
 use Bio::ENA::DataSubmission;
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest;
+use Bio::ENA::DataSubmission::XML;
 use DateTime;
 use Digest::MD5 qw(md5_hex);
 use File::Slurp;
@@ -64,7 +65,7 @@ has '_manifest_data'  => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_bu
 #has '_data_root'      => ( is => 'rw', isa => 'Str',      required => 0, default => '/software/pathogen/projects/Bio-ENA-DataSubmission/data/' );
 has '_data_root'      => ( is => 'rw', isa => 'Str',      required => 0, default => '/Users/cc21/Development/repos/Bio-ENA-DataSubmission/data' );
 has '_server_dest'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-has '_release_dates'  => ( is => 'rw', isa => 'ArrayRef', required => 0, default => [] );
+has '_release_dates'  => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 
 sub _build__output_dest{
 	my $self = shift;
@@ -84,6 +85,17 @@ sub _build__output_dest{
 	# chmod $mode, $dir; # sets correct permissions - make_path not working properly
 
 	return $dir;
+}
+
+sub _build__release_dates {
+	my $self = shift;
+	my @manifest = @{ $self->_manifest_data };
+
+	my @dates;
+	for my $row ( @manifest ) {
+		push( @dates, $row->[15] ) if ( defined $row->[15] );
+	}
+	return \@dates;
 }
 
 sub _build__current_user {
@@ -126,7 +138,7 @@ sub _build__server_dest {
 }
 
 sub BUILD {
-	my ( $self ) = @_;
+	my $self = shift;
 
 	my ( 
 		$file, $outfile, $test, $analysis_type,
@@ -197,20 +209,19 @@ sub run {
 	}
 
 	# generate analysis XML
-	my $analysis_files = $self->_update_analysis_xml;
+	$self->_update_analysis_xml;
 
 	# generate submission XML
-	$self->_generate_submissions( $analysis_files );
+	$self->_generate_submissions;
 
 	# validate XMLs with XSDs
-	$self->_validate_with_xsd( $analysis_files );
+	$self->_validate_with_xsd;
 	
 	# submit all files for each submission via ENA REST API
-	$self->_submit( $analysis_files );
+	$self->_submit;
 
-	# get confirmation XML
-
-	# generate report
+	# generate report from XML receipts
+	$self->_report;
 
 }
 
@@ -245,14 +256,14 @@ sub _update_analysis_xml {
 		push( @{ $updated_data{$release_date} }, $analysis_xml );
 	}
 
-	my %files;
+	my @release_dates;
 	for my $k ( keys %updated_data ){
 		my %new_xml = ( 'ANALYSIS' => $updated_data{$k} );
 		my $outfile = $self->_analysis_xml( $k );
 		Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => $outfile )->write_analysis;
-		$files{$k} = $outfile;
+		push( @release_dates, $k );
 	}
-	return \%files;
+	$self->_release_dates( \@release_dates );
 }
 
 sub _server_path {
@@ -285,13 +296,13 @@ sub _receipt_xml {
 }
 
 sub _generate_submissions {
-	my ( $self, $files ) = @_;
-	my %filelist = %{ $files };
+	my $self = shift;
+	my @dates    = @{ $self->_release_dates }; 
 
 	my $sub_template = Bio::ENA::DataSubmission::XML->new( xml => $self->_data_root . "/submission.xml" )->parse_from_file;	
 
-	for my $date ( keys %filelist ){
-		my ( $filename, $directories, $suffix ) = fileparse( $filelist{$date}, ('.xml') );
+	for my $date ( @dates ){
+		my ( $filename, $directories, $suffix ) = fileparse( $self->_analysis_xml( $date ), ('.xml') );
 		my $file = "$filename$suffix"; # remove directories
 
 		my @actions = ( { ADD => [ { source => $file, schema => 'analysis' } ] } );
@@ -337,16 +348,16 @@ sub _later_than_today {
 }
 
 sub _validate_with_xsd {
-	my ( $self, $filelist ) = @_;
+	my $self = shift;
 	my $dest = $self->_output_dest;
 	my $xsd_root = $self->_data_root;
 
-	for my $analysis_xml ( values %{ $filelist } ){
+	for my $date ( @{ $self->_release_dates } ){
+		my $analysis_xml = $self->_analysis_xml( $date );
 		my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => $analysis_xml, xsd => "$xsd_root/analysis.xsd" );
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n" . $sample_validator->validation_report . "\n" ) unless ( $sample_validator->validate );
 
-		my $submission_xml = $analysis_xml;
-		$submission_xml =~ s/analysis_/submission_/;
+		my $submission_xml = $self->_submission_xml( $date );
 		my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => $submission_xml, xsd => "$xsd_root/submission.xsd" );
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed. Errors:\n" . $submission_validator->validation_report . "\n" ) unless ( $submission_validator->validate );
 	}
@@ -355,9 +366,9 @@ sub _validate_with_xsd {
 }
 
 sub _submit {
-	my ( $self, $filelist ) = @_;
+	my $self = shift;
 
-	for my $date ( keys %{ $filelist } ){
+	for my $date ( @{ $self->_release_dates } ){
 		my $sub_obj = Bio::ENA::DataSubmission->new(
 			submission => $self->_submission_xml( $date ),
 			analysis   => $self->_analysis_xml( $date ),
@@ -369,12 +380,48 @@ sub _submit {
 	}
 }
 
+sub _report {
+	my $self = shift;
+
+	# parse and store all required info from receipt XMLs
+	my %receipts;
+	for my $date ( @{ $self->_release_dates } ){
+		my $receipt = $self->_receipt_xml( $date );
+		$receipts{$date} = $self->_parse_receipt( $receipt );
+	}
+
+	# loop through manifest and match to receipt
+	my @report = ( ['name', 'success', 'errors'] );
+	my @manifest = @{ $self->_manifest_data };
+	for my $row ( @manifest ) {
+		my $release = $row->[15];
+		push( @report, [ $row->[0], $receipts{$release}->{success}, $receipts{$release}->{errors} ] );
+	}
+
+	## write report to spreadsheet
+	my $report_xls = Bio::ENA::DataSubmission::Spreadsheet->new(
+		data                => $data,
+		outfile             => $self->outfile,
+	);
+	$report_xls->write_xls;
+}
+
+sub _parse_receipt {
+	my ( $self, $receipt ) = @_;
+
+	my $xml = Bio::ENA::DataSubmission::XML->new( xml => $receipt )->parse_from_file;
+	return {
+		success => $xml->{success},
+		errors  => join( ';', @{ $xml->{MESSAGES}->[0]->{ERROR} } )
+	};
+}
+
 sub usage_text {
 	return <<USAGE;
 Usage: submit_analysis_objects [options]
 
 	-f|file    
-	-o|outfile     Output file for report (  )
+	-o|outfile     Output file for report ( .xls format )
 	-t|type        Default = sequence_assembly
 	--no_validate  Do not run manifest validation step
 	-h|help'       This help message

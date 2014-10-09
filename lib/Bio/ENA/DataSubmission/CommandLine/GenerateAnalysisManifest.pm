@@ -123,7 +123,7 @@ sub run {
 	my $header = [
 		'name*', 'partial*', 'coverage*', 'program*', 'platform*', 'minimum_gap',
 		'file*', 'file_type*', 'title', 'description*', 'study*', 'sample*', 'run',
-		'analysis_centre', 'analysis_date', 'release_date', 'pubmed_id'									
+		'analysis_center', 'analysis_date', 'release_date', 'pubmed_id'									
 	];
 
 	# write data to spreadsheet
