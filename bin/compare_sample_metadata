@@ -3,7 +3,7 @@
 package Bio::ENA::DataSubmission::Bin::CompareMetadata;
 
 # ABSTRACT: 
-# PODNAME: 
+# PODNAME: compare_sample_metadata
 
 =head1 SYNOPSIS
 

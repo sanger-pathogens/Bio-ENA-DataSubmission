@@ -3,7 +3,7 @@
 package Bio::ENA::DataSubmission::Bin::GenerateManifest;
 
 # ABSTRACT: 
-# PODNAME: 
+# PODNAME: generate_sample_manifest
 
 =head1 SYNOPSIS
 

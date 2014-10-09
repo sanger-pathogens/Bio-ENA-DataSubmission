@@ -3,7 +3,7 @@
 package Bio::ENA::DataSubmission::Bin::ValidateEMBL;
 
 # ABSTRACT: wrapper around embl-client.jar
-# PODNAME: 
+# PODNAME: validate_embl
 
 =head1 SYNOPSIS
 

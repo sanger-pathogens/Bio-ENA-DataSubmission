@@ -3,7 +3,7 @@
 package Bio::ENA::DataSubmission::Bin::ValidateManifest;
 
 # ABSTRACT: 
-# PODNAME: 
+# PODNAME: validate_sample_manifest
 
 =head1 SYNOPSIS
 

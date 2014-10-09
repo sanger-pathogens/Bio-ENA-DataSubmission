@@ -3,7 +3,7 @@
 package Bio::ENA::DataSubmission::Bin::SubmitAnalysisObjects;
 
 # ABSTRACT: 
-# PODNAME: 
+# PODNAME: submit_analysis_objects
 
 =head1 SYNOPSIS
 

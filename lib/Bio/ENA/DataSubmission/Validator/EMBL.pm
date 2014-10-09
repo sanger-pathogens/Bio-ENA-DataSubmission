@@ -1,6 +1,6 @@
 package Bio::ENA::DataSubmission::Validator::EMBL;
 
-# ABSTRACT: 
+# ABSTRACT: Embl validator
 
 =head1 SYNOPSIS
 
