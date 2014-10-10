@@ -15,13 +15,11 @@ my ( $obj, $exp );
 # test URL construction #
 #-----------------------#
 
-$obj = Bio::ENA::DataSubmission->new( submission => '', receipt => 'output_receipt' );
-$exp = 'https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20Webin-38858%20holy_schisto';
-is ( $obj->_ena_url, $exp, "Production server URL correct" );
-
-$obj = Bio::ENA::DataSubmission->new( submission => '', test => 1, receipt => 'output_receipt' );
-$exp = 'https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20Webin-38858%20holy_schisto';
-is ( $obj->_ena_url, $exp, "Test server URL correct" );
+$obj = Bio::ENA::DataSubmission->new( submission => '', receipt => 'output_receipt',webin_user => 'user',
+webin_pass => 'pass',
+ena_dropbox_submission_url => 'http://example.com/' );
+$exp = 'http://example.com/user%20pass';
+is ( $obj->_ena_url, $exp, "URL construction correct" );
 
 #-------------------#
 # test full command #
@@ -30,21 +28,12 @@ is ( $obj->_ena_url, $exp, "Test server URL correct" );
 $obj = Bio::ENA::DataSubmission->new( 
 	submission => 't/data/datasub/submission.xml',
 	analysis   => 't/data/datasub/analysis.xml', 
-	receipt    => 'output_receipt'
+	receipt    => 'output_receipt',
+	webin_user => 'user',
+	webin_pass => 'pass',
+	ena_dropbox_submission_url => 'http://example.com/'
 );
-$exp = 'curl -F "SUBMISSION=@t/data/datasub/submission.xml" -F "ANALYSIS=@t/data/datasub/analysis.xml" "https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20Webin-38858%20holy_schisto" > output_receipt';
-is ( $obj->_submission_cmd, $exp, "Submission command correct" );
-
-$obj = Bio::ENA::DataSubmission->new( 
-	submission  => 't/data/datasub/submission.xml',
-	project     => 't/data/datasub/project.xml',
-	sample      => 't/data/datasub/sample.xml',
-	test        => 1,
-	_webin_user => 'ENA_4_life',
-	_webin_pass => 'easy_password',
-	receipt     => 'output_receipt'
-);
-$exp = 'curl -F "SUBMISSION=@t/data/datasub/submission.xml" -F "SAMPLE=@t/data/datasub/sample.xml" -F "PROJECT=@t/data/datasub/project.xml" "https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20ENA_4_life%20easy_password" > output_receipt';
+$exp = 'curl -F "SUBMISSION=@t/data/datasub/submission.xml" -F "ANALYSIS=@t/data/datasub/analysis.xml" "http://example.com/user%20pass" > output_receipt';
 is ( $obj->_submission_cmd, $exp, "Submission command correct" );
 
 done_testing();

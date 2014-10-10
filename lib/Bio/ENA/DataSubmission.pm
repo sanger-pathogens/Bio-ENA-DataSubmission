@@ -21,28 +21,26 @@ use warnings;
 use Moose;
 use Bio::ENA::DataSubmission::Exception;
 
-has 'submission' => ( is => 'ro', isa => 'Str', required => 1 );
-has 'study'      => ( is => 'ro', isa => 'Str', required => 0 );
-has 'sample'     => ( is => 'ro', isa => 'Str', required => 0 );
-has 'experiment' => ( is => 'ro', isa => 'Str', required => 0 );
-has 'analysis'   => ( is => 'ro', isa => 'Str', required => 0 );
-has 'run'        => ( is => 'ro', isa => 'Str', required => 0 );
-has 'project'    => ( is => 'ro', isa => 'Str', required => 0 );
-has 'receipt'    => ( is => 'ro', isa => 'Str', required => 1 );
+has 'submission'                 => ( is => 'ro', isa => 'Str', required => 1 );
+has 'receipt'                    => ( is => 'ro', isa => 'Str', required => 1 );
+has 'webin_user'                 => ( is => 'ro', isa => 'Str', required => 1 );
+has 'webin_pass'                 => ( is => 'ro', isa => 'Str', required => 1 );
+has 'ena_dropbox_submission_url' => ( is => 'ro', isa => 'Str', required => 1 );
 
-has 'test' => ( is => 'ro', isa => 'Bool', required => 0, default => 0 );
+has 'study'                      => ( is => 'ro', isa => 'Str', required => 0 );
+has 'sample'                     => ( is => 'ro', isa => 'Str', required => 0 );
+has 'experiment'                 => ( is => 'ro', isa => 'Str', required => 0 );
+has 'analysis'                   => ( is => 'ro', isa => 'Str', required => 0 );
+has 'run'                        => ( is => 'ro', isa => 'Str', required => 0 );
+has 'project'                    => ( is => 'ro', isa => 'Str', required => 0 );
 
-has '_webin_user'     => ( is => 'rw', isa => 'Str', required => 0, default => 'Webin-38858' );
-has '_webin_pass'     => ( is => 'rw', isa => 'Str', required => 0, default => 'holy_schisto' );
-has '_ena_url'        => ( is => 'rw', isa => 'Str', required => 0, lazy_build => 1 );
-has '_submission_cmd' => ( is => 'rw', isa => 'Str', required => 0, lazy_build => 1 );
+has '_ena_url'                   => ( is => 'rw', isa => 'Str', required => 0, lazy_build => 1 );
+has '_submission_cmd'            => ( is => 'rw', isa => 'Str', required => 0, lazy_build => 1 );
 
 sub _build__ena_url {
 	my $self = shift;
 
-	my $url = 'https://wwwdev.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20' . $self->_webin_user . '%20' . $self->_webin_pass;
-	$url =~ s/wwwdev/www-test/ if ( $self->test );
-
+	my $url = $self->ena_dropbox_submission_url . $self->webin_user . '%20' . $self->webin_pass;
 	return $url;
 }
 
