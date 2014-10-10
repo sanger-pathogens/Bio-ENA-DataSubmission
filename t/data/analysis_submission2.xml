@@ -2,7 +2,7 @@
 <SUBMISSION alias="testuser_testtime_release_2050-01-01" center_name="SC">
   <ACTIONS>
     <ACTION>
-      <ADD schema="analysis" source="analysis_B.xml" />
+      <ADD schema="analysis" source="analysis_2050-01-01.xml" />
     </ACTION>
     <ACTION>
       <HOLD HoldUntilDate="2050-01-01" />

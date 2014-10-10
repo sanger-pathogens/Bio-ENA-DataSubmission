@@ -16,26 +16,7 @@
       </SEQUENCE_ASSEMBLY>
     </ANALYSIS_TYPE>
     <FILES>
-      <FILE checksum="d41d8cd98f00b204e9800998ecf8427e" checksum_method="MD5" filename="testfile1.fasta.gz" filetype="fasta" />
-    </FILES>
-  </ANALYSIS>
-  <ANALYSIS alias="test_genome_2" analysis_center="SC" analysis_date="2014-09-01T00:00:00" center_name="SC">
-    <TITLE>Assembly of test genome 2</TITLE>
-    <DESCRIPTION>Assembly of a steaming pile</DESCRIPTION>
-    <STUDY_REF refcenter="SC" refname="ERP001039" />
-    <SAMPLE_REF accession="ERS311489" refcenter="SC" />
-    <ANALYSIS_TYPE>
-      <SEQUENCE_ASSEMBLY>
-        <NAME>test_genome_2</NAME>
-        <PARTIAL>true</PARTIAL>
-        <COVERAGE>81.5</COVERAGE>
-        <PROGRAM>velvet</PROGRAM>
-        <PLATFORM>SLX</PLATFORM>
-        <MIN_GAP_LENGTH>0</MIN_GAP_LENGTH>
-      </SEQUENCE_ASSEMBLY>
-    </ANALYSIS_TYPE>
-    <FILES>
-      <FILE checksum="d41d8cd98f00b204e9800998ecf8427e" checksum_method="MD5" filename="testfile2.fasta.gz" filetype="fasta" />
+      <FILE checksum="4b3a78768acfed5205e22b7f3419923a" checksum_method="MD5" filename="testfile1.fasta.gz" filetype="fasta" />
     </FILES>
   </ANALYSIS>
 </ANALYSIS_SET>

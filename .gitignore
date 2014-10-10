@@ -19,3 +19,5 @@ nytprof.out
 /pm_to_blib
 *.o
 *.bs
+.DS_Store
+ena_updates

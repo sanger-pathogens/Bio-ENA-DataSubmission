@@ -26,27 +26,27 @@ my ($obj, @args);
 
 # sanity checks
 
-$obj = Bio::ENA::DataSubmission::XML->new();
+$obj = Bio::ENA::DataSubmission::XML->new(dataroot => 'data');
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml');
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml',dataroot => 'data');
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without XSD input';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xsd => 'data/sample.xsd');
+$obj = Bio::ENA::DataSubmission::XML->new( xsd => 'data/sample.xsd',dataroot => 'data');
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml', xsd => 'not/a/file.xsd' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml', xsd => 'not/a/file.xsd' ,dataroot => 'data');
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XSD path';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml', xsd => 'data/sample.xsd' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml', xsd => 'data/sample.xsd' ,dataroot => 'data');
 throws_ok {$obj->validate} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid XML path';
 
 # validation checks
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_bad.xml', xsd => 'data/sample.xsd' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_bad.xml', xsd => 'data/sample.xsd' ,dataroot => 'data');
 is $obj->validate, 0, 'Bad XML failed';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml', xsd => 'data/sample.xsd' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/validation_good.xml', xsd => 'data/sample.xsd' ,dataroot => 'data');
 is $obj->validate, 1, 'Good XML passed';
 
 #-----------------#
@@ -55,7 +55,7 @@ is $obj->validate, 1, 'Good XML passed';
 
 # sanity checks
 
-ok($obj = Bio::ENA::DataSubmission::XML->new(), 'initialise xml obj');
+ok($obj = Bio::ENA::DataSubmission::XML->new(dataroot => 'data'), 'initialise xml obj');
 throws_ok {$obj->update_sample} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without sample input';
 
 my %sample_sample;
@@ -71,15 +71,15 @@ throws_ok {$obj->update_sample( \%sample_sample )} 'Bio::ENA::DataSubmission::Ex
 
 # sanity checks
 
-$obj = Bio::ENA::DataSubmission::XML->new();
+$obj = Bio::ENA::DataSubmission::XML->new(dataroot => 'data');
 throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 'not/a/file.xml',dataroot => 'data' );
 throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::CannotReadFile', 'dies with invalid XML path';
 
 # file parser checks
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml',dataroot => 'data' );
 my $exp = 
 {
           'SUBMISSION' => [
@@ -106,7 +106,7 @@ is_deeply $obj->parse_from_file, $exp, 'XML parsed successfully';
 
 # URL parser checks
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', _ena_base_path => 't/data/' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', _ena_base_path => 't/data/',dataroot => 'data' );
 # Metadata parsing test
 my %exp = (
 	tax_id           => '1496',

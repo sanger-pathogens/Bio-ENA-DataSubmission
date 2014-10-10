@@ -44,9 +44,10 @@ has 'data'               => ( is => 'rw', isa => 'HashRef',  required => 0 );
 has 'xsd'                => ( is => 'ro', isa => 'Str',      required => 0 );
 has 'outfile'            => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'root'               => ( is => 'ro', isa => 'Str',      required => 0, default    => 'root' );
+has 'data_root'          => ( is => 'rw', isa => 'Str',      default  => 'data');
 has '_fields'            => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'validation_report'  => ( is => 'rw', isa => 'XML::LibXML::Error',  required => 0 );
-has '_analysis_template' => ( is => 'rw', isa => 'Str',      required => 0, default => '/Users/cc21/Development/repos/Bio-ENA-DataSubmission/data/analysis.xml'  );
+has '_analysis_template' => ( is => 'rw', isa => 'Str',      required => 0, default => 'analysis.xml'  );
 has '_ena_base_path'     => ( is => 'rw', isa => 'Str',      default  => 'http://www.ebi.ac.uk/ena/data/view/');
 has '_proxy'             => ( is => 'rw', isa => 'Str',      default  => 'http://wwwcache.sanger.ac.uk:3128');
 
@@ -158,7 +159,7 @@ sub update_analysis {
 	my $file = "$filename$suffix";
 
 	# read in template
-	my $template = $self->parse_from_file( $self->_analysis_template );
+	my $template = $self->parse_from_file( $self->data_root.'/'.$self->_analysis_template );
 
 	# insert data
 	# mandatory data
