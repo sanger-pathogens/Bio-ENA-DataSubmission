@@ -67,20 +67,5 @@ is(
 	'validation report correct'
 );
 
-# # validate and edit bad spreadsheet
-# @args = ('-f', 't/data/manifest_bad.xls', '-r', "$tmp/pass.txt", '--edit', '-o', "$tmp/edited_manifest.xls");
-# $obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
-# is $obj->run, 0, 'bad spreadsheet failed';
-# is(
-# 	read_file('t/data/validator_fail.txt'),
-# 	read_file("$tmp/fail.txt"),
-# 	'validation report correct'
-# );
-# is(
-# 	read_file('t/data/edited_manifest.xls'),
-# 	read_file("$tmp/edited_manifest.xls"),
-# 	'manifest edited correctly'
-# );
-
 remove_tree($tmp);
 done_testing();
