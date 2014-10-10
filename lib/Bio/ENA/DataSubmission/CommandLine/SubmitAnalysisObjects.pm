@@ -30,15 +30,11 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
-use Data::Dumper;
 use File::Basename;
 use File::Copy qw(copy);
 use File::Path qw(make_path);
 use Cwd 'abs_path';
 
-use lib "/software/pathogen/internal/prod/lib";
-use lib '../lib';
-use lib './lib';
 use Bio::ENA::DataSubmission;
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest;

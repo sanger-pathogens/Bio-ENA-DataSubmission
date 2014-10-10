@@ -5,7 +5,6 @@ use XML::Simple;
 package Bio::ENA::DataSubmission::XMLSimple::Sample;
 use base 'XML::Simple';
 # ABSTRACT: XMLSimple Sample
-use Data::Dumper;
 
 sub sorted_keys {
 	my ( $self, $name, $hashref ) = @_;

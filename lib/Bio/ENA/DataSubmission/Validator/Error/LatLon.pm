@@ -9,7 +9,6 @@ Checks -90 < lat < 90 && -180 < lon < 180
 =cut
 
 use Moose;
-use Data::Dumper;
 extends "Bio::ENA::DataSubmission::Validator::Error";
 
 has 'latlon'       => ( is => 'ro', isa => 'Str', required => 1 );

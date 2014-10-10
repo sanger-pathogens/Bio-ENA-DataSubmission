@@ -10,8 +10,6 @@ Checks that given taxon ID is valid and corresponds to the given scientific name
 
 use Moose;
 extends "Bio::ENA::DataSubmission::Validator::Error";
-
-use lib "/software/pathogen/projects/update_pipeline/modules/";
 use NCBI::TaxonLookup;
 
 has 'tax_id'           => ( is => 'ro', isa => 'Str', required => 1 );

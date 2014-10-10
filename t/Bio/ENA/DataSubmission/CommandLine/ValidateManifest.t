@@ -12,9 +12,8 @@ use File::Slurp;
 use File::Path qw( remove_tree);
 use Cwd;
 use File::Temp;
+use Data::Dumper;
 
-#use Data::Dumper;
-#print Dumper \@INC;
 
 my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();

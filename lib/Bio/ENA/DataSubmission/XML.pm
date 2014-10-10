@@ -27,7 +27,6 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
-use lib "/software/pathogen/internal/prod/lib";
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::XMLSimple::Sample;
 use Bio::ENA::DataSubmission::XMLSimple::Analysis;
@@ -37,7 +36,6 @@ use XML::LibXML;
 use File::Basename;
 use LWP;
 use Switch;
-use Data::Dumper;
 
 has 'xml'                => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'url'                => ( is => 'rw', isa => 'Str',      required => 0 );
