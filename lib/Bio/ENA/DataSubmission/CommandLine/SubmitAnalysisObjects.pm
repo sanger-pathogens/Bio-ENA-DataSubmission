@@ -53,7 +53,7 @@ has 'outfile'         => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'test'            => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 has 'help'            => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_current_user'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-has '_auth_users'     => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'auth_users'      => ( is => 'rw', isa => 'ArrayRef', required => 0,  default => sub{['root']} );
 has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 has '_no_upload'      => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 has '_timestamp'      => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
@@ -97,19 +97,6 @@ sub _build__release_dates {
 sub _build__current_user {
 	my $self = shift;
 	return getpwuid( $< );
-}
-
-sub _build__auth_users {
-	my $self = shift;
-
-	my $dir = $self->_output_root;
-	open( my $users, '<', "$dir/approved_users" );
-	my @u;
-	while( my $line = <$users> ){
-		my @parts = split('\t', $line);
-		push(@u, $parts[0]) if defined( $parts[0] );
-	}
-	return \@u;
 }
 
 sub _build__timestamp {

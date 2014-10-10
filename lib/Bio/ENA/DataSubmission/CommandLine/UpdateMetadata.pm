@@ -154,7 +154,7 @@ sub _check_inputs {
 sub _check_user {
 	my $self = shift;
 	my $user = $self->_current_user;
-	my @auth = @{ $self->_auth_users };
+	my @auth = @{ $self->auth_users };
 
 	return ( grep {$_ eq $user} @auth );
 }
