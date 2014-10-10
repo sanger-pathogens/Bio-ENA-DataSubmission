@@ -55,11 +55,11 @@ is $obj->validate, 1, 'Good XML passed';
 
 # sanity checks
 
-$obj = Bio::ENA::DataSubmission::XML->new();
-throws_ok {$obj->update} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without sample input';
+ok($obj = Bio::ENA::DataSubmission::XML->new(), 'initialise xml obj');
+throws_ok {$obj->update_sample} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without sample input';
 
 my %sample_sample;
-throws_ok {$obj->update( \%sample_sample )} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without sample input';
+throws_ok {$obj->update_sample( \%sample_sample )} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without sample input';
 
 
 # update checks
@@ -80,23 +80,33 @@ throws_ok {$obj->parse_from_file} 'Bio::ENA::DataSubmission::Exception::CannotRe
 # file parser checks
 
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml' );
-my $exp = {
-        'SUBMISSION' => {
-            'ACTIONS' => {
-                'ACTION' => {
-                    'MODIFY' => {
-                        'source' => 'samples.xml',
-                        'schema' => 'sample'
-                    }
-                }
-            },
-            'alias' => 'ReleaseSubmissionUpdate'
-        }
-};
+my $exp = 
+{
+          'SUBMISSION' => [
+                          {
+                            'ACTIONS' => [
+                                         {
+                                           'ACTION' => [
+                                                       {
+                                                         'MODIFY' => [
+                                                                     {
+                                                                       'source' => 'samples.xml',
+                                                                       'schema' => 'sample'
+                                                                     }
+                                                                   ]
+                                                       }
+                                                     ]
+                                         }
+                                       ],
+                            'alias' => 'ReleaseSubmissionUpdate'
+                          }
+                        ]
+        };
 is_deeply $obj->parse_from_file, $exp, 'XML parsed successfully';
 
 # URL parser checks
 
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', _ena_base_path => 't/data/' );
 # Metadata parsing test
 my %exp = (
 	tax_id           => '1496',

@@ -36,6 +36,7 @@ use XML::LibXML;
 use File::Basename;
 use LWP;
 use Switch;
+use File::Slurp;
 
 has 'xml'                => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'url'                => ( is => 'rw', isa => 'Str',      required => 0 );
@@ -46,6 +47,8 @@ has 'root'               => ( is => 'ro', isa => 'Str',      required => 0, defa
 has '_fields'            => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'validation_report'  => ( is => 'rw', isa => 'XML::LibXML::Error',  required => 0 );
 has '_analysis_template' => ( is => 'rw', isa => 'Str',      required => 0, default => '/Users/cc21/Development/repos/Bio-ENA-DataSubmission/data/analysis.xml'  );
+has '_ena_base_path'     => ( is => 'rw', isa => 'Str',      default  => 'http://www.ebi.ac.uk/ena/data/view/');
+has '_proxy'             => ( is => 'rw', isa => 'Str',      default  => 'http://wwwcache.sanger.ac.uk:3128');
 
 sub _build__fields {
 	# this will change with schema eventually
@@ -227,12 +230,22 @@ sub parse_from_file {
 	return XML::Simple->new( ForceArray => 1 )->XMLin($xml);
 }
 
+sub _parse_from_file
+{
+  my ($self, $filename) = @_;
+  my $file_contents = read_file($filename);
+  return (XML::Simple->new( ForceArray => 1 )->XMLin( $file_contents ));
+}
+
 sub parse_from_url {
 	my $self = shift;
 	my $url = $self->url;
-
+	if(!($url =~ /(http|ftp)/))
+  {
+    return $self->_parse_from_file($url);
+  }
 	my $ua = LWP::UserAgent->new;
-	$ua->proxy(['http', 'https'], 'http://wwwcache.sanger.ac.uk:3128');
+	$ua->proxy(['http', 'https'], $self->_proxy);
 	my $req = HTTP::Request->new( GET => $url );
 	my $res = $ua->request( $req );
 
@@ -244,7 +257,7 @@ sub parse_from_url {
 sub parse_xml_metadata{
 	my ($self, $acc) = @_;
 
-	$self->url("http://www.ebi.ac.uk/ena/data/view/$acc&display=xml");
+	$self->url($self->_ena_base_path.$acc."&display=xml");
 	my $xml = $self->parse_from_url;
 	my @fields = @{ $self->_fields };
 
