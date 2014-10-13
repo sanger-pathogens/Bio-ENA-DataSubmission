@@ -87,7 +87,8 @@ ok(
 
 # test full run
 
-#remove_tree($obj->_output_dest);
+remove_tree($obj->_output_dest);
+remove_tree($obj->_output_root);
 remove_tree($tmp);
 done_testing();
 

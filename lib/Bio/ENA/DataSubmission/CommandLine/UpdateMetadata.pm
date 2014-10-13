@@ -37,6 +37,7 @@ use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
 use File::Copy qw(copy);
 use File::Path qw(make_path);
+use File::Slurp;
 use Cwd 'abs_path';
 
 use Bio::ENA::DataSubmission::Exception;
@@ -46,25 +47,43 @@ use Email::Sender::Simple qw(sendmail);
 
 has 'args'            => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
-has '_output_root'    => ( is => 'rw', isa => 'Str',      required => 0, default => '/nfs/pathogen/ena_updates/' );
-has '_output_dest'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-has 'schema'          => ( is => 'rw', isa => 'Str',      required => 0, default => 'ERC000028' );
+has 'data_root'       => ( is => 'rw', isa => 'Maybe[Str]');
+has '_output_root'    => ( is => 'rw', isa => 'Maybe[Str]');
+has '_email_to'       => ( is => 'rw', isa => 'Maybe[Str]');
+has 'auth_users'     => ( is => 'rw', isa => 'Maybe[ArrayRef]');
+has '_output_dest'    => ( is => 'rw', isa => 'Maybe[Str]');
+has 'schema'          => ( is => 'rw', isa => 'Maybe[Str]');
+has 'output_group'    => ( is => 'rw', isa => 'Maybe[Str]');
+
 has 'manifest'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'         => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'test'            => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'            => ( is => 'rw', isa => 'Bool',     required => 0 );
-has '_data_root'      => ( is => 'rw', isa => 'Str',      required => 0, default => '/software/pathogen/projects/Bio-ENA-DataSubmission/data/' );
-has '_email_to'       => ( is => 'rw', isa => 'Str',      required => 0, default => 'datahose@sanger.ac.uk' );
 has '_current_user'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-has 'auth_users'      => ( is => 'rw', isa => 'ArrayRef', default  => sub{['root']} );
-has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
+has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
 has '_timestamp'      => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_sample_xml'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_submission_xml' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-#has '_receipt_dest'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+
+has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+
+sub _populate_attributes_from_config_file
+{
+  my ($self) = @_;
+  my $file_contents = read_file($self->config_file);
+  my $config_values = eval($file_contents);
+
+  $self->_output_root($config_values->{output_root});
+  $self->data_root(   $config_values->{data_root}  );
+  $self->auth_users( $config_values->{auth_users} );
+  $self->_email_to(   $config_values->{email_to}   );
+  $self->schema(      $config_values->{schema}     );
+  $self->output_group($config_values->{output_group});
+}
 
 sub _build__output_dest{
 	my $self = shift;
+	make_path( $self->_output_root ) unless(-d $self->_output_root);
 	my $dir = abs_path($self->_output_root);
 
 	my $user      = $self->_current_user;
@@ -74,9 +93,11 @@ sub _build__output_dest{
 	my $mode = 0774;
 	make_path( $dir, {
 		owner => $self->_current_user,
-		group => 'pathsub',
+		group => $self->output_group,
 		mode  => $mode
-	}) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" );
+	});
+	
+	Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" ) unless(-e $dir);
 	chmod $mode, $dir; # sets correct permissions - make_path not working properly
 
 	return $dir;
@@ -109,20 +130,10 @@ sub _build__submission_xml {
 	return "submission_$time.xml";
 }
 
-sub _build__receipt_dest {
-	my $self = shift;
-
-	my $root = $self->_output_root;
-	my $user = $self->_current_user;
-	my $time = $self->_timestamp;
-
-	return "$root/receipts/$user" . '_' . $time . "_receipt.xml";
-}
-
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $schema, $outfile, $test, $no_validate, $help );
+	my ( $file, $schema, $outfile, $test, $no_validate, $help, $config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -132,6 +143,7 @@ sub BUILD {
 		'o|outfile=s' => \$outfile,
 		'test'        => \$test,
 		'no_validate' => \$no_validate,
+		'c|config_file=s' => \$config_file,
 		'h|help'      => \$help
 	);
 
@@ -141,6 +153,15 @@ sub BUILD {
 	$self->test($test)               if ( defined $test );
 	$self->no_validate($no_validate) if ( defined $no_validate );
 	$self->help($help)               if ( defined $help );
+	
+	$self->config_file($config_file)     if ( defined $config_file );
+	
+	$self->_check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
+	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
+
+	$self->_populate_attributes_from_config_file() if(-e $self->config_file);
+	$self->_output_dest($self->_build__output_dest);
+	
 }
 
 sub _check_inputs {
@@ -221,7 +242,7 @@ sub _updated_xml {
 sub _generate_submission {
 	my $self = shift;
 	my $dest = $self->_output_dest;
-	my $root = $self->_data_root;
+	my $root = $self->data_root;
 	my $sample_xml = $self->_sample_xml;
 	my $submission_xml = $self->_submission_xml;
 
@@ -244,7 +265,7 @@ sub _validate_with_xsd {
 	my $self = shift;
 	my $dest = $self->_output_dest;
 
-	my $xsd_root = $self->_data_root;
+	my $xsd_root = $self->data_root;
 	my $sample_xml = $self->_sample_xml;
 	my $submission_xml = $self->_submission_xml;
 
@@ -292,7 +313,6 @@ sub _email {
 sub _email_body {
 	my $self = shift;
 	my $dest = $self->_output_dest;
-	#my $receipt = $self->_receipt_dest;
 
 	return <<BODY;
 Hi,
