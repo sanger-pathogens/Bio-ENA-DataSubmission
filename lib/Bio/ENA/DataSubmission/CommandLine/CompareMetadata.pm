@@ -30,6 +30,7 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use File::Slurp;
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::XML;
@@ -43,10 +44,15 @@ has 'schema'   => ( is => 'rw', isa => 'Str',        required => 0, default => '
 has 'outfile'  => ( is => 'rw', isa => 'Maybe[Str]', required => 0 );
 has 'help'     => ( is => 'rw', isa => 'Bool',       required => 0 );
 
+has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+has 'proxy'           => ( is => 'rw', isa => 'Maybe[Str]');
+has 'ena_base_path'   => ( is => 'rw', isa => 'Maybe[Str]');
+
+
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $schema, $outfile, $help );
+	my ( $file, $schema, $outfile, $help,$config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -54,13 +60,27 @@ sub BUILD {
 		'f|file=s'    => \$file,
 		's|schema=s'  => \$schema,
 		'o|outfile=s' => \$outfile,
-		'h|help'      => \$help
+		'h|help'      => \$help,
+		'c|config_file=s' => \$config_file
 	);
 
 	$self->manifest($file)   if ( defined $file );
 	$self->schema($schema)   if ( defined $schema );
 	$self->outfile($outfile) if ( defined $outfile );
 	$self->help($help)       if ( defined $help );
+	
+	$self->config_file($config_file) if ( defined $config_file );
+	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
+	$self->_populate_attributes_from_config_file;
+}
+
+sub _populate_attributes_from_config_file
+{
+  my ($self) = @_;
+  my $file_contents = read_file($self->config_file);
+  my $config_values = eval($file_contents);
+  $self->proxy($config_values->{proxy});
+  $self->ena_base_path($config_values->{ena_base_path});
 }
 
 sub check_inputs{
@@ -88,7 +108,7 @@ sub run{
 	# loop through manifest and compare to XML from ENA
 	my @conflicts;
 	my $parser = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $manifest );
-	my $xml_handler = Bio::ENA::DataSubmission::XML->new();
+	my $xml_handler = Bio::ENA::DataSubmission::XML->new(ena_base_path => $self->ena_base_path, proxy => $self->proxy);
 	foreach my $entry ( @{ $parser->parse_manifest } ){
 		next unless ( defined $entry->{'sample_accession'} );
 		my $ena_meta = $xml_handler->parse_xml_metadata( $entry->{'sample_accession'} );
