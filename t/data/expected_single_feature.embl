@@ -1,0 +1,47 @@
+ID   XXX; XXX; circular; genomic DNA; STD; PROK; 240 BP.
+XX
+AC * _H115100079003
+XX
+PR   Project:PRJEB6396
+XX
+DE   My description contig 1
+XX
+RN   [1]
+RA   John
+RT   "Some title"
+RL   Some journal.
+XX
+RN   [2]
+RA   Jane
+RT   "My institute"
+RL   UK.
+XX
+RN   [3]
+RA   Torsten Seemann;
+RT   "Prokka: rapid prokaryotic genome annotation"
+RL    Bioinformatics. 2014 Jul 15;30(14):2068-9.;
+XX
+CC   Data release policy http://www.sanger.ac.uk/legal/#t_2
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..240
+FT                   /organism="Organism"
+FT                   /mol_type="genomic DNA"
+FT                   /db_xref="taxon:1234"
+FT   CDS             complement(1..210)
+FT                   /product="Peroxide stress regulator PerR%2C FUR family"
+FT                   /inference="ab initio prediction:Prodigal:2.60"
+FT                   /inference="similar to AA sequence:RefSeq:YP_005742566.1"
+FT                   /db_xref="UniProtKB/Swiss-Prot:Q2G282"
+FT                   /db_xref="CDD:PRK09462"
+FT                   /db_xref="PFAM:PF01475.13"
+FT                   /locus_tag="8233_4#93_02128"
+FT                   /gene="perR"
+FT                   /transl_table=11
+SQ   Sequence 240 BP; 76 A; 54 C; 36 G; 74 T; 0 other;
+     tctgacaatc gctttcttta aaaagaaact attgtcgaga atttgcatta gcaatatcac        60
+     tttgtcaaaa agatgtttga atgttaaata aacattcaaa actgaataca atatgtcacg       120
+     ttattccgca tcttctgaag aagatgttcc gaatatatcc ttagaaagga ggtgatccag       180
+     ccgcaccttc cgatacggct accttgttac gacttcaccc caatcatttg tcccaccttc       240
+//
