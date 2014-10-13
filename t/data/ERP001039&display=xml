@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="ERP001039&amp;display=xml">
+<STUDY alias="Whole_genome_sequencing_of_pathogenic_strains_of_Mycobacterium_abscessus-sc-2011-11-30T10:42:00Z-2047" accession="ERP001039" center_name="The Wellcome Trust Sanger Institute">
+     <IDENTIFIERS>
+          <PRIMARY_ID>ERP001039</PRIMARY_ID>
+          <SECONDARY_ID>PRJEB2779</SECONDARY_ID>
+          <SUBMITTER_ID namespace="SC">Whole_genome_sequencing_of_pathogenic_strains_of_Mycobacterium_abscessus-sc-2011-11-30T10:42:00Z-2047</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <DESCRIPTOR>
+          <STUDY_TITLE>Whole_genome_sequencing_of_pathogenic_strains_of_Mycobacterium_abscessus</STUDY_TITLE>
+          <STUDY_DESCRIPTION>http://www.sanger.ac.uk/resources/downloads/bacteria/mycobacterium.html
+This data is part of a pre-publication release. For information on the proper use of pre-publication data shared by the Wellcome Trust Sanger Institute (including details of any publication moratoria), please see http://www.sanger.ac.uk/datasharing/</STUDY_DESCRIPTION>
+          <CENTER_PROJECT_NAME>Whole_genome_sequencing_of_pathogenic_strains_of_Mycobacterium_abscessus</CENTER_PROJECT_NAME>
+          <STUDY_ABSTRACT>http://www.sanger.ac.uk/resources/downloads/bacteria/mycobacterium.html</STUDY_ABSTRACT>
+          <STUDY_TYPE existing_study_type="Whole Genome Sequencing"/>
+     </DESCRIPTOR>
+     <STUDY_LINKS>
+          <STUDY_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SAMPLE</DB>
+                    <ID>ERS075492-ERS075662,ERS244759-ERS245267,ERS311352-ERS311465,ERS311467-ERS311572,ERS373264-ERS373453,ERS373884-ERS374043,ERS383022-ERS383031,ERS383038-ERS383075,ERS383080-ERS383285,ERS407431-ERS407438,ERS452423-ERS452424</ID>
+               </XREF_LINK>
+          </STUDY_LINK>
+          <STUDY_LINK>
+               <XREF_LINK>
+                    <DB>ENA-TAXID</DB>
+                    <ID>36809</ID>
+               </XREF_LINK>
+          </STUDY_LINK>
+          <STUDY_LINK>
+               <XREF_LINK>
+                    <DB>ENA-EXPERIMENT</DB>
+                    <ID>ERX092400-ERX092543,ERX095354-ERX095380,ERX303680-ERX303849,ERX310637-ERX310806,ERX313341-ERX313423,ERX316024-ERX316097,ERX322099-ERX322166,ERX324752-ERX324763,ERX336006-ERX336281,ERX341842-ERX342049,ERX346319-ERX346582,ERX426091-ERX426437,ERX439098-ERX439107,ERX450780-ERX450837,ERX456121-ERX456158,ERX460248-ERX460398,ERX481730-ERX481737,ERX531617-ERX531618</ID>
+               </XREF_LINK>
+          </STUDY_LINK>
+          <STUDY_LINK>
+               <XREF_LINK>
+                    <DB>ENA-RUN</DB>
+                    <ID>ERR114965-ERR115108,ERR119082-ERR119108,ERR330751-ERR330920,ERR337732-ERR337901,ERR340492-ERR340574,ERR343175-ERR343248,ERR349263-ERR349330,ERR351969-ERR351980,ERR363237-ERR363512,ERR369133-ERR369340,ERR373942-ERR374205,ERR459750-ERR460096,ERR473267-ERR473276,ERR484948-ERR485005,ERR490667-ERR490704,ERR494832-ERR494982,ERR516495-ERR516502,ERR572847-ERR572848</ID>
+               </XREF_LINK>
+          </STUDY_LINK>
+          <STUDY_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMISSION</DB>
+                    <ID>ERA071223</ID>
+               </XREF_LINK>
+          </STUDY_LINK>
+          <STUDY_LINK>
+               <XREF_LINK>
+                    <DB>ENA-FASTQ-FILES</DB>
+                    <ID>http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=ERP001039&amp;result=read_run&amp;fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes</ID>
+               </XREF_LINK>
+          </STUDY_LINK>
+          <STUDY_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMITTED-FILES</DB>
+                    <ID>http://www.ebi.ac.uk/ena/data/warehouse/filereport?accession=ERP001039&amp;result=read_run&amp;fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format</ID>
+               </XREF_LINK>
+          </STUDY_LINK>
+     </STUDY_LINKS>
+     <STUDY_ATTRIBUTES>
+          <STUDY_ATTRIBUTE>
+               <TAG>ENA-SPOT-COUNT</TAG>
+               <VALUE>7695428090</VALUE>
+          </STUDY_ATTRIBUTE>
+          <STUDY_ATTRIBUTE>
+               <TAG>ENA-BASE-COUNT</TAG>
+               <VALUE>925407040200</VALUE>
+          </STUDY_ATTRIBUTE>
+     </STUDY_ATTRIBUTES>
+</STUDY>
+</ROOT>

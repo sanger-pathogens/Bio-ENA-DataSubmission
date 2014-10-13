@@ -24,19 +24,19 @@ my ($obj, @args);
 # test illegal options #
 #----------------------#
 
-@args = ();
+@args = ( '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
 
-@args = ('--edit', '-r', 't/data/fakefile.txt');
+@args = ('--edit', '-r', 't/data/fakefile.txt', '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
-@args = ('-f', 'not/a/file');
+@args = ('-f', 'not/a/file', '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid input file path';
 
-@args = ('-f', 't/data/manifest_bad.xls', '-r', 'not/a/file');
+@args = ('-f', 't/data/manifest_bad.xls', '-r', 'not/a/file', '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid output file path';
 
@@ -46,7 +46,7 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
 #--------------------------#
 
 # validate good spreadsheet
-@args = ('-f', 't/data/analysis_manifest_good.xls', '-r', "$tmp/pass.txt");
+@args = ('-f', 't/data/analysis_manifest_good.xls', '-r', "$tmp/pass.txt", '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 is $obj->run, 1, 'perfect spreadsheet passed';
 is(
@@ -56,8 +56,8 @@ is(
 );
 
 # validate bad spreadsheet
-@args = ('-f', 't/data/analysis_manifest_bad.xls', '-r', "$tmp/fail.txt");
-$obj = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
+@args = ('-f', 't/data/analysis_manifest_bad.xls', '-r', "$tmp/fail.txt", '-c', 't/data/test_ena_data_submission.conf');
+ok($obj = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args ),'initialise obj');
 is $obj->run, 0, 'bad spreadsheet failed';
 is(
 	read_file('t/data/analysis_validator_fail.txt'),

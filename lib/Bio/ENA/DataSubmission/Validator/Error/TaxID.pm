@@ -20,7 +20,7 @@ sub validate {
 	my $self             = shift;
 	my $tax_id           = $self->tax_id;
 	my $scientific_name  = $self->scientific_name;
-	my $id              = $self->identifier;
+	my $id               = $self->identifier;
 
 	chomp $tax_id;
 	$tax_id = int( $tax_id );

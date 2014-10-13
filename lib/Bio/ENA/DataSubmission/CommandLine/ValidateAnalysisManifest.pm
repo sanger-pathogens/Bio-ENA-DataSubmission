@@ -25,6 +25,7 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use File::Slurp;
 
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
@@ -52,6 +53,10 @@ has 'outfile'    => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'edit'       => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'       => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_filetypes' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
+has 'pubmed_url_base'  => ( is => 'rw', isa => 'Str', default  => 'http://www.ncbi.nlm.nih.gov/pubmed/?term=');
+
+has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
 
 sub _build__filetypes {
 	my $self = shift;
@@ -68,7 +73,7 @@ sub _build__filetypes {
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $report, $outfile, $edit, $help );
+	my ( $file, $report, $outfile, $edit, $help,$config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -77,7 +82,8 @@ sub BUILD {
 		'r|report=s'  => \$report,
 		'o|outfile=s' => \$outfile,
 		'edit'        => \$edit,
-		'h|help'      => \$help
+		'h|help'      => \$help,
+		'c|config_file=s'    => \$config_file
 	);
 
 	$self->file($file)       if ( defined $file );
@@ -85,6 +91,19 @@ sub BUILD {
 	$self->outfile($outfile) if ( defined $outfile );
 	$self->edit($edit)       if ( defined $edit );
 	$self->help($help)       if ( defined $help );
+	$self->config_file($config_file)       if ( defined $config_file );
+	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
+	$self->_populate_attributes_from_config_file;
+}
+
+sub _populate_attributes_from_config_file
+{
+  my ($self) = @_;
+  my $file_contents = read_file($self->config_file);
+  my $config_values = eval($file_contents);
+
+  $self->ena_base_path($config_values->{ena_base_path});
+  $self->pubmed_url_base($config_values->{pubmed_url_base});
 }
 
 sub check_inputs{
@@ -198,7 +217,8 @@ sub run {
 		# study accession
 		my $study_error = Bio::ENA::DataSubmission::Validator::Error::ProjectAccession->new(
 			identifier => $name,
-			accession => $row[10]
+			accession => $row[10],
+			ena_base_path => $self->ena_base_path
 		)->validate;
 		push( @errors_found, $study_error ) if ( $study_error->triggered );
 
@@ -206,7 +226,8 @@ sub run {
 		# sample accession
 		my $sample_error = Bio::ENA::DataSubmission::Validator::Error::SampleAccession->new(
 			identifier => $name,
-			accession => $row[11]
+			accession => $row[11],
+			ena_base_path => $self->ena_base_path
 		)->validate;
 		push( @errors_found, $sample_error ) if ( $sample_error->triggered );
 
@@ -214,7 +235,8 @@ sub run {
 		if ( $row[12] ){
 			my $run_error = Bio::ENA::DataSubmission::Validator::Error::RunAccession->new(
 				identifier => $name,
-				accession => $row[12]
+				accession => $row[12],
+				ena_base_path => $self->ena_base_path
 			)->validate;
 			push( @errors_found, $run_error ) if ( $run_error->triggered );
 		}
@@ -241,7 +263,8 @@ sub run {
 		if ( $row[16] ){
 			my $pubmed_id_error = Bio::ENA::DataSubmission::Validator::Error::PubmedID->new(
 				identifier => $name,
-				pubmed_id  => $row[16]
+				pubmed_id  => $row[16],
+				pubmed_url_base => $self->pubmed_url_base,
 			)->validate;
 			push( @errors_found, $pubmed_id_error ) if ( $pubmed_id_error->triggered );
 		}

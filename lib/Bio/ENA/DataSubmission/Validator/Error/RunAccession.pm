@@ -15,6 +15,7 @@ use Bio::ENA::DataSubmission::XML;
 
 has 'accession'   => ( is => 'ro', isa => 'Str', required => 1 );
 has 'identifier'  => ( is => 'ro', isa => 'Str', required => 1 );
+has 'ena_base_path'     => ( is => 'rw', isa => 'Str',      default  => 'http://www.ebi.ac.uk/ena/data/view/');
 
 sub validate {
 	my $self = shift;
@@ -27,7 +28,7 @@ sub validate {
 	}
 	else {
 		# pull XML from ENA and verify that it isn't empty
-		my $xml = Bio::ENA::DataSubmission::XML->new( url => "http://www.ebi.ac.uk/ena/data/view/$acc&display=xml" )->parse_from_url;
+		my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$acc&display=xml" )->parse_from_url;
 		$self->set_error_message( $id, "Invalid run accession - could not be found at the ENA" ) unless ( defined $xml->{RUN} );		
 	}
 
