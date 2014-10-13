@@ -86,7 +86,7 @@ is_deeply(
 );
 
 # check empty spreadsheet
-@args = ("--empty", '-o', "$tmp/empty.xls");
+@args = ("--empty", '-o', "$tmp/empty.xls",'-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
 ok( $obj->run, 'Manifest generated' );
 is_deeply $obj->manifest_data, [[]], 'Empty data correct';
