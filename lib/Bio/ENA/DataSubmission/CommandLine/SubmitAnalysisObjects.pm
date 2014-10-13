@@ -72,6 +72,7 @@ has 'data_root'                   => ( is => 'rw', isa => 'Maybe[Str]');
 has '_output_root'                => ( is => 'rw', isa => 'Maybe[Str]');
 has '_webin_user'                 => ( is => 'rw', isa => 'Maybe[Str]');
 has '_webin_pass'                 => ( is => 'rw', isa => 'Maybe[Str]');
+has '_webin_host'                 => ( is => 'rw', isa => 'Maybe[Str]');
 has '_ena_dropbox_submission_url' => ( is => 'rw', isa => 'Maybe[Str]');
 has '_auth_users'                 => ( is => 'rw', isa => 'Maybe[ArrayRef]');
 
@@ -102,7 +103,7 @@ sub BUILD {
 	$self->config_file($config_file)     if ( defined $config_file );
 	
 	$self->_check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
-	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
+	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file for Submit Analysis Objects\n" );
 
 	$self->_populate_attributes_from_config_file() if(-e $self->config_file);
 	
@@ -194,6 +195,7 @@ sub _populate_attributes_from_config_file
   $self->_auth_users( $config_values->{auth_users});
   $self->_webin_user( $config_values->{webin_user});
   $self->_webin_pass( $config_values->{webin_pass});
+  $self->_webin_host( $config_values->{webin_host});
   $self->_ena_dropbox_submission_url($config_values->{ena_dropbox_submission_url});
 }
 
@@ -219,7 +221,7 @@ sub run {
 
 	# first, validate the manifest
 	unless( $self->no_validate ){
-		my @args = ( '-f', $manifest, '-r', $outfile );
+		my @args = ( '-f', $manifest, '-r', $outfile, '-c', $self->config_file );
 		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 	}
@@ -228,7 +230,7 @@ sub run {
 	unless( defined $self->_no_upload ){
 		my $files = $self->_parse_filelist;
 		my $dest  = $self->_server_dest; 
-		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest );
+		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest, username => $self->webin_user, password => $self->webin_pass, server => $self->webin_host );
 		$uploader->upload or Bio::ENA::DataSubmission::Exception::FTPError->throw( error => $uploader->error );
 	}
 
@@ -400,8 +402,7 @@ sub _submit {
 			webin_pass => $self->_webin_pass,
 			ena_dropbox_submission_url => $self->_ena_dropbox_submission_url
 		);
-		#$sub_obj->submit;
-		print $sub_obj->_submission_cmd . "\n";
+		$sub_obj->submit;
 	}
 }
 

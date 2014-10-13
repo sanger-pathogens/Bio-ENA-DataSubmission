@@ -25,9 +25,9 @@ use Moose;
 use Net::FTP;
 use File::Basename;
 
-has 'server'    => ( is => 'rw', isa => 'Str',      required => 0, default => 'webin.ebi.ac.uk' );
-has 'username'  => ( is => 'rw', isa => 'Str',      required => 0, default => 'Webin-38858' );
-has 'password'  => ( is => 'rw', isa => 'Str',      required => 0, default => 'holy_schisto' );
+has 'server'    => ( is => 'rw', isa => 'Str',      required => 1 );
+has 'username'  => ( is => 'rw', isa => 'Str',      required => 1 );
+has 'password'  => ( is => 'rw', isa => 'Str',      required => 1 );
 has 'files'     => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 has 'directory' => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'error'     => ( is => 'rw', isa => 'Str',      required => 0 );
