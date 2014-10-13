@@ -53,7 +53,7 @@ sub _remote_lookup_translation_table
     $tree->{TaxaSet}->{Taxon}->{ScientificName};
   } or do
   {
-     NCBI::Exceptions::TaxonLookupFailed ->throw( error => "Cant lookup the scientific name for taxon ID ".$self->taxon_id."\n" );
+     NCBI::Exceptions::TaxonLookupFailed ->throw( error => "Cant lookup the scientific name for taxon ID ".$self->taxon_id."\n$url\n" );
   };
 }
 

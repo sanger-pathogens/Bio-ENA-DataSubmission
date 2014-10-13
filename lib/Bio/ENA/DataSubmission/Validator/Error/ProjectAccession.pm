@@ -28,7 +28,7 @@ sub validate {
 	}
 	else {
 		# pull XML from ENA and verify that it isn't empty
-		my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$acc&display=xml" )->parse_from_url;
+		my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$acc&display=xml",ena_base_path => $self->ena_base_path )->parse_from_url;
 		$self->set_error_message( $id, "Invalid study accession - could not be found at the ENA" ) unless ( defined $xml->{STUDY} );		
 	}
 

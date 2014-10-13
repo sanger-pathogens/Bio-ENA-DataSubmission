@@ -48,8 +48,8 @@ has 'data_root'          => ( is => 'rw', isa => 'Str',      default  => 'data')
 has '_fields'            => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'validation_report'  => ( is => 'rw', isa => 'XML::LibXML::Error',  required => 0 );
 has '_analysis_template' => ( is => 'rw', isa => 'Str',      required => 0, default => 'analysis.xml'  );
-has '_ena_base_path'     => ( is => 'rw', isa => 'Str',      default  => 'http://www.ebi.ac.uk/ena/data/view/');
-has '_proxy'             => ( is => 'rw', isa => 'Str',      default  => 'http://wwwcache.sanger.ac.uk:3128');
+has 'ena_base_path'     => ( is => 'rw', isa => 'Str',      default => 'http://www.ebi.ac.uk/ena/data/view/');
+has 'proxy'             => ( is => 'rw', isa => 'Str',      default  => 'http://wwwcache.sanger.ac.uk:3128');
 
 sub _build__fields {
 	# this will change with schema eventually
@@ -94,7 +94,7 @@ sub update_sample {
 
 	my $acc = $sample->{'sample_accession'};
 	(defined $acc ) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "Accession number data not present\n" ); 
-	$self->url("http://www.ebi.ac.uk/ena/data/view/$acc&display=xml");
+	$self->url($self->ena_base_path."$acc&display=xml");
 	my $xml = $self->parse_from_url;
 	
 	return undef unless( defined $xml->{SAMPLE} );
@@ -246,7 +246,7 @@ sub parse_from_url {
     return $self->_parse_from_file($url);
   }
 	my $ua = LWP::UserAgent->new;
-	$ua->proxy(['http', 'https'], $self->_proxy);
+	$ua->proxy(['http', 'https'], $self->proxy);
 	my $req = HTTP::Request->new( GET => $url );
 	my $res = $ua->request( $req );
 
@@ -258,7 +258,7 @@ sub parse_from_url {
 sub parse_xml_metadata{
 	my ($self, $acc) = @_;
 
-	$self->url($self->_ena_base_path.$acc."&display=xml");
+	$self->url($self->ena_base_path.$acc."&display=xml");
 	my $xml = $self->parse_from_url;
 	my @fields = @{ $self->_fields };
 

@@ -106,7 +106,7 @@ is_deeply $obj->parse_from_file, $exp, 'XML parsed successfully';
 
 # URL parser checks
 
-$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', _ena_base_path => 't/data/',dataroot => 'data' );
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
 # Metadata parsing test
 my %exp = (
 	tax_id           => '1496',

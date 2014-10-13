@@ -54,6 +54,8 @@ has 'auth_users'     => ( is => 'rw', isa => 'Maybe[ArrayRef]');
 has '_output_dest'    => ( is => 'rw', isa => 'Maybe[Str]');
 has 'schema'          => ( is => 'rw', isa => 'Maybe[Str]');
 has 'output_group'    => ( is => 'rw', isa => 'Maybe[Str]');
+has 'proxy'           => ( is => 'rw', isa => 'Maybe[Str]');
+has 'ena_base_path'   => ( is => 'rw', isa => 'Maybe[Str]');
 
 has 'manifest'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'         => ( is => 'rw', isa => 'Str',      required => 0 );
@@ -79,6 +81,8 @@ sub _populate_attributes_from_config_file
   $self->_email_to(   $config_values->{email_to}   );
   $self->schema(      $config_values->{schema}     );
   $self->output_group($config_values->{output_group});
+  $self->proxy($config_values->{proxy});
+  $self->ena_base_path($config_values->{ena_base_path});
 }
 
 sub _build__output_dest{
@@ -197,7 +201,7 @@ sub run {
 
 	# first, validate the manifest
 	unless( $self->no_validate ){
-		my @args = ( '-f', $manifest, '-r', $outfile );
+		my @args = ( '-f', $manifest, '-r', $outfile, '-c', $self->config_file );
 		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new( args => \@args );
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 	}
@@ -232,11 +236,12 @@ sub _updated_xml {
 	my @manifest = @{ $manifest_handler->parse_manifest };
 	my @updated_samples;
 	foreach my $sample (@manifest){
-		my $new_sample = Bio::ENA::DataSubmission::XML->new()->update_sample( $sample );
+		my $new_sample = Bio::ENA::DataSubmission::XML->new(ena_base_path => $self->ena_base_path, proxy => $self->proxy )->update_sample( $sample );
 		push( @updated_samples, $new_sample );
 	}
+
 	my %new_xml = ( 'SAMPLE' => \@updated_samples );
-	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/$samples" )->write_sample;
+	Bio::ENA::DataSubmission::XML->new( data => \%new_xml, outfile => "$dest/$samples",ena_base_path => $self->ena_base_path, proxy => $self->proxy )->write_sample;
 }
 
 sub _generate_submission {
@@ -269,10 +274,10 @@ sub _validate_with_xsd {
 	my $sample_xml = $self->_sample_xml;
 	my $submission_xml = $self->_submission_xml;
 
-	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/$sample_xml", xsd => "$xsd_root/sample.xsd" );
+	my $sample_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/$sample_xml", xsd => "$xsd_root/sample.xsd", ena_base_path => $self->ena_base_path, proxy => $self->proxy );
 	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of updated sample XML failed. Errors:\n" . $sample_validator->validation_report . "\n" ) unless ( $sample_validator->validate );
 
-	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/$submission_xml", xsd => "$xsd_root/submission.xsd" );
+	my $submission_validator = Bio::ENA::DataSubmission::XML->new( xml => "$dest/$submission_xml", xsd => "$xsd_root/submission.xsd", ena_base_path => $self->ena_base_path, proxy => $self->proxy );
 	Bio::ENA::DataSubmission::Exception::ValidationFail->throw( error => "Validation of submission XML failed. Errors:\n" . $submission_validator->validation_report . "\n" ) unless ( $submission_validator->validate );
 
 	return 1;
