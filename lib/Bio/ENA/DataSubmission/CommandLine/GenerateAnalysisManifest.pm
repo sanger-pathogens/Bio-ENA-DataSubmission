@@ -25,6 +25,7 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use File::Slurp;
 
 use Path::Find;
 use Path::Find::Lanes;
@@ -46,8 +47,10 @@ has 'empty'            => ( is => 'rw', isa => 'Bool',     required => 0, defaul
 has 'pubmed_id'        => ( is => 'rw', isa => 'Str',      required => 0, default => '' );
 has 'help'             => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_current_date'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
-has '_analysis_centre' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_analysis_center' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_show_errors'     => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
+
+has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
 
 sub _build__current_date {
 	my $self = shift;
@@ -58,14 +61,14 @@ sub _build__current_date {
 	return $day;
 }
 
-sub _build__analysis_centre {
+sub _build__analysis_center {
 	return 'SC';
 }
 
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $type, $id, $outfile, $empty, $pubmed_id, $no_errors, $help );
+	my ( $type, $id, $outfile, $empty, $pubmed_id, $no_errors, $help,$config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -76,7 +79,8 @@ sub BUILD {
 		'empty'         => \$empty,
 		'p|pubmed_id=s' => \$pubmed_id,
 		'no_errors'     => \$no_errors,
-		'h|help'        => \$help
+		'h|help'      => \$help,
+		'c|config_file=s' => \$config_file
 	);
 
 	$self->type($type)               if ( defined $type );
@@ -86,6 +90,17 @@ sub BUILD {
 	$self->pubmed_id($pubmed_id)     if ( defined $pubmed_id );
 	$self->_show_errors(!$no_errors) if ( defined $no_errors );
 	$self->help($help)               if ( defined $help );
+	
+	$self->config_file($config_file) if ( defined $config_file );
+	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
+	$self->_populate_attributes_from_config_file;
+}
+
+sub _populate_attributes_from_config_file
+{
+  my ($self) = @_;
+  my $file_contents = read_file($self->config_file);
+  my $config_values = eval($file_contents);
 }
 
 sub check_inputs{
@@ -156,7 +171,7 @@ sub _build_manifest_data {
 sub _manifest_row{
 	my ($self, $f, $lane, $k) = @_;
 
-	my @row = ('', 'FALSE', 'not found', '', 'SLX', '0', '', '', '', '', 'not found', 'not found', 'not found', $self->_analysis_centre, $self->_current_date, $self->_current_date, $self->pubmed_id);
+	my @row = ('', 'FALSE', 'not found', '', 'SLX', '0', '', '', '', '', 'not found', 'not found', 'not found', $self->_analysis_center, $self->_current_date, $self->_current_date, $self->pubmed_id);
 	@row = $self->_error_row(\@row) if ( $self->_show_errors );
 	unless ( defined $lane ) {
 	    $row[12] = $k;
