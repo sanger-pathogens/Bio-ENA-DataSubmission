@@ -55,6 +55,7 @@ has 'help'       => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_filetypes' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
 has 'pubmed_url_base'  => ( is => 'rw', isa => 'Str', default  => 'http://www.ncbi.nlm.nih.gov/pubmed/?term=');
+has 'taxon_lookup_service' => ( is => 'ro', isa => 'Str', default  => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=' );
 
 has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
 
@@ -104,6 +105,7 @@ sub _populate_attributes_from_config_file
 
   $self->ena_base_path($config_values->{ena_base_path});
   $self->pubmed_url_base($config_values->{pubmed_url_base});
+  $self->taxon_lookup_service($config_values->{taxon_lookup_service});
 }
 
 sub check_inputs{

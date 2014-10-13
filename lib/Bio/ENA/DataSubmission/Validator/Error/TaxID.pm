@@ -15,6 +15,7 @@ use NCBI::TaxonLookup;
 has 'tax_id'           => ( is => 'ro', isa => 'Str', required => 1 );
 has 'scientific_name'  => ( is => 'ro', isa => 'Str', required => 0 );
 has 'identifier'       => ( is => 'ro', isa => 'Str', required => 1 );
+has 'taxon_lookup_service' => ( is => 'ro', isa => 'Str', default  => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=' );
 
 sub validate {
 	my $self             = shift;
