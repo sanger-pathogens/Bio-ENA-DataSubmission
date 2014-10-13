@@ -25,6 +25,7 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use File::Slurp;
 
 use Path::Find;
 use Path::Find::Lanes;
@@ -46,6 +47,9 @@ has 'help'        => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_warehouse'   => ( is => 'rw', isa => 'DBI::db',  required => 0, lazy_build => 1 );
 has '_show_errors' => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
 
+has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+
+
 sub _build__warehouse {
 	my $self = shift;
 
@@ -58,7 +62,7 @@ sub _build__warehouse {
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $type, $id, $outfile, $empty, $no_errors, $help );
+	my ( $type, $id, $outfile, $empty, $no_errors, $help,$config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
@@ -68,7 +72,8 @@ sub BUILD {
 		'o|outfile=s' => \$outfile,
 		'empty'       => \$empty,
 		'no_errors'   => \$no_errors,
-		'h|help'      => \$help
+		'h|help'      => \$help,
+		'c|config_file=s' => \$config_file
 	);
 
 	$self->type($type)               if ( defined $type );
@@ -77,6 +82,17 @@ sub BUILD {
 	$self->empty($empty)             if ( defined $empty );
 	$self->help($help)               if ( defined $help );
 	$self->_show_errors(!$no_errors) if ( defined $no_errors );
+	
+	$self->config_file($config_file) if ( defined $config_file );
+	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
+	$self->_populate_attributes_from_config_file;
+}
+
+sub _populate_attributes_from_config_file
+{
+  my ($self) = @_;
+  my $file_contents = read_file($self->config_file);
+  my $config_values = eval($file_contents);
 }
 
 sub check_inputs{

@@ -25,35 +25,27 @@ my ( @args, $obj, @exp );
 # test illegal options #
 #----------------------#
 
-@args = ();
+@args = ('-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
 
-@args = ('-t');
+@args = ('-t', 'rex','-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
 
-@args = ('-t', 'rex');
+@args = ('-i', 'pod','-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
 
-@args = ('-i');
+@args = ('-t', 'rex', '-i', '10665_2#81','-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
 
-@args = ('-i', 'pod');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
-
-@args = ('-t', 'rex', '-i', '10665_2#81');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
-
-@args = ('-t', 'file', '-i', 'not/a/file');
+@args = ('-t', 'file', '-i', 'not/a/file','-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid arguments';
 
-@args = ('-t', 'lane', '-i', '10665_2#81', '-o', 'not/a/file');
+@args = ('-t', 'lane', '-i', '10665_2#81', '-o', 'not/a/file','-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid arguments';
 
@@ -66,7 +58,7 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
 
 # lane
 @exp = ( ['', 'FALSE', '52.42', '', 'SLX', '0', '', '', '', '', 'ERP001039', 'ERS311560', 'ERR363472', 'SC', 'current_date', 'current_date', ''] );
-@args = ( '-t', 'lane', '-i', '10660_2#13', '-o', "$tmp/manifest.xls" );
+@args = ( '-t', 'lane', '-i', '10660_2#13', '-o', "$tmp/manifest.xls" ,'-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args, _current_date => 'current_date' );
 ok( $obj->run, 'Manifest generated' );
 is_deeply $obj->manifest_data, \@exp, 'Correct lane data';
@@ -78,14 +70,14 @@ is_deeply $obj->manifest_data, \@exp, 'Correct lane data';
 	['', 'FALSE', '81.50', '', 'SLX', '0', '', '', '', '', 'ERP001039', 'ERS311489', 'ERR369164', 'SC', 'current_date', 'current_date', ''],
         ['', 'FALSE', 'not found', '', 'SLX', '0', '', '', '', '', 'not found', 'not found', '11111_1#1', 'SC', 'current_date', 'current_date', '']
 );
-@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls" );
+@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls" ,'-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args, _current_date => 'current_date' );
 ok( $obj->run, 'Manifest generated' );
 is_deeply $obj->manifest_data, \@exp, 'Correct file data';
 
 
 # check spreadsheet
-@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls", '-p', 'im_a_paper');
+@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls", '-p', 'im_a_paper','-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifest->new( args => \@args, _current_date => 'current_date' );
 ok( $obj->run, 'Manifest generated' );
 is_deeply( 
