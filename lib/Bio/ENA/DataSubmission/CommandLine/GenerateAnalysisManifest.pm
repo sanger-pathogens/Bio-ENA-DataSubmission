@@ -280,10 +280,10 @@ sub _get_assembly_details {
 
 	my $yield = $lane->raw_bases;
 
-	my %type_extensions = ( ass_stats => 'contigs.fa.stats' );
+	my %type_extensions = ( assembly => 'contigs.fa' );
 	my $lane_filter = Path::Find::Filter->new(
             lanes           => [$lane],
-            filetype        => 'ass_stats',
+            filetype        => 'assembly',
             type_extensions => \%type_extensions,
             root            => $finder->_root,
             pathtrack       => $finder->_vrtrack,
@@ -292,7 +292,7 @@ sub _get_assembly_details {
     my @matching_lanes = $lane_filter->filter;
     return undef unless defined $matching_lanes[0];
 
-    return ($self->_calculate_coverage($matching_lanes[0]->{path},$yield),$self->_get_assembly_program($matching_lanes[0]->{path}),$matching_lanes[0]->{path}, 'fasta');
+    return ($self->_calculate_coverage($matching_lanes[0]->{path}.'.stats',$yield),$self->_get_assembly_program($matching_lanes[0]->{path}),$matching_lanes[0]->{path}, 'fasta');
 }
 
 sub _get_assembly_program
