@@ -20,13 +20,14 @@ BEGIN {
 
 use Moose;
 use File::Compare;
+use File::Copy;
 use File::Path qw( remove_tree);
 use Cwd;
 use File::Temp;
 use Data::Dumper;
 use File::Slurp;
 
-my $temp_directory_obj = File::Temp->newdir( DIR => getcwd, CLEANUP => 0   );
+my $temp_directory_obj = File::Temp->newdir( DIR => getcwd, CLEANUP => 1   );
 my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects');
@@ -93,12 +94,27 @@ ok( compare( 't/data/analysis_submission2.xml', $obj->_output_dest . "/submissio
 
 @args = ( '-f', 't/data/analysis_submission_manifest.xls', '-o', "$tmp/analysis_submission_report.xls", '-c', 't/data/test_ena_data_submission.conf' );
 ok( $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( args => \@args ), 'Initialize object for valid run' );
-write_file($obj->_output_dest.'/receipt_2050-01-01.xml', '<success/>');
+copy('t/data/success_receipt.xml', $obj->_output_dest.'/receipt_2050-01-01.xml');
+copy('t/data/success_receipt.xml', $obj->_output_dest.'/receipt_2014-01-01.xml');
 
 ok( $obj->run(), 'Submission XMLs uploaded with external interfaces mocked out' );
+ok(-e $tmp."/analysis_submission_report.xls", 'report on submission created');
+
+is_deeply( 
+	diff_xls('t/data/success_analysis_submission_report.xls', $tmp."/analysis_submission_report.xls" ),
+	'Report xls created properly'
+);
 
 remove_tree( $obj->_output_dest );
 remove_tree( $obj->_output_root );
 remove_tree($tmp);
 done_testing();
 
+
+sub diff_xls {
+	my ($x1, $x2) = @_;
+	my $x1_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x1 )->parse;
+	my $x2_data = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $x2 )->parse;
+
+	return ( $x1_data, $x2_data );
+}

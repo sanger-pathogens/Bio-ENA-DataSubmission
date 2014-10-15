@@ -420,14 +420,14 @@ sub _report {
 	my @report = ( ['name', 'success', 'errors'] );
 	my @manifest = @{ $self->_manifest_data };
 	for my $row ( @manifest ) {
-		my $release = $row->[15];
-		push( @report, [ $row->[0], $receipts{$release}->{success}, $receipts{$release}->{errors} ] );
+		my $release = $row->{release_date};
+		my $receipt_details = [ $row->{name}, $receipts{$release}->{success} ?$receipts{$release}->{success} : '' , $receipts{$release}->{errors} ?$receipts{$release}->{errors} : '' ];
+		push( @report, $receipt_details );
 	}
 
-	## write report to spreadsheet
-	# FIXME: not sure what should go in here?
 	my $report_xls = Bio::ENA::DataSubmission::Spreadsheet->new(
-		data                =>\@manifest,
+		data                =>\@report,
+		_header              => ['name','success','errors'],
 		outfile             => $self->outfile,
 	);
 	$report_xls->write_xls;
@@ -437,10 +437,19 @@ sub _parse_receipt {
 	my ( $self, $receipt ) = @_;
 
 	my $xml = Bio::ENA::DataSubmission::XML->new( xml => $receipt, data_root => $self->data_root )->parse_from_file;
-	return {
-		success => $xml->{success},
-		errors  => join( ';', @{ $xml->{MESSAGES}->[0]->{ERROR} } )
-	};
+	my %receipt_details ;
+	
+	if(defined($xml->{MESSAGES}) && defined($xml->{MESSAGES}->[0]) && defined( $xml->{MESSAGES}->[0]->{ERROR}))
+	{
+	  $receipt_details{errors} = join( ';', @{ $xml->{MESSAGES}->[0]->{ERROR} } );
+  }
+  
+  if(defined($xml->{success}))
+  {
+    $receipt_details{success} = $xml->{success};
+  }
+	
+	return \%receipt_details;
 }
 
 sub usage_text {
