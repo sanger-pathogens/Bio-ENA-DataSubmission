@@ -23,8 +23,7 @@ use Bio::ENA::DataSubmission::Exception;
 
 has 'submission'                 => ( is => 'ro', isa => 'Str', required => 1 );
 has 'receipt'                    => ( is => 'ro', isa => 'Str', required => 1 );
-has 'webin_user'                 => ( is => 'ro', isa => 'Str', required => 1 );
-has 'webin_pass'                 => ( is => 'ro', isa => 'Str', required => 1 );
+has 'ena_login_string'           => ( is => 'ro', isa => 'Str', required => 1 );
 has 'ena_dropbox_submission_url' => ( is => 'ro', isa => 'Str', required => 1 );
 
 has 'study'                      => ( is => 'ro', isa => 'Str', required => 0 );
@@ -40,7 +39,7 @@ has '_submission_cmd'            => ( is => 'rw', isa => 'Str', required => 0, l
 sub _build__ena_url {
 	my $self = shift;
 
-	my $url = $self->ena_dropbox_submission_url . $self->webin_user . '%20' . $self->webin_pass;
+	my $url = $self->ena_dropbox_submission_url . $self->ena_login_string;
 	return $url;
 }
 

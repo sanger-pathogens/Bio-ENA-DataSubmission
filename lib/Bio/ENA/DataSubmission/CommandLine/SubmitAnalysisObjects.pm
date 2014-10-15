@@ -60,7 +60,7 @@ has '_output_dest'    => ( is => 'rw', isa => 'Str'      );
 has '_manifest_data'  => ( is => 'rw', isa => 'ArrayRef' );
 has '_server_dest'    => ( is => 'rw', isa => 'Str'      );
 has '_release_dates'  => ( is => 'rw', isa => 'ArrayRef' );
-
+has 'ena_login_string' => ( is => 'rw', isa => 'Str'     );
 
 has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
 has '_no_upload'      => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
@@ -135,14 +135,6 @@ sub _build__output_dest{
 	$dir .= '/' . $user . '_' . $timestamp;
 
 	make_path( $dir );
-	# my $mode = 0774;
-	# make_path( $dir, {
-	# 	owner => $self->_current_user,
-	# 	group => 'pathsub',
-	# 	mode  => $mode
-	# }) or Bio::ENA::DataSubmission::Exception::CannotCreateDirectory->throw( error => "Cannot create directory $dir" );
-	# chmod $mode, $dir; # sets correct permissions - make_path not working properly
-
 	return $dir;
 }
 
@@ -196,6 +188,7 @@ sub _populate_attributes_from_config_file
   $self->_webin_user( $config_values->{webin_user});
   $self->_webin_pass( $config_values->{webin_pass});
   $self->_webin_host( $config_values->{webin_host});
+  $self->ena_login_string( $config_values->{ena_login_string});
   $self->_ena_dropbox_submission_url($config_values->{ena_dropbox_submission_url});
 }
 
@@ -417,8 +410,7 @@ sub _submit {
 			submission => $self->_submission_xml( $date ),
 			analysis   => $self->_analysis_xml( $date ),
 			receipt    => $self->_receipt_xml( $date ),
-			webin_user => $self->_webin_user,
-			webin_pass => $self->_webin_pass,
+			ena_login_string => $self->ena_login_string,
 			ena_dropbox_submission_url => $self->_ena_dropbox_submission_url
 		);
 		$sub_obj->submit;
