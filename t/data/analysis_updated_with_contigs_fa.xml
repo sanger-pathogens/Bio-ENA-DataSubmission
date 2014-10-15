@@ -16,7 +16,7 @@
       </SEQUENCE_ASSEMBLY>
     </ANALYSIS_TYPE>
     <FILES>
-      <FILE checksum="c50890b1d9476cc43f44b1e6171714b8" checksum_method="MD5" filename="test_genome_1.fa.gz" filetype="fasta" />
+      <FILE checksum="e4b732387c323c606af63c666fe4b69d" checksum_method="MD5" filename="test_genome_1.fa.gz" filetype="fasta" />
     </FILES>
   </ANALYSIS>
   <ANALYSIS alias="test_genome_2" analysis_center="SC" analysis_date="2014-09-01T00:00:00" center_name="SC">
@@ -35,7 +35,7 @@
       </SEQUENCE_ASSEMBLY>
     </ANALYSIS_TYPE>
     <FILES>
-      <FILE checksum="47124d7618ddc4e3f1fc8787dd7ad000" checksum_method="MD5" filename="test_genome_2.fa.gz" filetype="fasta" />
+      <FILE checksum="b425d27d2d7b8ebae239872c7e32991e" checksum_method="MD5" filename="test_genome_2.fa.gz" filetype="fasta" />
     </FILES>
   </ANALYSIS>
 </ANALYSIS_SET>

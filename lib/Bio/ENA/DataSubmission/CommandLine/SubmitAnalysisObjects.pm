@@ -266,6 +266,17 @@ sub _parse_filelist {
 	return \%filelist;
 }
 
+sub _calc_md5
+{
+  my ($self, $file)     = @_;
+  
+  open(my $fh, $file);
+  binmode($fh);
+  my $ctx = Digest::MD5->new;
+  $ctx->addfile($fh);
+  return $ctx->hexdigest; 
+}
+
 sub _update_analysis_xml {
 	my $self     = shift;
 	my $dest     = $self->_output_dest;
@@ -277,10 +288,10 @@ sub _update_analysis_xml {
 	my %updated_data;
 	foreach my $row (@manifest){
 	  my $file_gz = $row->{file}.'.gz';
-	  system("gzip -9 -c  ".$row->{file}." > $file_gz ");
+	  system("gzip -c -n ".$row->{file}." > $file_gz ");
 	  
 	  $row->{file} = $file_gz;
-		$row->{checksum} = md5_hex( read_file( $row->{file} ),binmode => ':raw' ); # add MD5 checksum
+		$row->{checksum} = $self->_calc_md5($row->{file}); # add MD5 checksum 
 		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new(data_root => $self->data_root)->update_analysis( $row );
 		my $release_date = $row->{release_date};
