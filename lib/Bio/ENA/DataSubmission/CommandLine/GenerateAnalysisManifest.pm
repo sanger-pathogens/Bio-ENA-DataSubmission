@@ -50,6 +50,8 @@ has '_current_date'    => ( is => 'rw', isa => 'Str',      required => 0, lazy_b
 has '_analysis_center' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_show_errors'     => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
 
+has 'file_type'   => ( is => 'rw', isa => 'Str',      required => 0, default    => 'assembly' );
+has 'assembly_directories' => ( is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
 
 sub _build__current_date {
@@ -68,29 +70,31 @@ sub _build__analysis_center {
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $type, $id, $outfile, $empty, $pubmed_id, $no_errors, $help,$config_file );
+	my ( $type, $id, $outfile, $empty, $pubmed_id, $no_errors, $help,$config_file,$file_type );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
 		$args,
-		't|type=s'      => \$type,
-		'i|id=s'        => \$id,
-		'o|outfile=s'   => \$outfile,
-		'empty'         => \$empty,
-		'p|pubmed_id=s' => \$pubmed_id,
-		'no_errors'     => \$no_errors,
-		'h|help'      => \$help,
-		'c|config_file=s' => \$config_file
+		't|type=s'          => \$type,
+		'i|id=s'            => \$id,
+		'o|outfile=s'       => \$outfile,
+		'empty'             => \$empty,
+		'p|pubmed_id=s'     => \$pubmed_id,
+		'no_errors'         => \$no_errors,
+		'h|help'            => \$help,
+		'c|config_file=s'   => \$config_file,
+		'a|file_type=s' => \$file_type
 	);
 
-	$self->type($type)               if ( defined $type );
-	$self->id($id)                   if ( defined $id );
-	$self->outfile($outfile)         if ( defined $outfile );
-	$self->empty($empty)             if ( defined $empty );
-	$self->pubmed_id($pubmed_id)     if ( defined $pubmed_id );
-	$self->_show_errors(!$no_errors) if ( defined $no_errors );
-	$self->help($help)               if ( defined $help );
-	
+	$self->type($type)                   if ( defined $type );
+	$self->id($id)                       if ( defined $id );
+	$self->outfile($outfile)             if ( defined $outfile );
+	$self->empty($empty)                 if ( defined $empty );
+	$self->pubmed_id($pubmed_id)         if ( defined $pubmed_id );
+	$self->_show_errors(!$no_errors)     if ( defined $no_errors );
+	$self->help($help)                   if ( defined $help );
+	$self->file_type($file_type) if ( defined $file_type );
+
 	$self->config_file($config_file) if ( defined $config_file );
 	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
 	$self->_populate_attributes_from_config_file;
@@ -101,6 +105,8 @@ sub _populate_attributes_from_config_file
   my ($self) = @_;
   my $file_contents = read_file($self->config_file);
   my $config_values = eval($file_contents);
+  
+  $self->assembly_directories($config_values->{assembly_directories});
 }
 
 sub check_inputs{
@@ -134,7 +140,7 @@ sub run {
 	my $header = [
 		'name*', 'partial*', 'coverage*', 'program*', 'platform*', 'minimum_gap',
 		'file*', 'file_type*', 'title', 'description*', 'study*', 'sample*', 'run',
-		'analysis_center', 'analysis_date', 'release_date', 'pubmed_id'									
+		'analysis_center', 'analysis_date', 'release_date', 'pubmed_id','tax_id','common_name'
 	];
 
 	# write data to spreadsheet
@@ -178,12 +184,15 @@ sub _manifest_row{
 	    return \@row;
 	}
 
-	$row[2]  = $self->_get_coverage( $f, $lane );
-	$row[4]  = $self->_get_seq_tech_from_lane( $f->_vrtrack, $lane );
-	$row[10] = $self->_get_study_from_lane( $f->_vrtrack, $lane );
-	$row[11] = $self->_get_sample_from_lane( $f->_vrtrack, $lane );
-	$row[12] = $self->_get_run_from_lane( $lane );
-
+  $row[0]             = $lane->name;
+	($row[2],$row[3],$row[6],$row[7]) = $self->_get_file_details( $f, $lane );
+	$row[4]             = $self->_get_seq_tech_from_lane( $f->_vrtrack, $lane );
+	$row[10]            = $self->_get_study_from_lane( $f->_vrtrack, $lane );
+	$row[11]            = $self->_get_sample_from_lane( $f->_vrtrack, $lane );
+	$row[12]            = $self->_get_run_from_lane( $lane ); 
+	($row[18],$row[17]) = $self->_get_species_name_and_taxid_from_lane($lane);
+	$row[8]             = $self->_create_description($row[18]);
+	$row[9]             = $row[8];
 	return \@row;
 }
 
@@ -200,8 +209,6 @@ sub _error_row {
 
 sub _get_seq_tech_from_lane {
 	my ($self, $vrtrack, $lane) = @_;
-
-	return "SLX"; # remove if any other seq tech is ever added to DB
 
 	my ( $library, $seq_tech );
 
@@ -223,6 +230,18 @@ sub _get_study_from_lane {
     return $study->acc;
 }
 
+sub _get_species_name_and_taxid_from_lane {
+	my ( $self, $vrtrack, $lane ) = @_;
+	my ( $library, $sample, $individual, $species );
+
+    $library = VRTrack::Library->new( $vrtrack, $lane->library_id );
+    $sample  = VRTrack::Sample->new( $vrtrack, $library->sample_id ) if defined $library;
+    $individual  = VRTrack::Individual->new( $vrtrack, $sample->individual_id ) if defined $sample;
+    $species  = VRTrack::Species->new( $vrtrack, $individual->species_id ) if defined $individual;
+
+    return ($species->name,$species->taxon_id);
+}
+
 sub _get_sample_from_lane {
     my ( $self, $vrtrack, $lane ) = @_;
     my ( $library, $sample );
@@ -239,12 +258,24 @@ sub _get_run_from_lane {
 	return $lane->acc;
 }
 
-sub _get_coverage {
+sub _get_file_details
+{
+  my ( $self, $finder, $lane ) = @_;
+  if($self->file_type eq "assembly")
+  {
+    return $self->_get_assembly_details($finder, $lane );
+  }
+  else
+  {
+    # annotation
+  }
+}
+
+sub _get_assembly_details {
 	my ( $self, $finder, $lane ) = @_;
 
 	my $yield = $lane->raw_bases;
 
-	my @sub_directories = ( '/velvet_assembly', '/spades_assembly', '/iva_assembly' );
 	my %type_extensions = ( ass_stats => 'contigs.fa.stats' );
 	my $lane_filter = Path::Find::Filter->new(
             lanes           => [$lane],
@@ -252,30 +283,62 @@ sub _get_coverage {
             type_extensions => \%type_extensions,
             root            => $finder->_root,
             pathtrack       => $finder->_vrtrack,
-            subdirectories  => \@sub_directories,
+            subdirectories  => $self->assembly_directories,
     );
     my @matching_lanes = $lane_filter->filter;
     return undef unless defined $matching_lanes[0];
 
-    open(my $fh, '<', $matching_lanes[0]->{path});
-    my $line = <$fh>;
-    $line = <$fh>;
-    $line =~ /sum = (\d+)/;
-    my $assembly = int($1);
-    my $coverage = $yield/$assembly;
-	return sprintf( "%.2f", $coverage );
+    return ($self->_calculate_coverage($matching_lanes[0]->{path}),$self->_get_assembly_program($matching_lanes[0]->{path}),$matching_lanes[0]->{path}, 'fasta');
+}
+
+sub _get_assembly_program
+{
+  my ( $self, $path ) = @_;
+  my $program = 'velvet';
+  if($path =~ /\/(\w+)_assembly/)
+  {
+    $program  = $1;
+  }
+  return $program;
+}
+
+sub _create_description
+{
+  my ( $self, $common_name ) = @_;
+  if($self->file_type eq "assembly")
+  {
+    return "Assembly of $common_name";
+  }
+  else
+  {
+    return "Annotated assembly of $common_name";
+  }
+}
+
+sub _calculate_coverage
+{
+   my ( $self, $path ) = @_;
+   
+   open(my $fh, '<', $path);
+   my $line = <$fh>;
+   $line = <$fh>;
+   $line =~ /sum = (\d+)/;
+   my $assembly = int($1);
+   my $coverage = $yield/$assembly;
+   return sprintf( "%.2f", $coverage );
 }
 
 sub usage_text {
 	return <<USAGE;
 Usage: validate_sample_manifest [options]
 
-	-t|type       lane|study|file|sample
-	-i|id         lane ID|study ID|file of lanes|file of samples|sample ID
-	-o|outfile    path for output manifest
-	--empty       generate empty manifest
-	-p|pubmed_id  pubmed ID associated with analysis
-	-h|help       this help message
+	-t|type          lane|study|file|sample
+	-i|id            lane ID|study ID|file of lanes|file of samples|sample ID
+	-o|outfile       path for output manifest
+	--empty          generate empty manifest
+	-p|pubmed_id     pubmed ID associated with analysis
+	-a|file_type     [assembly|annotation] defaults to assembly
+	-h|help          this help message
 
 USAGE
 }
