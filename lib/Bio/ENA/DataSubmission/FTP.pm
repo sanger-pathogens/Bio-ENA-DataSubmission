@@ -28,7 +28,7 @@ use File::Basename;
 has 'server'    => ( is => 'rw', isa => 'Str',      required => 1 );
 has 'username'  => ( is => 'rw', isa => 'Str',      required => 1 );
 has 'password'  => ( is => 'rw', isa => 'Str',      required => 1 );
-has 'files'     => ( is => 'ro', isa => 'ArrayRef', required => 1 );
+has 'files'     => ( is => 'ro', isa => 'HashRef',  required => 1 );
 has 'directory' => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'error'     => ( is => 'rw', isa => 'Str',      required => 0 );
 
@@ -69,11 +69,15 @@ sub upload {
 		$ftp->mkdir( $self->directory );
 	}
 
-	for my $file ( @{ $self->files } ){
-		my $target = $file;
-		$target = $self->_server_target( $file );
-		unless ( $ftp->put( $file, $target ) ){
-			$self->error( "Failed to upload $file\n" );
+	for my $local_file ( keys %{ $self->files } ){
+	  my $target = $self->files->{$local_file};
+	  $target = $self->_server_target( $self->files->{$local_file} );
+	  
+	  system("gzip -9 $local_file");
+	  my $gzipped_local_file = $local_file.'.gz';
+		
+		unless ( $ftp->put( $gzipped_local_file, $target ) ){
+			$self->error( "Failed to upload $gzipped_local_file\n" );
 			return 0;
 		}
 	}

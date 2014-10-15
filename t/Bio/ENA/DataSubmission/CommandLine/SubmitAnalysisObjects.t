@@ -105,6 +105,17 @@ is_deeply(
 	'Report xls created properly'
 );
 
+
+# Rename file if its just contigs.fa
+@args = ( '-f', 't/data/analysis_submission_manifest_with_contigs_fa.xls', '-o', "$tmp/analysis_submission_report_with_contigs_fa.xls", '-c', 't/data/test_ena_data_submission.conf' );
+$obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new(
+    args         => \@args,
+    _output_dest => $tmp,
+);
+ok( $obj->_update_analysis_xml,                         'XML update successful' );
+ok(-e $obj->_output_dest . "/analysis_2014-01-01.xml", 'file exists');
+ok( compare( 't/data/analysis_updated_with_contigs_fa.xml', $obj->_output_dest . "/analysis_2014-01-01.xml" ) == 0, 'XML contains modified filenames' );
+
 remove_tree( $obj->_output_dest );
 remove_tree( $obj->_output_root );
 remove_tree($tmp);

@@ -252,14 +252,18 @@ sub run {
 }
 
 sub _parse_filelist {
-	my $self = shift;
+	my ($self) = @_;
 	my @manifest = @{ $self->_manifest_data };
 
-	my @filelist;
+	my %filelist;
 	for my $row ( @manifest ) {
-		push( @filelist, $row->[6] );
+	  my $sample_name = chomp($row->[0]);
+	  
+	  my ( $filename, $directories, $suffix ) = fileparse( $row->[6], qr/\.[^.]*/ );
+	  
+		$filelist{$row->[6]} = $sample_name.$suffix.'.gz' ;
 	}
-	return \@filelist;
+	return \%filelist;
 }
 
 sub _update_analysis_xml {
@@ -273,7 +277,7 @@ sub _update_analysis_xml {
 	my %updated_data;
 	foreach my $row (@manifest){
 		$row->{checksum} = md5_hex( read_file( $row->{file} ) ); # add MD5 checksum
-		$row->{file} = $self->_server_path( $row->{file} ); # change file path from local to server
+		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new(data_root => $self->data_root)->update_analysis( $row );
 		my $release_date = $row->{release_date};
 		# split data based on release dates. release date set in submission XML
@@ -292,11 +296,11 @@ sub _update_analysis_xml {
 }
 
 sub _server_path {
-	my ( $self, $local ) = @_;
+	my ( $self, $local, $name ) = @_;
 	my $s_dest = $self->_server_dest;
 
-	my ( $filename, $directories, $suffix ) = fileparse( $local );
-	return "$s_dest/$filename";
+	my ( $filename, $directories, $suffix ) = fileparse( $local, qr/\.[^.]*/ );
+	return "$s_dest/$name".$suffix.'.gz';
 }
 
 sub _analysis_xml {
