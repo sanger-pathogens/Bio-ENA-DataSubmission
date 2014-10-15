@@ -288,7 +288,7 @@ sub _get_assembly_details {
     my @matching_lanes = $lane_filter->filter;
     return undef unless defined $matching_lanes[0];
 
-    return ($self->_calculate_coverage($matching_lanes[0]->{path}),$self->_get_assembly_program($matching_lanes[0]->{path}),$matching_lanes[0]->{path}, 'fasta');
+    return ($self->_calculate_coverage($matching_lanes[0]->{path},$yield),$self->_get_assembly_program($matching_lanes[0]->{path}),$matching_lanes[0]->{path}, 'fasta');
 }
 
 sub _get_assembly_program
@@ -317,7 +317,7 @@ sub _create_description
 
 sub _calculate_coverage
 {
-   my ( $self, $path ) = @_;
+   my ( $self, $path,$yield ) = @_;
    
    open(my $fh, '<', $path);
    my $line = <$fh>;
