@@ -240,7 +240,7 @@ sub _get_species_name_and_taxid_from_lane {
     $species  = VRTrack::Species->new( $vrtrack, $individual->species_id ) if defined $individual;
     unless(defined($species))
     {
-      ('','');
+      return ('','');
     }
 
     return ($species->name,$species->taxon_id);
