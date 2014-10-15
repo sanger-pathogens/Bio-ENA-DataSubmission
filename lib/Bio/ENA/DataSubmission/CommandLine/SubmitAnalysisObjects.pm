@@ -276,6 +276,10 @@ sub _update_analysis_xml {
 	my @manifest = @{ $manifest_handler->parse_manifest };
 	my %updated_data;
 	foreach my $row (@manifest){
+	  my $file_gz = $row->{file}.'.gz';
+	  system("gzip -9 -c  ".$row->{file}." > $file_gz ");
+	  
+	  $row->{file} = $file_gz;
 		$row->{checksum} = md5_hex( read_file( $row->{file} ) ); # add MD5 checksum
 		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new(data_root => $self->data_root)->update_analysis( $row );
@@ -299,8 +303,8 @@ sub _server_path {
 	my ( $self, $local, $name ) = @_;
 	my $s_dest = $self->_server_dest;
 
-	my ( $filename, $directories, $suffix ) = fileparse( $local, qr/\.[^.]*/ );
-	return "$s_dest/$name".$suffix.'.gz';
+	my ( $filename, $directories, $suffix ) = fileparse( $local, qr/\.[^.]*\.gz/ );
+	return "$s_dest/$name".$suffix;
 }
 
 sub _analysis_xml {

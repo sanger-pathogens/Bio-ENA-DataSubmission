@@ -72,12 +72,8 @@ sub upload {
 	for my $local_file ( keys %{ $self->files } ){
 	  my $target = $self->files->{$local_file};
 	  $target = $self->_server_target( $self->files->{$local_file} );
-	  
-	  system("gzip -9 $local_file");
-	  my $gzipped_local_file = $local_file.'.gz';
-		
-		unless ( $ftp->put( $gzipped_local_file, $target ) ){
-			$self->error( "Failed to upload $gzipped_local_file\n" );
+		unless ( $ftp->put( $local_file, $target ) ){
+			$self->error( "Failed to upload $local_file\n" );
 			return 0;
 		}
 	}

@@ -119,6 +119,11 @@ ok( compare( 't/data/analysis_updated_with_contigs_fa.xml', $obj->_output_dest .
 remove_tree( $obj->_output_dest );
 remove_tree( $obj->_output_root );
 remove_tree($tmp);
+
+unlink('t/data/analysis_submission/contigsfa/1/contigs.fa.gz');
+unlink('t/data/analysis_submission/contigsfa/2/contigs.fa.gz');
+unlink('t/data/analysis_submission/testfile1.fa.gz');
+unlink('t/data/analysis_submission/testfile2.fa.gz');
 done_testing();
 
 
