@@ -190,7 +190,7 @@ sub _manifest_row{
 	$row[10]            = $self->_get_study_from_lane( $f->_vrtrack, $lane );
 	$row[11]            = $self->_get_sample_from_lane( $f->_vrtrack, $lane );
 	$row[12]            = $self->_get_run_from_lane( $lane ); 
-	($row[18],$row[17]) = $self->_get_species_name_and_taxid_from_lane($lane);
+	($row[18],$row[17]) = $self->_get_species_name_and_taxid_from_lane($f->_vrtrack, $lane);
 	$row[8]             = $self->_create_description($row[18]);
 	$row[9]             = $row[8];
 	return \@row;
@@ -238,6 +238,10 @@ sub _get_species_name_and_taxid_from_lane {
     $sample  = VRTrack::Sample->new( $vrtrack, $library->sample_id ) if defined $library;
     $individual  = VRTrack::Individual->new( $vrtrack, $sample->individual_id ) if defined $sample;
     $species  = VRTrack::Species->new( $vrtrack, $individual->species_id ) if defined $individual;
+    unless(defined($species))
+    {
+      ('','');
+    }
 
     return ($species->name,$species->taxon_id);
 }
