@@ -64,7 +64,7 @@ sub _build__current_date {
 }
 
 sub _build__analysis_center {
-	return 'SC';
+	return 'SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE';
 }
 
 sub BUILD {
@@ -328,8 +328,8 @@ sub _calculate_coverage
    $line = <$fh>;
    $line =~ /sum = (\d+)/;
    my $assembly = int($1);
-   my $coverage = $yield/$assembly;
-   return sprintf( "%.2f", $coverage );
+   my $coverage = int($yield/$assembly);
+   return $coverage ;
 }
 
 sub usage_text {
