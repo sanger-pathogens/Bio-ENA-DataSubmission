@@ -174,6 +174,7 @@ sub update_analysis {
 	$template->{DESCRIPTION}->[0]                                              = $row->{description};
 	$template->{STUDY_REF}->[0]->{refname}                                     = $row->{study};
 	$template->{SAMPLE_REF}->[0]->{accession}                                  = $row->{sample};
+	$template->{RUN_REF}->[0]->{accession}                                     = $row->{run};
 	
 	# optional data
 	if ( defined $row->{minimum_gap} ){
@@ -195,12 +196,14 @@ sub update_analysis {
 		$template->{center_name}                  = $row->{analysis_center};
 		$template->{STUDY_REF}->[0]->{refcenter}  = $row->{analysis_center};
 		$template->{SAMPLE_REF}->[0]->{refcenter} = $row->{analysis_center};
+		$template->{RUN_REF}->[0]->{refcenter}    = $row->{analysis_center};
 	}
 	else {
 		delete $template->{analysis_center};
 		delete $template->{center_name};
 		delete $template->{STUDY_REF}->[0]->{refcenter};
 		delete $template->{SAMPLE_REF}->[0]->{refcenter};
+		delete $template->{RUN_REF}->[0]->{refcenter};
 	}
 
 	if ( defined $row->{analysis_date} ){

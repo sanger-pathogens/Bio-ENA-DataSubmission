@@ -5,6 +5,7 @@
     <DESCRIPTION>We assembled some crap! Who cares?</DESCRIPTION>
     <STUDY_REF refcenter="SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE" refname="ERP001039" />
     <SAMPLE_REF accession="ERS311560" refcenter="SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE" />
+    <RUN_REF accession="ERR363472" refcenter="SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE" />
     <ANALYSIS_TYPE>
       <SEQUENCE_ASSEMBLY>
         <NAME>test_genome_1</NAME>
