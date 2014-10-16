@@ -52,6 +52,7 @@ has '_show_errors'     => ( is => 'rw', isa => 'Bool',     required => 0, defaul
 
 has 'file_type'   => ( is => 'rw', isa => 'Str',      required => 0, default    => 'assembly' );
 has 'assembly_directories' => ( is => 'rw', isa => 'Maybe[ArrayRef]');
+has 'annotation_directories' => ( is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
 
 sub _build__current_date {
@@ -107,6 +108,7 @@ sub _populate_attributes_from_config_file
   my $config_values = eval($file_contents);
   
   $self->assembly_directories($config_values->{assembly_directories});
+  $self->annotation_directories($config_values->{annotation_directories});
 }
 
 sub check_inputs{
@@ -163,7 +165,8 @@ sub _build_manifest_data {
 
 	my $finder = Bio::ENA::DataSubmission::FindData->new(
 		type => $self->type,
-		id   => $self->id
+		id   => $self->id,
+		file_type => $self->file_type
 	);
 	my %data = %{ $finder->find };
 
@@ -271,8 +274,27 @@ sub _get_file_details
   }
   else
   {
-    # annotation
+    return $self->_get_annotation_details($finder, $lane );
   }
+}
+
+sub _get_annotation_details {
+  my ( $self, $finder, $lane ) = @_;
+  
+  my $yield = $lane->raw_bases;
+  my %type_extensions = ( gff => '*.gff');
+  my $lane_filter = Path::Find::Filter->new(
+            lanes           => [$lane],
+            filetype        => 'gff',
+            type_extensions => \%type_extensions,
+            root            => $finder->_root,
+            pathtrack       => $finder->_vrtrack,
+            subdirectories  => $self->annotation_directories,
+    );
+  my @matching_lanes = $lane_filter->filter;
+  return undef unless defined $matching_lanes[0];
+  
+  return (100,'Prokka',$matching_lanes[0]->{path}, 'scaffold_flatfile');
 }
 
 sub _get_assembly_details {
