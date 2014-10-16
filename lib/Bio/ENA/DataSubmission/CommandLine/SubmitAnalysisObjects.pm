@@ -218,13 +218,14 @@ sub run {
 		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 	}
-
 	# Place files in ENA dropbox via FTP
-	unless( defined $self->_no_upload ){
-		my $files = $self->_parse_filelist;
+	unless( defined($self->_no_upload) && $self->_no_upload == 1 ){
+	  my $files = $self->_parse_filelist;
 		my $dest  = $self->_server_dest; 
-		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest, username => $self->webin_user, password => $self->webin_pass, server => $self->webin_host );
+		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest, username => $self->_webin_user, password => $self->_webin_pass, server => $self->_webin_host );
 		$uploader->upload or Bio::ENA::DataSubmission::Exception::FTPError->throw( error => $uploader->error );
+		# Save submitted files
+  	$self->_keep_local_copy_of_submitted_files($files);
 	}
 
 	# generate analysis XML
@@ -244,17 +245,31 @@ sub run {
 
 }
 
+sub _keep_local_copy_of_submitted_files
+{
+  my ($self, $files) = @_;
+  my $data_file_path = join('/',($self->_output_dest,'datafiles'));
+  
+  make_path( $data_file_path ) unless(-d $data_file_path);
+  for my $local_file ( keys %{ $files } )
+  {
+    my $target = $files->{$local_file};
+    copy($local_file, join('/',($data_file_path,$target)));
+  }
+  1;
+}
+
 sub _parse_filelist {
 	my ($self) = @_;
 	my @manifest = @{ $self->_manifest_data };
 
 	my %filelist;
 	for my $row ( @manifest ) {
-	  my $sample_name = chomp($row->[0]);
+	  chomp($row->{name});
+	  my $sample_name = $row->{name};
+	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*/ );
 	  
-	  my ( $filename, $directories, $suffix ) = fileparse( $row->[6], qr/\.[^.]*/ );
-	  
-		$filelist{$row->[6]} = $sample_name.$suffix.'.gz' ;
+		$filelist{$row->{file}} = $sample_name.$suffix.'.gz' ;
 	}
 	return \%filelist;
 }
