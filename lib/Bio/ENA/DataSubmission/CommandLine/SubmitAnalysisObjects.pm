@@ -63,6 +63,7 @@ has '_manifest_data'  => ( is => 'rw', isa => 'ArrayRef' );
 has '_server_dest'    => ( is => 'rw', isa => 'Str'      );
 has '_release_dates'  => ( is => 'rw', isa => 'ArrayRef' );
 has 'ena_login_string' => ( is => 'rw', isa => 'Str'     );
+has 'ena_base_path'    => ( is => 'rw', isa => 'Str'     );
 
 has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
 has '_no_upload'      => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
@@ -193,6 +194,7 @@ sub _populate_attributes_from_config_file
   $self->_webin_host( $config_values->{webin_host});
   $self->ena_login_string( $config_values->{ena_login_string});
   $self->_ena_dropbox_submission_url($config_values->{ena_dropbox_submission_url});
+  $self->ena_base_path($config_values->{ena_base_path});
 }
 
 sub _check_inputs {
@@ -214,6 +216,7 @@ sub run {
   
   my $outfile = $self->outfile;
 
+  $self->_convert_secondary_project_accession_to_primary_manifest_data();
 	# first, validate the manifest
 	unless( $self->no_validate ){
 		my @args = ( '-f', $self->manifest, '-r', $outfile, '-c', $self->config_file );
@@ -259,6 +262,26 @@ sub _convert_gffs_to_flatfiles
   {
     system($cmd);
   }
+}
+
+sub _convert_secondary_project_accession_to_primary
+{
+  my ($self, $accession) = @_;
+  return $accession unless($accession =~ /ERP/);
+
+  my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$accession&display=xml",ena_base_path => $self->ena_base_path )->parse_from_url;
+
+  if(defined($xml) && 
+     defined($xml->{STUDY}) && 
+     defined($xml->{STUDY}->[0]) && 
+     defined($xml->{STUDY}->[0]->{IDENTIFIERS}) && 
+     defined($xml->{STUDY}->[0]->{IDENTIFIERS}->[0]) && 
+     defined($xml->{STUDY}->[0]->{IDENTIFIERS}->[0]->{SECONDARY_ID}) && 
+     defined($xml->{STUDY}->[0]->{IDENTIFIERS}->[0]->{SECONDARY_ID}->[0])  )
+  {
+    return $xml->{STUDY}->[0]->{IDENTIFIERS}->[0]->{SECONDARY_ID}->[0];
+  }
+  return $accession;
 }
 
 sub _convert_gffs_to_flatfiles_cmds
@@ -335,6 +358,17 @@ sub _gzip_input_files
 	1;
 }
 
+sub _convert_secondary_project_accession_to_primary_manifest_data
+{
+  my ($self)     = @_;
+  my @manifest = @{ $self->_manifest_data };
+	my %updated_data;
+	foreach my $row (@manifest){
+	  $row->{study} = $self->_convert_secondary_project_accession_to_primary($row->{study});
+	}
+	1;
+}
+
 sub _update_analysis_xml {
 	my ($self)     = @_;
 	my $dest     = $self->_output_dest;
@@ -342,6 +376,7 @@ sub _update_analysis_xml {
 	# parse manifest and loop
 	my %updated_data;
 	foreach my $row (@manifest){
+	  $row->{study} = $self->_convert_secondary_project_accession_to_primary($row->{study});
 		$row->{checksum} = $self->_calc_md5($row->{file}); # add MD5 checksum 
 		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new(data_root => $self->data_root)->update_analysis( $row );
