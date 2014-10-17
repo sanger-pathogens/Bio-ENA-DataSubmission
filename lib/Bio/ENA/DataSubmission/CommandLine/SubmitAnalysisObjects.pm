@@ -39,6 +39,8 @@ use Bio::ENA::DataSubmission;
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest;
 use Bio::ENA::DataSubmission::XML;
+use Bio::ENA::DataSubmission::FTP;
+use Bio::ENA::DataSubmission::Spreadsheet;
 use DateTime;
 use Digest::MD5 qw(md5_hex);
 use File::Slurp;
