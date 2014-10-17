@@ -40,7 +40,7 @@ sub upload {
 	my $password = $self->password;
 
 	# check files exist first
-	for my $file ( @{ $self->files } ){
+	for my $file ( keys %{ $self->files } ){
 		unless( -e $file ){
 			$self->error( "Cannot find $file\n" );
 			return 0;
