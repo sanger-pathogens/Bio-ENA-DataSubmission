@@ -178,6 +178,7 @@ sub _build__server_dest {
 	return '/' . $self->analysis_type . '/' . $self->_current_user . '_' . $self->_timestamp;
 }
 
+
 sub _populate_attributes_from_config_file
 {
   my ($self) = @_;
@@ -210,17 +211,17 @@ sub _check_user {
 
 sub run {
 	my $self = shift;
-
-  my $manifest = $self->manifest;
+  
   my $outfile = $self->outfile;
 
 	# first, validate the manifest
 	unless( $self->no_validate ){
-		my @args = ( '-f', $manifest, '-r', $outfile, '-c', $self->config_file );
+		my @args = ( '-f', $self->manifest, '-r', $outfile, '-c', $self->config_file );
 		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
-		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
+		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $self->manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 	}
 
+  $self->_gzip_input_files();
 	
 	# Place files in ENA dropbox via FTP
 	unless( defined($self->_no_upload) && $self->_no_upload == 1 ){
@@ -304,9 +305,8 @@ sub _parse_filelist {
 	for my $row ( @manifest ) {
 	  chomp($row->{name});
 	  my $sample_name = $row->{name};
-	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*/ );
-	  
-		$filelist{$row->{file}} = $sample_name.$suffix.'.gz' ;
+	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*\.gz/ );
+		$filelist{$row->{file}} = $sample_name.$suffix ;
 	}
 	return \%filelist;
 }
@@ -321,21 +321,27 @@ sub _calc_md5
   $ctx->addfile($fh);
   return $ctx->hexdigest; 
 }
-
-sub _update_analysis_xml {
-	my $self     = shift;
-	my $dest     = $self->_output_dest;
-	my $manifest = $self->manifest;
-
-	# parse manifest and loop
-	my $manifest_handler = Bio::ENA::DataSubmission::Spreadsheet->new( infile => $manifest );
-	my @manifest = @{ $manifest_handler->parse_manifest };
-	my %updated_data;
-	foreach my $row (@manifest){
+sub _gzip_input_files
+{
+  my ($self)     = @_;
+  
+  my @manifest = @{ $self->_manifest_data };
+	foreach my $row (@manifest ){
 	  my $file_gz = $row->{file}.'.gz';
 	  system("gzip -c -n ".$row->{file}." > $file_gz ");
 	  
 	  $row->{file} = $file_gz;
+	}
+	1;
+}
+
+sub _update_analysis_xml {
+	my ($self)     = @_;
+	my $dest     = $self->_output_dest;
+  my @manifest = @{ $self->_manifest_data };
+	# parse manifest and loop
+	my %updated_data;
+	foreach my $row (@manifest){
 		$row->{checksum} = $self->_calc_md5($row->{file}); # add MD5 checksum 
 		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new(data_root => $self->data_root)->update_analysis( $row );
