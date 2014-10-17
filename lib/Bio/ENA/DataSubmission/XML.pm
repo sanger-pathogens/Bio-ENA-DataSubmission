@@ -174,7 +174,7 @@ sub update_analysis {
 	$template->{DESCRIPTION}->[0]                                              = $row->{description};
 	$template->{STUDY_REF}->[0]->{refname}                                     = $row->{study};
 	$template->{SAMPLE_REF}->[0]->{accession}                                  = $row->{sample};
-	$template->{RUN_REF}->[0]->{accession}                                     = $row->{run};
+	$template->{RUN_REF}->[0]->{accession}                                     = $row->{run} if(defined($row->{run}));
 	
 	# optional data
 	if ( defined $row->{minimum_gap} ){
