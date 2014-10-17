@@ -32,7 +32,7 @@ $obj = Bio::ENA::DataSubmission->new(
 	ena_login_string => 'pass',
 	ena_dropbox_submission_url => 'http://example.com/'
 );
-$exp = 'curl -F "SUBMISSION=@t/data/datasub/submission.xml" -F "ANALYSIS=@t/data/datasub/analysis.xml" "http://example.com/pass" > output_receipt';
+$exp = 'curl -k -F "SUBMISSION=@t/data/datasub/submission.xml" -F "ANALYSIS=@t/data/datasub/analysis.xml" "http://example.com/pass" > output_receipt';
 is ( $obj->_submission_cmd, $exp, "Submission command correct" );
 
 done_testing();

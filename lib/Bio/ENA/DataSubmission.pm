@@ -46,7 +46,7 @@ sub _build__ena_url {
 sub _build__submission_cmd {
 	my $self = shift;
 
-	my $cmd = 'curl -F "SUBMISSION=@' . $self->submission . '"';
+	my $cmd = 'curl -k -F "SUBMISSION=@' . $self->submission . '"';
 
     $cmd .= ' -F "STUDY=@'      . $self->study      . '"' if ( defined $self->study );
     $cmd .= ' -F "SAMPLE=@'     . $self->sample     . '"' if ( defined $self->sample );
