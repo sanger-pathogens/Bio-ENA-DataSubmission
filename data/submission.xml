@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION alias="ReleaseSubmissionUpdate" center_name="SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE">
+<SUBMISSION alias="ReleaseSubmissionUpdate" center_name="SC">
     <ACTIONS>
 		<ACTION>
 			<MODIFY source="samples.xml" schema="sample" />

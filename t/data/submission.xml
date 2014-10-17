@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION alias="xxxxx_testtime" center_name="SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE">
+<SUBMISSION alias="xxxxx_testtime" center_name="SC">
     <ACTIONS>
 		<ACTION>
 			<MODIFY source="samples_testtime.xml" schema="sample" />

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION alias="testuser_testtime_release_2014-01-01" center_name="SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE">
+<SUBMISSION alias="testuser_testtime_release_2014-01-01" center_name="SC">
   <ACTIONS>
     <ACTION>
       <ADD schema="analysis" source="analysis_2014-01-01.xml" />

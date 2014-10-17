@@ -94,6 +94,9 @@ ok( compare( 't/data/analysis_submission2.xml', $obj->_output_dest . "/submissio
 
 @args = ( '-f', 't/data/analysis_submission_manifest.xls', '-o', "$tmp/analysis_submission_report.xls", '-c', 't/data/test_ena_data_submission.conf' );
 ok( $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( args => \@args ), 'Initialize object for valid run' );
+is_deeply($obj->_convert_gffs_to_flatfiles_cmds, 
+  [], 'no commands to convert from gff to embl because its fasta files');
+
 copy('t/data/success_receipt.xml', $obj->_output_dest.'/receipt_2050-01-01.xml');
 copy('t/data/success_receipt.xml', $obj->_output_dest.'/receipt_2014-01-01.xml');
 
@@ -120,6 +123,14 @@ ok($obj->_keep_local_copy_of_submitted_files,'keep local copy of submitted files
 
 ok(-e $obj->_output_dest . "/datafiles/test_genome_1.fa.gz", 'Saved local copy of test_genome_1.fa.gz');
 ok(-e $obj->_output_dest . "/datafiles/test_genome_2.fa.gz", 'Saved local copy of test_genome_2.fa.gz');
+
+
+# GFF file
+@args = ( '-f', 't/data/analysis_submission_manifest_gffs.xls', '-o', "$tmp/analysis_submission_report.xls", '-c', 't/data/test_ena_data_submission.conf' );
+ok( $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( args => \@args ), 'Initialize object for valid run' );
+is_deeply($obj->_convert_gffs_to_flatfiles_cmds, 
+  ['gff3_to_embl --output_filename test_genome_1.embl "Stap A" "1234" "ERP001039" "We assembled some crap! Who cares?" "t/data/analysis_submission/testfile1.gff"',
+   'gff3_to_embl --output_filename test_genome_2.embl "Ecoli" "1234" "ERP001039" "Assembly of a steaming pile" "t/data/analysis_submission/testfile2.gff"'], 'no commands to convert from gff to embl because its fasta files');
 
 remove_tree( $obj->_output_dest );
 remove_tree( $obj->_output_root );

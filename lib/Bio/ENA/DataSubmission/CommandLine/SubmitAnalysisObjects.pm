@@ -218,9 +218,13 @@ sub run {
 		my $validator = Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest->new( args => \@args );
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 	}
+
+	
 	# Place files in ENA dropbox via FTP
 	unless( defined($self->_no_upload) && $self->_no_upload == 1 ){
+	  $self->_convert_gffs_to_flatfiles();
 	  my $files = $self->_parse_filelist;
+	  
 		my $dest  = $self->_server_dest; 
 		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest, username => $self->_webin_user, password => $self->_webin_pass, server => $self->_webin_host );
 		$uploader->upload or Bio::ENA::DataSubmission::Exception::FTPError->throw( error => $uploader->error );
@@ -243,6 +247,37 @@ sub run {
 	# generate report from XML receipts
 	$self->_report;
 
+}
+
+sub _convert_gffs_to_flatfiles
+{
+  my ($self) = @_;
+  for my $cmd (@{$self->_convert_gffs_to_flatfiles_cmds})
+  {
+    system($cmd);
+  }
+}
+
+sub _convert_gffs_to_flatfiles_cmds
+{
+   my ($self) = @_;
+   
+   my @manifest = @{ $self->_manifest_data };
+   my @commands_to_run;
+   my %filelist;
+   for my $row ( @manifest ) {
+     chomp($row->{name});
+     my $sample_name = $row->{name};
+     my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*/ );
+     next unless(  $row->{file} =~ /gff$/);
+     
+     my $input_file = $row->{file};
+     my $output_file = $sample_name.'.embl' ;
+     
+     push(@commands_to_run, "gff3_to_embl --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
+     $row->{file} = $output_file ;
+   }
+   return \@commands_to_run;
 }
 
 sub _keep_local_copy_of_submitted_files
@@ -371,7 +406,7 @@ sub _generate_submissions {
 		my $sub_template = { 
 			ACTIONS     => [{ ACTION => \@actions }],
 			alias       => $self->_current_user . '_' . $self->_timestamp . "_release_$date",
-			center_name => 'SANGER INSTITUTE/UNIVERSITY OF CAMBRIDGE'
+			center_name => 'SC'
 		};
 		
 		# write to file
