@@ -17,7 +17,7 @@
       </SEQUENCE_ASSEMBLY>
     </ANALYSIS_TYPE>
     <FILES>
-      <FILE checksum="562491bcc02fdafdc2c6587f33c9d0b7" checksum_method="MD5" filename="test_genome_1.fa.gz" filetype="fasta" />
+      <FILE checksum="562491bcc02fdafdc2c6587f33c9d0b7" checksum_method="MD5" filename="test_genome_1.fasta.gz" filetype="fasta" />
     </FILES>
   </ANALYSIS>
 </ANALYSIS_SET>

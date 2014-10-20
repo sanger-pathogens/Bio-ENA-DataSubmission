@@ -334,6 +334,11 @@ sub _temp_copies
 	  my $sample_name = $row->{name};
 	  
 	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*/ );
+	  if( $suffix eq '.fa')
+	  {
+	    $suffix = '.fasta';
+    }
+	  
 	  my $temp_file =  $tmpdir.'/'.$sample_name.$suffix;
 	  copy($row->{file}, $temp_file);
 	  $row->{file} = $temp_file;

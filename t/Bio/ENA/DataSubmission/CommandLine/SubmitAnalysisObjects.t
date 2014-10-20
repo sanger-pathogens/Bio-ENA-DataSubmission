@@ -132,8 +132,8 @@ ok( compare( 't/data/analysis_updated_with_contigs_fa.xml', $obj->_output_dest .
 
 ok($obj->_keep_local_copy_of_submitted_files,'keep local copy of submitted files method');
 
-ok(-e $obj->_output_dest . "/datafiles/test_genome_1.fa.gz", 'Saved local copy of test_genome_1.fa.gz');
-ok(-e $obj->_output_dest . "/datafiles/test_genome_2.fa.gz", 'Saved local copy of test_genome_2.fa.gz');
+ok(-e $obj->_output_dest . "/datafiles/test_genome_1.fasta.gz", 'Saved local copy of test_genome_1.fa.gz');
+ok(-e $obj->_output_dest . "/datafiles/test_genome_2.fasta.gz", 'Saved local copy of test_genome_2.fa.gz');
 
 
 # GFF file
