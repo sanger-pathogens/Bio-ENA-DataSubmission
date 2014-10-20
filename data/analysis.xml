@@ -3,7 +3,7 @@
   <DESCRIPTION>
     description text
   </DESCRIPTION>
-  <STUDY_REF refname="ERPXXXXXX" refcenter="center"/>
+  <STUDY_REF accession="ERPXXXXXX" refcenter="center"/>
   <SAMPLE_REF accession="ERSXXXXXX" refcenter="center"/>
   <ANALYSIS_TYPE>
     <SEQUENCE_ASSEMBLY>

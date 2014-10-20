@@ -62,9 +62,10 @@ $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new(
 );
 
 # sample XML updating
+ok($obj->_temp_copies($tmp),'create temp copies of files');
 ok($obj->_convert_secondary_project_accession_to_primary_manifest_data,'convert to secondary');
 ok($obj->_gzip_input_files(),'gzip the input files');
-ok($obj->_parse_filelist,'convert the names of the files');
+ok($obj->_parse_filelist($tmp),'convert the names of the files');
 ok( $obj->_update_analysis_xml,                         'XML update successful' );
 ok( -e $obj->_output_dest . "/analysis_2014-01-01.xml", 'XML exists analysis_2014-01-01.xml' );
 ok( compare( 't/data/analysis_updated.xml', $obj->_output_dest . "/analysis_2014-01-01.xml" ) == 0, 'Updated XML file correct' );
@@ -121,10 +122,10 @@ $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new(
     args         => \@args,
     _output_dest => $tmp,
 );
+ok($obj->_temp_copies($tmp),'create temp copies of files');
 ok($obj->_convert_secondary_project_accession_to_primary_manifest_data,'convert to secondary');
 ok($obj->_gzip_input_files(),'gzip the input files');
-ok($obj->_parse_filelist,'convert the names of the files');
-
+ok($obj->_parse_filelist($tmp),'convert the names of the files');
 ok( $obj->_update_analysis_xml,                         'XML update successful' );
 ok(-e $obj->_output_dest . "/analysis_2014-01-01.xml", 'file exists');
 ok( compare( 't/data/analysis_updated_with_contigs_fa.xml', $obj->_output_dest . "/analysis_2014-01-01.xml" ) == 0, 'XML contains modified filenames' );

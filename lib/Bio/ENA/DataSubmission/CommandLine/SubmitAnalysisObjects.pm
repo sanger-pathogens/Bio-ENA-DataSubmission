@@ -34,6 +34,7 @@ use File::Basename;
 use File::Copy qw(copy);
 use File::Path qw(make_path);
 use Cwd 'abs_path';
+use Cwd;
 
 use Bio::ENA::DataSubmission;
 use Bio::ENA::DataSubmission::Exception;
@@ -43,6 +44,7 @@ use Bio::ENA::DataSubmission::FTP;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use DateTime;
 use Digest::MD5 qw(md5_hex);
+use File::Temp;
 use File::Slurp;
 
 has 'args'            => ( is => 'ro', isa => 'ArrayRef', required => 1 );
@@ -224,14 +226,16 @@ sub run {
 		Bio::ENA::DataSubmission::Exception::ValidationFail->throw("Manifest $self->manifest did not pass validation. See $outfile for report\n") if( $validator->run == 0 ); # manifest failed validation
 	}
 
+  my $temp_directory_obj = File::Temp->newdir( DIR => getcwd, CLEANUP => 1   );
+  my $tmp = $temp_directory_obj->dirname();
+  $self->_temp_copies($tmp);
+  $self->_convert_gffs_to_flatfiles();
   $self->_gzip_input_files();
 	
 	# Place files in ENA dropbox via FTP
-	unless( defined($self->_no_upload) && $self->_no_upload == 1 ){
-	  $self->_convert_gffs_to_flatfiles();
-	  my $files = $self->_parse_filelist;
-	  
-		my $dest  = $self->_server_dest; 
+	unless( defined($self->_no_upload) && $self->_no_upload == 1 ){ 
+		my $dest  = $self->_server_dest;
+		my $files = $self->_parse_filelist($tmp);
 		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest, username => $self->_webin_user, password => $self->_webin_pass, server => $self->_webin_host );
 		$uploader->upload or Bio::ENA::DataSubmission::Exception::FTPError->throw( error => $uploader->error );
 		# Save submitted files
@@ -319,6 +323,24 @@ sub _keep_local_copy_of_submitted_files
   }
   1;
 }
+sub _temp_copies
+{
+  my ($self, $tmpdir) = @_;
+	my @manifest = @{ $self->_manifest_data };
+
+	my %filelist;
+	for my $row ( @manifest ) {
+	  chomp($row->{name});
+	  my $sample_name = $row->{name};
+	  
+	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*/ );
+	  my $temp_file =  $tmpdir.'/'.$sample_name.$suffix;
+	  copy($row->{file}, $temp_file);
+	  $row->{file} = $temp_file;
+	}
+	return 1;
+}
+
 
 sub _parse_filelist {
 	my ($self) = @_;
@@ -328,6 +350,7 @@ sub _parse_filelist {
 	for my $row ( @manifest ) {
 	  chomp($row->{name});
 	  my $sample_name = $row->{name};
+	  
 	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*\.gz/ );
 		$filelist{$row->{file}} = $sample_name.$suffix ;
 	}

@@ -172,7 +172,7 @@ sub update_analysis {
 	$template->{FILES}->[0]->{FILE}->[0]->{filename}                           = $file;
 	$template->{FILES}->[0]->{FILE}->[0]->{filetype}                           = $row->{file_type};
 	$template->{DESCRIPTION}->[0]                                              = $row->{description};
-	$template->{STUDY_REF}->[0]->{refname}                                     = $row->{study};
+	$template->{STUDY_REF}->[0]->{accession}                                   = $row->{study};
 	$template->{SAMPLE_REF}->[0]->{accession}                                  = $row->{sample};
 	$template->{RUN_REF}->[0]->{accession}                                     = $row->{run} if(defined($row->{run}));
 	

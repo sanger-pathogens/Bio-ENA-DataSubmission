@@ -5,7 +5,7 @@
     <DESCRIPTION>
       We assembled some crap! Who cares?
     </DESCRIPTION>
-    <STUDY_REF refname="ERP001039" refcenter="SC"/>
+    <STUDY_REF accession="ERP001039" refcenter="SC"/>
     <SAMPLE_REF accession="ERS311560" refcenter="SC"/>
     <ANALYSIS_TYPE>
       <SEQUENCE_ASSEMBLY>
@@ -26,7 +26,7 @@
     <DESCRIPTION>
       Assembly of a steaming pile
     </DESCRIPTION>
-    <STUDY_REF refname="ERP001039" refcenter="SC"/>
+    <STUDY_REF accession="ERP001039" refcenter="SC"/>
     <SAMPLE_REF accession="ERS311489" refcenter="SC"/>
     <ANALYSIS_TYPE>
       <SEQUENCE_ASSEMBLY>
