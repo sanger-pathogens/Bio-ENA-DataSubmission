@@ -13,7 +13,7 @@ use File::Compare;
 use Cwd;
 use File::Path qw( remove_tree);
 
-my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 0 );
+my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::Spreadsheet');

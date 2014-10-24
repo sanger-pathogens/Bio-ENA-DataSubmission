@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 BEGIN { unshift( @INC, './lib' ) }
+BEGIN { unshift( @INC, '/software/pathogen/internal/pathdev/vr-codebase/modules' ) }
 
 BEGIN {
     use Test::Most;

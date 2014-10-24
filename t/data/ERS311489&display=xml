@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="ERS311489&amp;display=xml">
+<SAMPLE alias="UNC647-sc-2013-06-18T13:34:01Z-1648610" accession="ERS311489" center_name="The Wellcome Trust Sanger Institute" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+     <IDENTIFIERS>
+          <PRIMARY_ID>ERS311489</PRIMARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMEA2144703</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="SC">UNC647-sc-2013-06-18T13:34:01Z-1648610</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Mycobacterium tuberculosis</TITLE>
+     <SAMPLE_NAME>
+          <COMMON_NAME>Mycobacterium abscessus</COMMON_NAME>
+          <TAXON_ID>1773</TAXON_ID>
+          <SCIENTIFIC_NAME>Mycobacterium tuberculosis</SCIENTIFIC_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-STUDY</DB>
+                    <ID>ERP001039</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-EXPERIMENT</DB>
+                    <ID>ERX341873</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-RUN</DB>
+                    <ID>ERR369164</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMISSION</DB>
+                    <ID>ERA228943</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-FASTQ-FILES</DB>
+                    <ID>http://www.ebi.ac.uk/ena/data/view/reports/sra/fastq_files/ERS311489</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMITTED-FILES</DB>
+                    <ID>http://www.ebi.ac.uk/ena/data/view/reports/sra/submitted_files/ERS311489</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+     </SAMPLE_LINKS>
+     <SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Strain</TAG>
+               <VALUE/>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Sample Description</TAG>
+               <VALUE/>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ArrayExpress-Species</TAG>
+               <VALUE>Mycobacterium abscessus</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-SPOT-COUNT</TAG>
+               <VALUE>2525488</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-BASE-COUNT</TAG>
+               <VALUE>252548800</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+</ROOT>

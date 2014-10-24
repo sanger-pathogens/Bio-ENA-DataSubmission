@@ -1,6 +1,6 @@
 package Bio::ENA::DataSubmission::Validator::EMBL;
 
-# ABSTRACT: 
+# ABSTRACT: Embl validator
 
 =head1 SYNOPSIS
 
@@ -12,11 +12,11 @@ Wrapper around ENA's validation .jar file
 
 use Moose;
 
-has 'jar_path'   => ( is => 'rw', isa => 'Str',      default => '/Users/cc21/bin/embl-client.jar' );
+has 'jar_path'   => ( is => 'rw', isa => 'Str', required => 1 );
 has 'embl_files' => ( is => 'rw', isa => 'ArrayRef', required => 1 );
 
 sub validate {
-	my $self = @_;
+	my ($self) = @_;
 
 	my @files = @{ $self->embl_files };
 	my $jar   = $self->jar_path;
@@ -24,3 +24,8 @@ sub validate {
 	my $cmd = "java -classpath $jar uk.ac.ebi.client.EnaValidator -r -l 0 " . join( " ", @files );
 	system($cmd);
 }
+
+
+__PACKAGE__->meta->make_immutable;
+no Moose;
+1;

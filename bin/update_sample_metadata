@@ -3,7 +3,7 @@
 package Bio::ENA::DataSubmission::Bin::UpdateMetadata;
 
 # ABSTRACT: 
-# PODNAME: 
+# PODNAME: update_sample_metadata
 
 =head1 SYNOPSIS
 

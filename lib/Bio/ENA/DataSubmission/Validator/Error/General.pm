@@ -13,16 +13,18 @@ extends "Bio::ENA::DataSubmission::Validator::Error";
 
 has 'cell'       => ( is => 'ro', isa => 'Maybe[Str]', required => 1 );
 has 'identifier' => ( is => 'ro', isa => 'Maybe[Str]', required => 1 );
+has 'field'      => ( is => 'ro', isa => 'Maybe[Str]', required => 1 );
 
 sub validate {
 	my $self  = shift;
 	my $id    = $self->identifier;
 	my $cell  = $self->cell;
+	my $field = $self->field;
 
 	chomp $cell;
 	$cell =~ s/^\s+//;
 
-	$self->set_error_message( $id, "Newline characters detected within $id" ) if ( $cell =~ m/\n/ );
+	$self->set_error_message( $id, "Newline characters detected within $field" ) if ( $cell =~ m/\n/ );
 
 	return $self;
 }

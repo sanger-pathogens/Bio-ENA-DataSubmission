@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="ERS002783&amp;display=xml">
+<SAMPLE alias="3PN00133-sc-2010-05-07-10268" accession="ERS002783" center_name="The Wellcome Trust Sanger Institute">
+     <IDENTIFIERS>
+          <PRIMARY_ID>ERS002783</PRIMARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMEA677572</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="SC">3PN00133-sc-2010-05-07-10268</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Streptococcus pneumoniae</TITLE>
+     <SAMPLE_NAME>
+          <COMMON_NAME>Streptococcus pneumoniae</COMMON_NAME>
+          <TAXON_ID>1313</TAXON_ID>
+          <SCIENTIFIC_NAME>Streptococcus pneumoniae</SCIENTIFIC_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-STUDY</DB>
+                    <ID>ERP000139</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-EXPERIMENT</DB>
+                    <ID>ERX009532,ERX009535</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-RUN</DB>
+                    <ID>ERR023421,ERR023443</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMISSION</DB>
+                    <ID>ERA001521</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-FASTQ-FILES</DB>
+                    <ID>http://www.ebi.ac.uk/ena/data/view/reports/sra/fastq_files/ERS002783</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+          <SAMPLE_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMITTED-FILES</DB>
+                    <ID>http://www.ebi.ac.uk/ena/data/view/reports/sra/submitted_files/ERS002783</ID>
+               </XREF_LINK>
+          </SAMPLE_LINK>
+     </SAMPLE_LINKS>
+     <SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>country</TAG>
+               <VALUE>United Kingdom</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collection_date</TAG>
+               <VALUE>2003</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>serovar</TAG>
+               <VALUE>23F</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>specific_host</TAG>
+               <VALUE>Homo sapiens</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>pubmed_id</TAG>
+               <VALUE>21273480</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>strain</TAG>
+               <VALUE>3PN00133</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-SPOT-COUNT</TAG>
+               <VALUE>10064422</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-BASE-COUNT</TAG>
+               <VALUE>1161642276</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+</ROOT>

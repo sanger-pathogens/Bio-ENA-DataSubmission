@@ -16,11 +16,12 @@ use WWW::Mechanize;
 
 has 'pubmed_id'   => ( is => 'ro', isa => 'Str', required => 1 );
 has 'identifier'  => ( is => 'ro', isa => 'Str', required => 1 );
-has '_pubmed_url' => ( is => 'rw', isa => 'Str', required => 0, lazy_build => 1 );
+has 'pubmed_url_base' => ( is => 'rw', isa => 'Str', default => 'http://www.ncbi.nlm.nih.gov/pubmed/?term=' );
+has '_pubmed_url'     => ( is => 'rw', isa => 'Str', required => 0, lazy_build => 1 );
 
 sub _build__pubmed_url {
 	my $self = shift;
-	return 'http://www.ncbi.nlm.nih.gov/pubmed/?term=' . $self->pubmed_id;
+	return $self->pubmed_url_base . $self->pubmed_id;
 }
 
 sub validate {
@@ -36,6 +37,14 @@ sub validate {
 sub _valid_pubmed_id {
 	my $self = shift;
 	my $url  = $self->_pubmed_url;
+	# For tests check to see if its a file we have on disk
+	if( $url =~ /t\/data/)
+	{
+	  if( -e $url)
+	  {return 1;}
+	  else
+	  {return 0;}
+  }
 
 	my $mech = WWW::Mechanize->new();
 	$mech->get( $url );

@@ -26,13 +26,12 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 
-use lib "/software/pathogen/internal/prod/lib";
-use Data::Dumper;
 use Path::Find;
 use Path::Find::Lanes;
 
 has 'type' => ( is => 'rw', isa => 'Str', required => 1 );
 has 'id'   => ( is => 'rw', isa => 'Str', required => 1 );
+has 'file_type'   => ( is => 'rw', isa => 'Str',      required => 0, default    => 'assembly' );
 
 has '_vrtrack' => ( is => 'rw', isa => 'VRTrack::VRTrack' );
 has '_root'    => ( is => 'rw', isa => 'Str' );
@@ -83,12 +82,22 @@ sub _get_lanes_from_db {
 	for my $database (@pathogen_databases){
 		( $pathtrack, $dbh, $root ) = $find->get_db_info($database);
 
+        my $processed_flag = 0;
+        if($self->file_type eq 'assembly')
+        {
+          $processed_flag = 1024;
+        }
+        elsif($self->file_type eq 'annotation')
+        {
+          $processed_flag = 2048;
+        }
+        
         my $find_lanes = Path::Find::Lanes->new(
             search_type    => $self->type,
             search_id      => $self->id,
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 0
+            processed_flag => $processed_flag
         );
         @lanes = @{ $find_lanes->lanes };
 

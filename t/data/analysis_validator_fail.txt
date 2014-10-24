@@ -1,4 +1,4 @@
-Validation result: FAIL	Errors: 9
+Validation report for: t/data/analysis_manifest_bad.xls	Result: FAIL	Errors: 10
 Test1 genome assembly: Cannot find file: t/data/no_test.fa
 Test1 genome assembly: Invalid run accession - must take format ERRXXXXXX
 Test1 genome assembly: Incorrect date format. Must match YYYY, YYYY-MM or YYYY-MM-DD
@@ -8,3 +8,4 @@ Test2 genome assembly: Invalid study accession - must take format ERPXXXXXX
 Test2 genome assembly: Incorrect date format. Must match YYYY, YYYY-MM or YYYY-MM-DD
 Test3 genome assembly: 'B===D' is not a number
 Test3 genome assembly: Invalid sample accession - must take format ERSXXXXXX
+Test3 genome assembly: ID could not be found in PubMed

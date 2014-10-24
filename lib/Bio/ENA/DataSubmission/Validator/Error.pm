@@ -1,5 +1,5 @@
 package Bio::ENA::DataSubmission::Validator::Error;
-# ABSTRACT: 
+# ABSTRACT: Base Error class from which other error classes will inherit. 
 
 =head1 SYNOPSIS
 

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="ERR369155&amp;display=xml">
+<RUN alias="SC_RUN_10665_2#81" center_name="The Wellcome Trust Sanger Institute" accession="ERR369155" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+     <IDENTIFIERS>
+          <PRIMARY_ID>ERR369155</PRIMARY_ID>
+          <SUBMITTER_ID namespace="SC">SC_RUN_10665_2#81</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Illumina HiSeq 2000 paired end sequencing</TITLE>
+     <EXPERIMENT_REF refname="SC_EXP_10665_2#81" refcenter="SC" accession="ERX341864">
+          <IDENTIFIERS>
+               <PRIMARY_ID>ERX341864</PRIMARY_ID>
+               <SUBMITTER_ID namespace="SC">SC_EXP_10665_2#81</SUBMITTER_ID>
+          </IDENTIFIERS>
+     </EXPERIMENT_REF>
+     <RUN_LINKS>
+          <RUN_LINK>
+               <XREF_LINK>
+                    <DB>ENA-STUDY</DB>
+                    <ID>ERP001039</ID>
+               </XREF_LINK>
+          </RUN_LINK>
+          <RUN_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SAMPLE</DB>
+                    <ID>ERS311393</ID>
+               </XREF_LINK>
+          </RUN_LINK>
+          <RUN_LINK>
+               <XREF_LINK>
+                    <DB>ENA-SUBMISSION</DB>
+                    <ID>ERA266939</ID>
+               </XREF_LINK>
+          </RUN_LINK>
+          <RUN_LINK>
+               <XREF_LINK>
+                    <DB>ENA-FASTQ-FILES</DB>
+                    <ID>http://www.ebi.ac.uk/ena/data/view/reports/sra/fastq_files/ERR369155</ID>
+               </XREF_LINK>
+          </RUN_LINK>
+     </RUN_LINKS>
+     <RUN_ATTRIBUTES>
+          <RUN_ATTRIBUTE>
+               <TAG>ENA-SPOT-COUNT</TAG>
+               <VALUE>2987814</VALUE>
+          </RUN_ATTRIBUTE>
+          <RUN_ATTRIBUTE>
+               <TAG>ENA-BASE-COUNT</TAG>
+               <VALUE>298781400</VALUE>
+          </RUN_ATTRIBUTE>
+     </RUN_ATTRIBUTES>
+</RUN>
+</ROOT>

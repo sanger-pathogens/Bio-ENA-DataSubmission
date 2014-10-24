@@ -25,17 +25,15 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
+use File::Slurp;
 
-use lib "/software/pathogen/internal/prod/lib";
-use lib '../lib';
-use lib './lib';
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::Validator::Report;
 
 # errors
-use Bio::ENA::DataSubmission::Validator::Error::CollectionDate;
+use Bio::ENA::DataSubmission::Validator::Error::Date;
 use Bio::ENA::DataSubmission::Validator::Error::Country;
 use Bio::ENA::DataSubmission::Validator::Error::General;
 use Bio::ENA::DataSubmission::Validator::Error::LatLon;
@@ -50,20 +48,26 @@ has 'report'  => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile' => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'edit'    => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'    => ( is => 'rw', isa => 'Bool',     required => 0 );
+has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+
+has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
+has 'taxon_lookup_service' => ( is => 'rw', isa => 'Str', default  => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=' );
+
 
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $report, $outfile, $edit, $help );
+	my ( $file, $report, $outfile, $edit, $help, $config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
 		$args,
-		'f|file=s'    => \$file,
-		'r|report=s'  => \$report,
-		'o|outfile=s' => \$outfile,
-		'edit'        => \$edit,
-		'h|help'      => \$help
+		'f|file=s'        => \$file,
+		'r|report=s'      => \$report,
+		'o|outfile=s'     => \$outfile,
+		'edit'            => \$edit,
+		'h|help'          => \$help,
+		'c|config_file=s' => \$config_file
 	);
 
 	$self->file($file)       if ( defined $file );
@@ -71,6 +75,19 @@ sub BUILD {
 	$self->outfile($outfile) if ( defined $outfile );
 	$self->edit($edit)       if ( defined $edit );
 	$self->help($help)       if ( defined $help );
+	$self->config_file($config_file) if ( defined $config_file );
+	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
+	$self->_populate_attributes_from_config_file;
+}
+
+sub _populate_attributes_from_config_file
+{
+  my ($self) = @_;
+  my $file_contents = read_file($self->config_file);
+  my $config_values = eval($file_contents);
+
+  $self->ena_base_path($config_values->{ena_base_path});
+  $self->taxon_lookup_service($config_values->{taxon_lookup_service});
 }
 
 sub check_inputs{
@@ -125,9 +142,9 @@ sub run {
 			my $cell = $row[$c];
 			if ( defined $cell ){
 				my $gen_error = Bio::ENA::DataSubmission::Validator::Error::General->new( 
-					accession => $acc,
-					cell      => $cell,
-					id        => $header[$c]
+					identifier => $acc,
+					cell       => $cell,
+					field      => $header[$c]
 				)->validate;
 				push( @errors_found, $gen_error ) if ( $gen_error->triggered );
 			}
@@ -136,28 +153,37 @@ sub run {
 		# validate more specific cells separately
 
 		# mandatory cells
-		my $mandatory_error = Bio::ENA::DataSubmission::Validator::Error::MandatoryCells->new( row => \@row )->validate;
+		my $mandatory = [ 4, 5, 14, 15, 16, 17, 19, 25, 28 ];
+		my $mandatory_error = Bio::ENA::DataSubmission::Validator::Error::MandatoryCells->new( 
+			row => \@row, 
+			mandatory => $mandatory
+		)->validate;
 		push( @errors_found, $mandatory_error ) if ( $mandatory_error->triggered );
 
 		# sample accession
-		my $acc_error = Bio::ENA::DataSubmission::Validator::Error::SampleAccession->new(accession => $acc)->validate;
+		my $acc_error = Bio::ENA::DataSubmission::Validator::Error::SampleAccession->new(
+			accession  => $acc,
+			identifier => $acc,
+			ena_base_path => $self->ena_base_path
+		)->validate;
 		push( @errors_found, $acc_error ) if ( $acc_error->triggered );
 
 		# taxon ID and scientific name
 		if ( $row[4] && $row[5] ){
 			my $taxid_error = Bio::ENA::DataSubmission::Validator::Error::TaxID->new(
-				accession       => $acc,
-				tax_id          => $row[4],
-				scientific_name => $row[5]
+				identifier       => $acc,
+				tax_id           => $row[4],
+				scientific_name  => $row[5],
+				taxon_lookup_service => $self->taxon_lookup_service
 			)->validate;
 			push( @errors_found, $taxid_error ) if ( $taxid_error->triggered );
 		}
 
 		# collection_date
 		if ( $row[14] ){
-			my $cdate_error = Bio::ENA::DataSubmission::Validator::Error::CollectionDate->new(
-				accession       => $acc,
-				collection_date => $row[14]
+			my $cdate_error = Bio::ENA::DataSubmission::Validator::Error::Date->new(
+				identifier => $acc,
+				date       => $row[14]
 			)->validate;
 			push( @errors_found, $cdate_error ) if ( $cdate_error->triggered );
 		}
@@ -165,8 +191,8 @@ sub run {
 		# country
 		if ( $row[15] ){
 			my $country_error = Bio::ENA::DataSubmission::Validator::Error::Country->new(
-				accession => $acc,
-				country   => $row[15]
+				identifier => $acc,
+				country    => $row[15]
 			)->validate;
 			push( @errors_found, $country_error ) if ( $country_error->triggered );
 		}
@@ -174,8 +200,8 @@ sub run {
 		# lat lon
 		if( $row[20] ){
 			my $lat_lon_error = Bio::ENA::DataSubmission::Validator::Error::LatLon->new(
-				accession => $acc,
-				latlon    => $row[20]
+				identifier => $acc,
+				latlon     => $row[20]
 			)->validate;
 			push( @errors_found, $lat_lon_error ) if ( $lat_lon_error->triggered );
 		}
@@ -186,8 +212,9 @@ sub run {
 	#--------------#
 
 	Bio::ENA::DataSubmission::Validator::Report->new(
-		errors  => \@errors_found,
-		outfile => $report
+	    errors  => \@errors_found,
+	    outfile => $report,
+	    infile => $self->file
 	)->print;
 
 	#-------------------------#

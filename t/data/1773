@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!DOCTYPE TaxaSet PUBLIC "-//NLM//DTD Taxon, 14th January 2002//EN" "http://www.ncbi.nlm.nih.gov/entrez/query/DTD/taxon.dtd">
+<TaxaSet><Taxon>
+    <TaxId>1773</TaxId>
+    <ScientificName>Mycobacterium tuberculosis</ScientificName>
+    <OtherNames>
+        <Synonym>Bacillus tuberculosis</Synonym>
+        <Synonym>Bacterium tuberculosis</Synonym>
+        <Synonym>Mycobacterium tuberculosis typus humanus</Synonym>
+        <Synonym>Mycobacterium tuberculosis var. hominis</Synonym>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>&quot;Bacillus tuberculosis&quot; (Zopf 1883) Klein 1884</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>&quot;Bacterium tuberculosis&quot; Zopf 1883</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>&quot;Mycobacterium tuberculosis typus humanus&quot; Lehmann and Neumann 1907</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>&quot;Mycobacterium tuberculosis var. hominis&quot; Bergey et al. 1934</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>authority</ClassCDE>
+            <DispName>Mycobacterium tuberculosis (Zopf 1883) Lehmann and Neumann 1896</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>ATCC 25618</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>ATCC 27294</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>ATCC 9360</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CCUG 37357</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CCUG 38148</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CIP 104475</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CIP 64.31</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>CNCTC 7301</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>NCTC 13144</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>NCTC 7416</DispName>
+        </Name>
+        <Name>
+            <ClassCDE>type material</ClassCDE>
+            <DispName>strain H37Rv</DispName>
+        </Name>
+    </OtherNames>
+    <ParentTaxId>77643</ParentTaxId>
+    <Rank>species</Rank>
+    <Division>Bacteria</Division>
+    <GeneticCode>
+        <GCId>11</GCId>
+        <GCName>Bacterial, Archaeal and Plant Plastid</GCName>
+    </GeneticCode>
+    <MitoGeneticCode>
+        <MGCId>0</MGCId>
+        <MGCName>Unspecified</MGCName>
+    </MitoGeneticCode>
+    <Lineage>cellular organisms; Bacteria; Actinobacteria; Actinobacteria; Actinobacteridae; Actinomycetales; Corynebacterineae; Mycobacteriaceae; Mycobacterium; Mycobacterium tuberculosis complex</Lineage>
+    <LineageEx>
+        <Taxon>
+            <TaxId>131567</TaxId>
+            <ScientificName>cellular organisms</ScientificName>
+            <Rank>no rank</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>2</TaxId>
+            <ScientificName>Bacteria</ScientificName>
+            <Rank>superkingdom</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>201174</TaxId>
+            <ScientificName>Actinobacteria</ScientificName>
+            <Rank>phylum</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>1760</TaxId>
+            <ScientificName>Actinobacteria</ScientificName>
+            <Rank>class</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>85003</TaxId>
+            <ScientificName>Actinobacteridae</ScientificName>
+            <Rank>subclass</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>2037</TaxId>
+            <ScientificName>Actinomycetales</ScientificName>
+            <Rank>order</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>85007</TaxId>
+            <ScientificName>Corynebacterineae</ScientificName>
+            <Rank>suborder</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>1762</TaxId>
+            <ScientificName>Mycobacteriaceae</ScientificName>
+            <Rank>family</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>1763</TaxId>
+            <ScientificName>Mycobacterium</ScientificName>
+            <Rank>genus</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>77643</TaxId>
+            <ScientificName>Mycobacterium tuberculosis complex</ScientificName>
+            <Rank>species group</Rank>
+        </Taxon>
+    </LineageEx>
+    <CreateDate>1995/02/27 09:24:00</CreateDate>
+    <UpdateDate>2013/10/25 16:51:11</UpdateDate>
+    <PubDate>1993/04/29 01:00:00</PubDate>
+</Taxon>
+
+</TaxaSet>

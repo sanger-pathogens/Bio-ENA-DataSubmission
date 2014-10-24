@@ -3,7 +3,7 @@
 package Bio::ENA::DataSubmission::Bin::GenerateAnalysisManifest;
 
 # ABSTRACT: 
-# PODNAME: 
+# PODNAME: generate_analysis_manifest
 
 =head1 SYNOPSIS
 
@@ -11,6 +11,7 @@ package Bio::ENA::DataSubmission::Bin::GenerateAnalysisManifest;
 =cut
 
 BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
+BEGIN { unshift( @INC, '/software/pathogen/internal/pathdev/vr-codebase/modules' ) }
 BEGIN { unshift( @INC, '../lib' ) }
 BEGIN { unshift( @INC, './lib' ) }
 

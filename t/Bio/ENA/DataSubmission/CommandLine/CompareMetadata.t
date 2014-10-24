@@ -14,7 +14,7 @@ use Cwd;
 use File::Temp;
 use Data::Dumper;
 
-my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 0 );
+my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::CommandLine::CompareMetadata');
@@ -25,19 +25,19 @@ my ($obj, @args);
 # test illegal options #
 #----------------------#
 
-@args = ();
+@args = ( '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
 
-@args = ( '-o', 't/data/fakefile.txt');
+@args = ( '-o', 't/data/fakefile.txt', '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without file input';
 
-@args = ('-f', 'not/a/file');
+@args = ('-f', 'not/a/file', '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid input file path';
 
-@args = ('-f', 't/data/compare_manifest.xls', '-o', 'not/a/file');
+@args = ('-f', 't/data/compare_manifest.xls', '-o', 'not/a/file', '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid output file path';
 
@@ -46,7 +46,7 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
 # test methods #
 #--------------#
 
-@args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report.xls");
+@args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report.xls", '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 
 # compare metadata
@@ -82,7 +82,7 @@ is_deeply( diff_xls('t/data/comparison_report.xls', "$tmp/comparison_report.xls"
 
 
 # test reporting without any errors
-@args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report2.xls");
+@args = ('-f', 't/data/compare_manifest.xls', '-o', "$tmp/comparison_report2.xls", '-c', 't/data/test_ena_data_submission.conf');
 $obj = Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@args );
 
 my @no_errors;

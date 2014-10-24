@@ -1,1 +1,1 @@
-Validation result: PASS	Errors: 0
+Validation report for: t/data/manifest_good.xls	Result: PASS	Errors: 0
