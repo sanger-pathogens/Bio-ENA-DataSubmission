@@ -136,6 +136,7 @@ sub write_xls{
 	foreach my $row ( @data ) {
 		$j = 0;
 		foreach my $cell ( @{ $row } ) {
+			next unless ( defined $cell );
 			if ( $self->_show_errors && $cell =~ m/!!$/ ){
 				$cell =~ s/!!$//;
 				$worksheet->write( $i, $j, $cell, $warning );
