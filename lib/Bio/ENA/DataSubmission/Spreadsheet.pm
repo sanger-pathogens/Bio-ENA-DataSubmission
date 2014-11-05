@@ -179,8 +179,8 @@ sub parse_manifest{
 
 	my @data;
 	foreach my $row ( @manifest ){
+	    next if( (! defined($row->[0])) ||  $row->[0] eq "");
 		push( @data, {} );
-		next if( (! defined($row->[0])) ||  $row->[0] eq "");
 		for my $c ( 0..$#{$row} ){
 			my $key = $header[$c] eq 'host' ? 'specific_host' : $header[$c];
 			$data[-1]->{$key} = $row->[$c];
