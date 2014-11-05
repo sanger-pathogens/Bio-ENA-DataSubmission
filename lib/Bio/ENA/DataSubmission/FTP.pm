@@ -72,8 +72,8 @@ sub upload {
 	for my $local_file ( keys %{ $self->files } ){
 	  my $target = $self->files->{$local_file};
 	  $target = $self->_server_target( $self->files->{$local_file} );
-	  
-	  system("curl -T $local_file ftp://".$self->username.":".$self->password."@".$self->server."/$target");
+	  my $cmd = "curl -T $local_file ftp://".$self->username.":".$self->password."@".$self->server;
+	  system($cmd);
 	}
 
 	unless ( $ftp->quit ) {
