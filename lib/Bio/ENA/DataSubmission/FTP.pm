@@ -72,10 +72,8 @@ sub upload {
 	for my $local_file ( keys %{ $self->files } ){
 	  my $target = $self->files->{$local_file};
 	  $target = $self->_server_target( $self->files->{$local_file} );
-		unless ( $ftp->put( $local_file, $target ) ){
-			$self->error( "Failed to upload $local_file\n" );
-			return 0;
-		}
+	  my $cmd = "curl -T $local_file ftp://".$self->username.":".$self->password."@".$self->server;
+	  system($cmd);
 	}
 
 	unless ( $ftp->quit ) {

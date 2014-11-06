@@ -271,6 +271,7 @@ sub _convert_gffs_to_flatfiles
 sub _convert_secondary_project_accession_to_primary
 {
   my ($self, $accession) = @_;
+  return $accession unless(defined($accession));
   return $accession unless($accession =~ /ERP/);
 
   my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$accession&display=xml",ena_base_path => $self->ena_base_path )->parse_from_url;
