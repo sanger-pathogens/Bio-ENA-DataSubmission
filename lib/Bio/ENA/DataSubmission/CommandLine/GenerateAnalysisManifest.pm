@@ -57,7 +57,6 @@ has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    
 
 sub _build__current_date {
 	my $self = shift;
-	print "Building current_date!\n";
 
 	my @timestamp = localtime(time);
 	my $day  = sprintf( "%04d-%02d-%02d", $timestamp[5]+1900, $timestamp[4]+1, $timestamp[3] );
@@ -154,6 +153,7 @@ sub run {
 		add_manifest_header => 1
 	);
 	$manifest->write_xls;
+	print "Created manifest file:\t".$self->outfile."\n";
 
 	1;
 }
@@ -356,7 +356,7 @@ sub _calculate_coverage
 
 sub usage_text {
 	return <<USAGE;
-Usage: validate_sample_manifest [options]
+Usage: generate_analysis_manifest [options]
 
 	-t|type          lane|study|file|sample
 	-i|id            lane ID|study ID|file of lanes|file of samples|sample ID
