@@ -35,6 +35,7 @@ use File::Copy qw(copy);
 use File::Path qw(make_path);
 use Cwd 'abs_path';
 use Cwd;
+use Parallel::ForkManager;
 
 use Bio::ENA::DataSubmission;
 use Bio::ENA::DataSubmission::Exception;
@@ -55,6 +56,7 @@ has 'analysis_type'   => ( is => 'rw', isa => 'Str',      required => 0, default
 has 'manifest'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'         => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'help'            => ( is => 'rw', isa => 'Bool',     required => 0 );
+has 'processors'      => ( is => 'rw', isa => 'Int',      default  => 1 );
 
 has '_current_user'   => ( is => 'rw', isa => 'Str',      lazy => 1, builder => '_build__current_user');
 has '_timestamp'      => ( is => 'rw', isa => 'Str',      lazy => 1, builder => '_build__timestamp');
@@ -86,7 +88,7 @@ sub BUILD {
 
 	my ( 
 		$file, $outfile, $analysis_type,
-		$no_validate, $no_upload, $help, $config_file
+		$no_validate, $no_upload, $help, $config_file,$processors
 	);
 	my $args = $self->args;
 
@@ -97,6 +99,7 @@ sub BUILD {
 		't|type'      => \$analysis_type,
 		'no_validate' => \$no_validate,
 		'c|config_file=s' => \$config_file,
+		'p|processors=i'  => \$processors,
 		'h|help'      => \$help
 	);
 
@@ -106,6 +109,7 @@ sub BUILD {
 	$self->no_validate($no_validate)     if ( defined $no_validate );
 	$self->help($help)                   if ( defined $help );
 	$self->config_file($config_file)     if ( defined $config_file );
+	$self->processors($processors)       if ( defined $processors );
 	
 	$self->_check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
 	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file for Submit Analysis Objects\n" );
@@ -236,7 +240,7 @@ sub run {
 	unless( defined($self->_no_upload) && $self->_no_upload == 1 ){ 
 		my $dest  = $self->_server_dest;
 		my $files = $self->_parse_filelist($tmp);
-		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest, username => $self->_webin_user, password => $self->_webin_pass, server => $self->_webin_host );
+		my $uploader = Bio::ENA::DataSubmission::FTP->new( files => $files, destination => $dest, username => $self->_webin_user, password => $self->_webin_pass, server => $self->_webin_host, processors => $self->processors );
 		$uploader->upload or Bio::ENA::DataSubmission::Exception::FTPError->throw( error => $uploader->error );
 		# Save submitted files
   	$self->_keep_local_copy_of_submitted_files($files);
@@ -262,10 +266,16 @@ sub run {
 sub _convert_gffs_to_flatfiles
 {
   my ($self) = @_;
+  my $pm = new Parallel::ForkManager( $self->processors );
+  
   for my $cmd (@{$self->_convert_gffs_to_flatfiles_cmds})
   {
+    $pm->start and next; 
     system($cmd);
+    $pm->finish;
   }
+  $pm->wait_all_children;
+  return 1;
 }
 
 sub _convert_secondary_project_accession_to_primary
@@ -303,9 +313,14 @@ sub _convert_gffs_to_flatfiles_cmds
      next unless(  $row->{file} =~ /gff$/);
      
      my $input_file = $row->{file};
-     my $output_file = $sample_name.'.embl' ;
+     my $output_file = $directories.$sample_name.'.embl' ;
+     my $locus_tag = "";
+     if(defined($row->{run}) && $row->{run} ne "")
+     {
+       $locus_tag = "--locus_tag ".$row->{run};
+     }
      
-     push(@commands_to_run, "gff3_to_embl --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
+     push(@commands_to_run, "gff3_to_embl $locus_tag --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
      $row->{file} = $output_file ;
    }
    return \@commands_to_run;
@@ -377,13 +392,23 @@ sub _gzip_input_files
 {
   my ($self)     = @_;
   
+  my @cmds ;
   my @manifest = @{ $self->_manifest_data };
 	foreach my $row (@manifest ){
 	  my $file_gz = $row->{file}.'.gz';
-	  system("gzip -c -n ".$row->{file}." > $file_gz ");
-	  
+	  push(@cmds, "gzip -c -n ".$row->{file}." > $file_gz ");
 	  $row->{file} = $file_gz;
 	}
+
+	my $pm = new Parallel::ForkManager( $self->processors );
+	for my $cmd (@cmds)
+	{
+    $pm->start and next; 
+    system($cmd);
+    $pm->finish;
+  }
+  $pm->wait_all_children;
+
 	1;
 }
 
@@ -593,7 +618,7 @@ Usage: submit_analysis_objects [options]
 	-o|outfile     Output file for report ( .xls format )
 	-t|type        Default = sequence_assembly
 	--no_validate  Do not run manifest validation step
-	-h|help'       This help message
+	-h|help        This help message
 
 USAGE
 }
