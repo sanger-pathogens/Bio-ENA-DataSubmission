@@ -303,9 +303,14 @@ sub _convert_gffs_to_flatfiles_cmds
      next unless(  $row->{file} =~ /gff$/);
      
      my $input_file = $row->{file};
-     my $output_file = $sample_name.'.embl' ;
+     my $output_file = $directories.$sample_name.'.embl' ;
+     my $locus_tag = "";
+     if(defined($row->{run}) && $row->{run} ne "")
+     {
+       $locus_tag = "--locus_tag ".$row->{run};
+     }
      
-     push(@commands_to_run, "gff3_to_embl --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
+     push(@commands_to_run, "gff3_to_embl $locus_tag --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
      $row->{file} = $output_file ;
    }
    return \@commands_to_run;
@@ -593,7 +598,7 @@ Usage: submit_analysis_objects [options]
 	-o|outfile     Output file for report ( .xls format )
 	-t|type        Default = sequence_assembly
 	--no_validate  Do not run manifest validation step
-	-h|help'       This help message
+	-h|help        This help message
 
 USAGE
 }
