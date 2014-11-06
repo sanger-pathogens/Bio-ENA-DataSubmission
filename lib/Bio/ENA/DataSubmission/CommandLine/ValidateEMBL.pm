@@ -100,6 +100,16 @@ sub run {
     1;
 }
 
+sub usage_text {
+	return <<USAGE;
+Usage: validate_embl [options] embl_files
+
+	--jar_path     Location of the EMBL validator jar file (defaults to /software/pathogen/external/bin/embl-client.jar)
+	-h|help        This help message
+
+USAGE
+}
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 1;
