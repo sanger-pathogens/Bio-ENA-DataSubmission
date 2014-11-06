@@ -24,6 +24,7 @@ no warnings 'uninitialized';
 use Moose;
 use Net::FTP;
 use File::Basename;
+use Parallel::ForkManager;
 
 has 'server'    => ( is => 'rw', isa => 'Str',      required => 1 );
 has 'username'  => ( is => 'rw', isa => 'Str',      required => 1 );
@@ -31,6 +32,7 @@ has 'password'  => ( is => 'rw', isa => 'Str',      required => 1 );
 has 'files'     => ( is => 'ro', isa => 'HashRef',  required => 1 );
 has 'directory' => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'error'     => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'processors' => ( is => 'rw', isa => 'Int',      default  => 1 );
 
 sub upload {
 	my $self = shift;
@@ -69,12 +71,16 @@ sub upload {
 		$ftp->mkdir( $self->directory );
 	}
 
+  my $pm = new Parallel::ForkManager( $self->processors );
 	for my $local_file ( keys %{ $self->files } ){
+	  $pm->start and next; 
 	  my $target = $self->files->{$local_file};
 	  $target = $self->_server_target( $self->files->{$local_file} );
 	  my $cmd = "curl -T $local_file ftp://".$self->username.":".$self->password."@".$self->server;
 	  system($cmd);
+	  $pm->finish;
 	}
+	$pm->wait_all_children;
 
 	unless ( $ftp->quit ) {
 		$self->error( $ftp->message );
