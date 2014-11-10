@@ -178,9 +178,12 @@ sub update_analysis {
 	
 	if(defined($row->{chromosome_list_file}))
 	{
-	  $template->{FILES}->[0]->{FILE}->[1]->{filename} = $row->{chromosome_list_file};
+	  my ( $cl_filename, $d, $s ) = fileparse( $row->{chromosome_list_file} );
+	  
+	  $template->{FILES}->[0]->{FILE}->[1]->{filename} = $cl_filename;
   	$template->{FILES}->[0]->{FILE}->[1]->{filetype} = 'chromosome_list';
   	$template->{FILES}->[0]->{FILE}->[1]->{checksum} = $row->{chromosome_list_file_checksum};
+  	$template->{FILES}->[0]->{FILE}->[1]->{checksum_method} = "MD5";
   }
 	
 
