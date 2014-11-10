@@ -176,6 +176,18 @@ sub update_analysis {
 	$template->{SAMPLE_REF}->[0]->{accession}                                  = $row->{sample};
 	$template->{RUN_REF}->[0]->{accession}                                     = $row->{run} if(defined($row->{run}));
 	
+	if(defined($row->{chromosome_list_file}))
+	{
+	  my ( $cl_filename, $d, $s ) = fileparse( $row->{chromosome_list_file} );
+	  
+	  $template->{FILES}->[0]->{FILE}->[1]->{filename} = $cl_filename;
+  	$template->{FILES}->[0]->{FILE}->[1]->{filetype} = 'chromosome_list';
+  	$template->{FILES}->[0]->{FILE}->[1]->{checksum} = $row->{chromosome_list_file_checksum};
+  	$template->{FILES}->[0]->{FILE}->[1]->{checksum_method} = "MD5";
+  }
+	
+
+	
 	# optional data
 	if ( defined $row->{minimum_gap} ){
 		$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{MIN_GAP_LENGTH}->[0] = $row->{minimum_gap};
