@@ -399,6 +399,8 @@ sub _parse_filelist {
 sub _calc_md5
 {
   my ($self, $file)     = @_;
+  return if(!defined($file));
+  return if(!(-e $file));
   
   open(my $fh, $file);
   binmode($fh);
@@ -458,7 +460,7 @@ sub _update_analysis_xml {
 	  $row->{study} = $self->_convert_secondary_project_accession_to_primary($row->{study});
 		$row->{checksum} = $self->_calc_md5($row->{file}); # add MD5 checksum 
 		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
-		$row->{chromosome_list_file_checksum} = $self->_calc_md5($row->{chromosome_list_file}); # add MD5 checksum 
+		$row->{chromosome_list_file_checksum} = $self->_calc_md5($row->{chromosome_list_file}) if(defined($row->{chromosome_list_file}));
 		$row->{chromosome_list_file} = $self->_server_path( $row->{chromosome_list_file}, $row->{name} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new(data_root => $self->data_root)->update_analysis( $row );
 		my $release_date = $row->{release_date};
