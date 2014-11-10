@@ -149,8 +149,8 @@ is_deeply($obj->_convert_gffs_to_flatfiles_cmds,
 ok( $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( args => \@args ), 'Initialize object for valid run' );
 ok($obj->_convert_secondary_project_accession_to_primary_manifest_data,'convert to secondary');
 is_deeply($obj->_convert_gffs_to_flatfiles_cmds, 
-  ['gff3_to_embl --locus_tag ERR363472 --chromosome_list t/data/analysis_submission/test_genome_1.embl.chromosome_list.txt --output_filename t/data/analysis_submission/test_genome_1.embl "Stap A" "1234" "PRJEB2779" "We assembled some crap! Who cares?" "t/data/analysis_submission/testfile1.gff"',
-   'gff3_to_embl --locus_tag ERR369164 --chromosome_list t/data/analysis_submission/test_genome_2.embl.chromosome_list.txt --output_filename t/data/analysis_submission/test_genome_2.embl "Ecoli" "1234" "PRJEB2779" "Assembly of a steaming pile" "t/data/analysis_submission/testfile2.gff"'], 'no commands to convert from gff to embl because its fasta files');
+  ['gff3_to_embl --locus_tag ERR363472 --chromosome_list t/data/analysis_submission/test_genome_1.embl.chromosome_list --output_filename t/data/analysis_submission/test_genome_1.embl "Stap A" "1234" "PRJEB2779" "We assembled some crap! Who cares?" "t/data/analysis_submission/testfile1.gff"',
+   'gff3_to_embl --locus_tag ERR369164 --chromosome_list t/data/analysis_submission/test_genome_2.embl.chromosome_list --output_filename t/data/analysis_submission/test_genome_2.embl "Ecoli" "1234" "PRJEB2779" "Assembly of a steaming pile" "t/data/analysis_submission/testfile2.gff"'], 'no commands to convert from gff to embl because its fasta files');
 
 remove_tree( $obj->_output_dest );
 remove_tree( $obj->_output_root );
