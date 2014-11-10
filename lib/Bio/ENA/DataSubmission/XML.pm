@@ -176,6 +176,15 @@ sub update_analysis {
 	$template->{SAMPLE_REF}->[0]->{accession}                                  = $row->{sample};
 	$template->{RUN_REF}->[0]->{accession}                                     = $row->{run} if(defined($row->{run}));
 	
+	if(defined($row->{chromosome_list_file}))
+	{
+	  $template->{FILES}->[0]->{FILE}->[1]->{filename} = $row->{chromosome_list_file};
+  	$template->{FILES}->[0]->{FILE}->[1]->{filetype} = 'chromosome_list';
+  	$template->{FILES}->[0]->{FILE}->[1]->{checksum} = $row->{chromosome_list_file_checksum};
+  }
+	
+
+	
 	# optional data
 	if ( defined $row->{minimum_gap} ){
 		$template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{MIN_GAP_LENGTH}->[0] = $row->{minimum_gap};

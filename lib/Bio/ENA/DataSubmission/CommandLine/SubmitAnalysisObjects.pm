@@ -234,6 +234,11 @@ sub run {
   my $tmp = $temp_directory_obj->dirname();
   $self->_temp_copies($tmp);
   $self->_convert_gffs_to_flatfiles();
+  
+  # Create a chromosome.txt file if the type is chromosome_flatfile
+  # gzip it and add it to the list to upload
+  # add it to the xml 
+  
   $self->_gzip_input_files();
 	
 	# Place files in ENA dropbox via FTP
@@ -320,7 +325,14 @@ sub _convert_gffs_to_flatfiles_cmds
        $locus_tag = "--locus_tag ".$row->{run};
      }
      
-     push(@commands_to_run, "gff3_to_embl $locus_tag --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
+     my $chromosome_list = '';
+     if(defined($row->{file_type}) && $row->{file_type} eq 'chromosome_flatfile')
+     {
+       $chromosome_list = '--chromosome_list '.$output_file.".chromosome_list";
+       $row->{chromosome_list_file} = $output_file.".chromosome_list" ;
+     }
+     
+     push(@commands_to_run, "gff3_to_embl $locus_tag $chromosome_list --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
      $row->{file} = $output_file ;
    }
    return \@commands_to_run;
@@ -374,6 +386,12 @@ sub _parse_filelist {
 	  
 	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*\.gz/ );
 		$filelist{$row->{file}} = $sample_name.$suffix ;
+		
+		if(-e $row->{chromosome_list_file})
+		{
+		  $filelist{$row->{chromosome_list_file}} = $sample_name.".chromosome_list.gz";
+	  }
+		
 	}
 	return \%filelist;
 }
@@ -398,6 +416,13 @@ sub _gzip_input_files
 	  my $file_gz = $row->{file}.'.gz';
 	  push(@cmds, "gzip -c -n ".$row->{file}." > $file_gz ");
 	  $row->{file} = $file_gz;
+	  
+	  if(-e $row->{chromosome_list_file})
+    {
+      my $file_cl_gz = $row->{chromosome_list_file}.'.gz';
+	    push(@cmds, "gzip -c -n ".$row->{chromosome_list_file}." > $file_cl_gz ");
+	    $row->{chromosome_list_file} = $file_cl_gz;
+    }
 	}
 
 	my $pm = new Parallel::ForkManager( $self->processors );
@@ -433,6 +458,8 @@ sub _update_analysis_xml {
 	  $row->{study} = $self->_convert_secondary_project_accession_to_primary($row->{study});
 		$row->{checksum} = $self->_calc_md5($row->{file}); # add MD5 checksum 
 		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
+		$row->{chromosome_list_file_checksum} = $self->_calc_md5($row->{chromosome_list_file}); # add MD5 checksum 
+		$row->{chromosome_list_file} = $self->_server_path( $row->{chromosome_list_file}, $row->{name} ); # change file path from local to server
 		my $analysis_xml = Bio::ENA::DataSubmission::XML->new(data_root => $self->data_root)->update_analysis( $row );
 		my $release_date = $row->{release_date};
 		# split data based on release dates. release date set in submission XML
@@ -452,6 +479,7 @@ sub _update_analysis_xml {
 
 sub _server_path {
 	my ( $self, $local, $name ) = @_;
+	return undef unless defined($local);
 	my $s_dest = $self->_server_dest;
 
 	my ( $filename, $directories, $suffix ) = fileparse( $local, qr/\.[^.]*\.gz/ );
