@@ -183,6 +183,7 @@ sub parse_manifest{
 	    next if( (! defined($row->[0])) ||  $row->[0] eq "");
 		push( @data, {} );
 		for my $c ( 0..$#{$row} ){
+		  $row->[$c] =~ s/^\s+|\s+$//g
 			my $key = $header[$c] eq 'host' ? 'specific_host' : $header[$c];
 			$data[-1]->{$key} = $row->[$c];
 		}
