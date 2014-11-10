@@ -387,7 +387,7 @@ sub _parse_filelist {
 	  my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*\.gz/ );
 		$filelist{$row->{file}} = $sample_name.$suffix ;
 		
-		if(-e $row->{chromosome_list_file})
+		if(defined($row->{chromosome_list_file}) && (-e $row->{chromosome_list_file}))
 		{
 		  $filelist{$row->{chromosome_list_file}} = $sample_name.".chromosome_list.gz";
 	  }
@@ -417,7 +417,7 @@ sub _gzip_input_files
 	  push(@cmds, "gzip -c -n ".$row->{file}." > $file_gz ");
 	  $row->{file} = $file_gz;
 	  
-	  if(-e $row->{chromosome_list_file})
+    if(defined($row->{chromosome_list_file}) && (-e $row->{chromosome_list_file}))
     {
       my $file_cl_gz = $row->{chromosome_list_file}.'.gz';
 	    push(@cmds, "gzip -c -n ".$row->{chromosome_list_file}." > $file_cl_gz ");
