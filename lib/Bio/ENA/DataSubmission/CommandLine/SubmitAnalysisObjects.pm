@@ -328,8 +328,8 @@ sub _convert_gffs_to_flatfiles_cmds
      my $chromosome_list = '';
      if(defined($row->{file_type}) && $row->{file_type} eq 'chromosome_flatfile')
      {
-       $chromosome_list = '--chromosome_list '.$output_file.".chromosome_list";
-       $row->{chromosome_list_file} = $output_file.".chromosome_list" ;
+       $chromosome_list = '--chromosome_list '.$directories.$sample_name.".chromosome_list";
+       $row->{chromosome_list_file} = $directories.$sample_name.".chromosome_list" ;
      }
      
      push(@commands_to_run, "gff3_to_embl $locus_tag $chromosome_list --output_filename $output_file \"$row->{common_name}\" \"$row->{tax_id}\" \"$row->{study}\" \"$row->{description}\" \"$input_file\""); 
