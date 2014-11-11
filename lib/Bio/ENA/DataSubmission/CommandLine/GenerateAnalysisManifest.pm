@@ -262,6 +262,7 @@ sub _get_sample_from_lane {
 
 sub _get_run_from_lane {
 	my ( $self, $lane ) = @_;
+	return '' unless(defined($lane->acc));
 	return $lane->acc;
 }
 
