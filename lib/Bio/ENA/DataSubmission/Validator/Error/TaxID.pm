@@ -31,7 +31,22 @@ sub validate {
 		$self->set_error_message( $id, "$tax_id is not a valid taxonomic ID" ) unless ( defined $taxon_lookup );
 	}
 	else {
-		$self->set_error_message( $id, "Taxon ID '$tax_id' does not match given scientific name '$scientific_name'. $tax_id = $taxon_lookup" ) unless ( $scientific_name eq $taxon_lookup );
+	  if ( $scientific_name ne $taxon_lookup )
+	  {
+	  	$self->set_error_message( $id, "Taxon ID '$tax_id' does not match given scientific name '$scientific_name'. $tax_id = $taxon_lookup" ) 
+  	}
+  	else
+  	{
+  	  #Remove non word characters and see do they match. [Clostridium] issue.
+  	  my $scientific_name_filtered = $scientific_name;
+  	  my $taxon_lookup_filtered    = $taxon_lookup;
+  	  $scientific_name_filtered =~ s!\W!!gi;
+  	  $taxon_lookup_filtered =~ s!\W!!gi;
+
+      $self->set_error_message( $id, "Taxon ID '$tax_id' does not match given scientific name '$scientific_name'. $tax_id = $taxon_lookup" ) if($scientific_name_filtered ne $taxon_lookup_filtered );
+	  }
+  	
+		
 	}
 
 	return $self;
