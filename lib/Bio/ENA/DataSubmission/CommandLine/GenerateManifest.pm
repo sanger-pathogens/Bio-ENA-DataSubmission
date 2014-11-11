@@ -167,13 +167,30 @@ sub _manifest_row{
 	# build data, so long as it's available
 	my $sample = $self->_get_sample_from_lane( $f->_vrtrack, $lane );
 	return \@row unless (defined $sample);
-	my $sample_name = $sample->name;
-	my $sample_acc = $sample->individual->acc;
+	my $sample_name = $sample->name || '';
+	my $sample_acc = $sample->individual->acc || '';
+	
 	my $warehouse_dbh = $self->_warehouse;
 	my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
-	my $supplier_name = $sample_data[0];
+	my $supplier_name = '';
+	if(@sample_data > 0)
+	{
+	  $supplier_name = $sample_data[0] || '';
+  }
 	
-	return [ $sample_acc, $sample_name, $supplier_name ];
+	my $sample_alias = $lane->name || '';
+	my $sample_anonymized_name = $sample->ssid() || '';
+	my $common_name = '';
+	my $taxon_id = '';
+	
+	if(defined($sample->individual) && defined($sample->individual->species))
+	{
+	  $common_name = $sample->individual->species->name || '';
+  	$taxon_id = $sample->individual->species->taxon_id || '';
+  }
+	
+	
+	return [ $sample_acc, $sample_name, $supplier_name,$sample_alias,$taxon_id, $common_name,$common_name, $sample_anonymized_name,'','','','','','','NA','NA','NA','NA','','NA','','','','','',$sample_name,'','','NA'];
 }
 
 sub _error_row {

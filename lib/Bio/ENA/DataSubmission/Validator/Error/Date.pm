@@ -19,10 +19,16 @@ sub validate {
 	my $date = $self->date;
 	my $id  = $self->identifier;
 
+  if(defined($date) && $date eq 'NA' )
+  {
+    return $self;
+  }
+
+  # Todo: replace with proper date validation
 	my $format = (
-		   $date =~ m/\d{4}-\d{2}-\d{2}/ 
-		|| $date =~ m/\d{4}-\d{2}/
-		|| $date =~ m/\d{4}/
+		   $date =~ m/^\d{4}-\d{2}-\d{2}$/ 
+		|| $date =~ m/^\d{4}-\d{2}$/
+		|| $date =~ m/^\d{4}$/
 	);
 
 	$self->set_error_message( $id, "Incorrect date format. Must match YYYY, YYYY-MM or YYYY-MM-DD" ) unless ( $format );
