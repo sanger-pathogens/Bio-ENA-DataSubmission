@@ -178,7 +178,7 @@ sub _manifest_row{
 	  $supplier_name = $sample_data[0] || '';
   }
 	
-	my $sample_alias = $sample_acc || '';
+	my $sample_alias = '';
 	my $lane_name =  $lane->name || '';
 	my $sample_anonymized_name = $sample->ssid() || '';
 	my $common_name = '';
