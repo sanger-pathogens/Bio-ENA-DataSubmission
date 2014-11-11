@@ -178,7 +178,8 @@ sub _manifest_row{
 	  $supplier_name = $sample_data[0] || '';
   }
 	
-	my $sample_alias = $lane->name || '';
+	my $sample_alias = $sample_acc || '';
+	my $lane_name =  $lane->name || '';
 	my $sample_anonymized_name = $sample->ssid() || '';
 	my $common_name = '';
 	my $taxon_id = '';
@@ -189,8 +190,7 @@ sub _manifest_row{
   	$taxon_id = $sample->individual->species->taxon_id || '';
   }
 	
-	
-	return [ $sample_acc, $sample_name, $supplier_name,$sample_alias,$taxon_id, $common_name,$common_name, $sample_anonymized_name,'','','','','','','NA','NA','NA','NA','','NA','','','','','',$sample_name,'','','NA'];
+	return [ $sample_acc, $sample_name, $supplier_name, $sample_alias, $taxon_id, $common_name,$common_name, $sample_anonymized_name, $lane_name,'','','','','','NA','NA','NA','NA','','NA','','','','','',$sample_name,'','','NA'];
 }
 
 sub _error_row {
