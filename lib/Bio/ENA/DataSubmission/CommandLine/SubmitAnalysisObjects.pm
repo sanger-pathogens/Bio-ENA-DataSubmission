@@ -648,6 +648,7 @@ Usage: submit_analysis_objects [options]
 	-o|outfile     Output file for report ( .xls format )
 	-t|type        Default = sequence_assembly
 	--no_validate  Do not run manifest validation step
+	-p|processors  Number of threads to use (default is 1)
 	-h|help        This help message
 
 USAGE
