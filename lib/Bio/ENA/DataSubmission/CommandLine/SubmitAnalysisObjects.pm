@@ -320,9 +320,9 @@ sub _convert_gffs_to_flatfiles_cmds
      my $input_file = $row->{file};
      my $output_file = $directories.$sample_name.'.embl' ;
      my $locus_tag = "";
-     if(defined($row->{name}) && $row->{name} ne "")
+     if(defined($row->{sample}) && $row->{sample} ne "")
      {
-       $locus_tag = "--locus_tag ".$row->{name};
+       $locus_tag = "--locus_tag ".$row->{sample};
      }
      
      my $chromosome_list = '';
