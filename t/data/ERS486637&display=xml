@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="ERS486637&amp;display=xml">
+<SAMPLE alias="3130-sc-2000353" accession="ERS486637" center_name="The Wellcome Trust Sanger Institute" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+     <IDENTIFIERS>
+          <PRIMARY_ID>ERS486637</PRIMARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMEA2613278</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="SC">3130-sc-2000353</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <SAMPLE_NAME>
+          <COMMON_NAME>Campylobacter sp.</COMMON_NAME>
+          <TAXON_ID>205</TAXON_ID>
+     </SAMPLE_NAME>
+     <SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Sample Description</TAG>
+               <VALUE/>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ArrayExpress-StrainOrLine</TAG>
+               <VALUE>Human</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>Strain</TAG>
+               <VALUE>Human</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ArrayExpress-Species</TAG>
+               <VALUE>Campylobacter sp.</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+</ROOT>
