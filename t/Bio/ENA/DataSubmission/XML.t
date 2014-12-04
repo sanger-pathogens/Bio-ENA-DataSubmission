@@ -12,6 +12,7 @@ use File::Slurp;
 use File::Path qw( remove_tree);
 use Cwd;
 use File::Temp;
+use Data::Dumper;
 
 my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
 my $tmp = $temp_directory_obj->dirname();
@@ -120,6 +121,56 @@ my %exp = (
 	strain           => '2007223'
 );
 is_deeply $obj->parse_xml_metadata('ERS001491'), \%exp, 'XML parsed correctly';
+
+# update_sample to check does it remove 'Strain'
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
+ok( my $updated_xml = $obj->update_sample({'sample_accession' => 'ERS486637', 'anothertag' => 'ABC', 'strain' => 'lowercase strain'}), 'Remove strain');
+is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},[
+          {
+            'SAMPLE_ATTRIBUTE' => [
+                                    {
+                                      'VALUE' => [
+                                                 {}
+                                               ],
+                                      'TAG' => [
+                                                 'Sample Description'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                 'Human'
+                                               ],
+                                      'TAG' => [
+                                                 'ArrayExpress-StrainOrLine'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                 'Campylobacter sp.'
+                                               ],
+                                      'TAG' => [
+                                                 'ArrayExpress-Species'
+                                               ]
+                                    },         
+                                     {
+                                       'VALUE' => [
+                                                  'lowercase strain'
+                                                ],
+                                       'TAG' => [
+                                                  'strain'
+                                                ]
+                                     },
+                                    {
+                                      'VALUE' => [
+                                                   'ABC'
+                                                 ],
+                                      'TAG' => [
+                                                 'anothertag'
+                                               ]
+                                    }
+                                  ]
+          }
+        ], 'Check Strain has been removed but lowercase strain kept');
 
 remove_tree($tmp);
 done_testing();
