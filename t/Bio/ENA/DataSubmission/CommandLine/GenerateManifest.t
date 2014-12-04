@@ -58,7 +58,7 @@ throws_ok { $obj->run } 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 
 # lane
 @exp_ers = (
     [
-        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', 'NA', 'NA', 'NA', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552104', '', '', 'NA'
+        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552104', '', '', 'NA'
     ]
 );
 @args = ( '-t', 'lane', '-i', '10665_2#81', '-o', "$tmp/manifest.xls", '-c', 't/data/test_ena_data_submission.conf' );
@@ -69,13 +69,13 @@ is_deeply $obj->sample_data, \@exp_ers, 'Correct lane ERS';
 # file
 @exp_ers = (
     [
-        'ERS311560', '2047STDY5552273', 'UNC718', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648682', '10660_2#13', '', '', '', '', '', 'NA', 'NA', 'NA', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552273', '', '', 'NA'
+        'ERS311560', '2047STDY5552273', 'UNC718', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648682', '10660_2#13', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552273', '', '', 'NA'
     ],
     [
-        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', 'NA', 'NA', 'NA', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552104', '', '', 'NA'
+        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552104', '', '', 'NA'
     ],
     [
-        'ERS311489', '2047STDY5552201', 'UNC647', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648610', '10665_2#90', '', '', '', '', '', 'NA', 'NA', 'NA', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552201', '', '', 'NA'
+        'ERS311489', '2047STDY5552201', 'UNC647', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648610', '10665_2#90', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552201', '', '', 'NA'
     ],
     [ '11111_1#1', 'not found', 'not found' ]
 );
