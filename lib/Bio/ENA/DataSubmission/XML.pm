@@ -135,7 +135,14 @@ sub _update_fields {
 
 	# if not found, then check sample attributes list
 	unless( $found ){
-		my @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
+	  my @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
+	  for my $a ( 0..$#attrs){
+		  if ( $attrs[$a]->{TAG}->[0] eq "Strain" ){
+		    splice $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE},$a,1;
+			}
+    }
+	  
+		@attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
 		foreach my $a ( 0..$#attrs){
 			if ( $attrs[$a]->{TAG}->[0] eq $key ){
 				$xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}->[$a]->{VALUE} = [$value];
