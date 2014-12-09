@@ -26,12 +26,22 @@ sub validate {
 
   # Todo: replace with proper date validation
 	my $format = (
-		   $date =~ m/^\d{4}-\d{2}-\d{2}$/ 
-		|| $date =~ m/^\d{4}-\d{2}$/
-		|| $date =~ m/^\d{4}$/
+		      $date =~ m/^\d{2}-\w{3}-\d{4}$/
+       || $date =~ m/^\d{2}-\w{3}-\d{4}\/\d{2}-\w{3}-\d{4}$/
+       || $date =~ m/^\d{4}$/
+       || $date =~ m/^\d{4}-\d{2}$/
+       || $date =~ m/^\d{4}-\d{2}-\d{2}$/
+       || $date =~ m/^\d{4}-\d{2}-\d{2}\/\d{4}-\d{2}-\d{2}$/
+       || $date =~ m/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$/
+       || $date =~ m/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}Z$/
+       || $date =~ m/^\d{4}-\d{2}-\d{2}T\d{2}Z$/
+       || $date =~ m/^\d{4}-\d{2}\/\d{4}-02$/
+       || $date =~ m/^\d{4}\/\d{4}$/
+       || $date =~ m/^\w{3}-\d{4}$/
+       || $date =~ m/^\w{3}-\d{4}\/\w{3}-\d{4}$/
 	);
 
-	$self->set_error_message( $id, "Incorrect date format. Must match YYYY, YYYY-MM or YYYY-MM-DD" ) unless ( $format );
+	$self->set_error_message( $id, "Incorrect date format. Must match YYYY, YYYY-MM, YYYY-MM-DD,... full list at http://www.ebi.ac.uk/ena/WebFeat/qualifiers/collection_date.html" ) unless ( $format );
 
 	return $self;
 }
