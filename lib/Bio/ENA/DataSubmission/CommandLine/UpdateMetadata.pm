@@ -337,6 +337,7 @@ Usage: update_sample_manifest [options]
 
 	-f|file       input manifest for update
 	-o|outfile    output path for validation report
+	--no_validate skip validation step (for cases where validation has already been done)
 	-h|help       this help message
 
 USAGE
