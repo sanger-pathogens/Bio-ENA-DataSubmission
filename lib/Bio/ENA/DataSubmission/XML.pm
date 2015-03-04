@@ -95,6 +95,7 @@ sub update_sample {
 	my $acc = $sample->{'sample_accession'};
 	(defined $acc ) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "Accession number data not present\n" ); 
 	$self->url($self->ena_base_path."$acc&display=xml");
+	
 	my $xml = $self->parse_from_url;
 	
 	return undef unless( defined $xml->{SAMPLE} );
@@ -231,6 +232,11 @@ sub update_analysis {
 	}
 	else {
 		delete $template->{analysis_date};
+	}
+	
+	unless(defined($row->{run}))
+	{
+    	delete $template->{RUN_REF};
 	}
 
 	# add file checksum
