@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ROOT request="ERS023435&amp;display=xml">
+	<SAMPLE accession="ERS023435">
+    <IDENTIFIERS>
+      <PRIMARY_ID>ERS023435</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA787711</EXTERNAL_ID>
+      <EXTERNAL_ID namespace="BioSample">SAMEA787711</EXTERNAL_ID>
+      <SUBMITTER_ID namespace="SC">7494-sc-2011-02-15-1079060</SUBMITTER_ID>
+    </IDENTIFIERS>
+    <TITLE>Mycobacterium tuberculosis</TITLE>
+    <SAMPLE_NAME>
+      <TAXON_ID>1773</TAXON_ID>
+      <SCIENTIFIC_NAME>Mycobacterium tuberculosis</SCIENTIFIC_NAME>
+      <COMMON_NAME>Mycobacterium tuberculosis</COMMON_NAME>
+    </SAMPLE_NAME>
+    <SAMPLE_ATTRIBUTES>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>Sample Description</TAG>
+        <VALUE></VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-SPOT-COUNT</TAG>
+        <VALUE>9596762</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-BASE-COUNT</TAG>
+        <VALUE>1439514300</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>collection_date</TAG>
+        <VALUE>2003-07-01</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>specific_host</TAG>
+        <VALUE>human</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>isolation_source</TAG>
+        <VALUE>sputum</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>strain</TAG>
+        <VALUE>A70011_1</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-SPOT-COUNT</TAG>
+        <VALUE>9596762</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>ENA-BASE-COUNT</TAG>
+        <VALUE>1439514300</VALUE>
+      </SAMPLE_ATTRIBUTE>
+    </SAMPLE_ATTRIBUTES>
+  </SAMPLE>
+</ROOT>

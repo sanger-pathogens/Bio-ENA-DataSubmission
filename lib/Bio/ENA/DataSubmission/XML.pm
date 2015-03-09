@@ -105,6 +105,7 @@ sub update_sample {
 	delete $sample_xml->[0]->{alias};
 	delete $sample_xml->[0]->{center_name};
 	delete $sample_xml->[0]->{SAMPLE_LINKS};
+	delete $sample_xml->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID};
 
 	# remove unwanted values from sample metadata
 	delete $sample->{'sanger_sample_name'};
@@ -136,12 +137,30 @@ sub _update_fields {
 
 	# if not found, then check sample attributes list
 	unless( $found ){
-	  my @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
-	  for my $a ( 0..$#attrs){
-		  if ( $attrs[$a]->{TAG}->[0] eq "Strain" ){
-		    splice $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE},$a,1;
-			}
-    }
+		my @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
+		for(my $num_checks = 0; $num_checks < 4; $num_checks++)
+		{
+	      @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
+	      for my $a ( 0..$#attrs){
+	     	  if ( $attrs[$a]->{TAG}->[0] eq "Strain" ){
+	     	    splice $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE},$a,1;
+	     		}
+	     	}
+	     	 @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
+	     	for my $a ( 0..$#attrs){
+  	     	  if ( $attrs[$a]->{TAG}->[0] eq "ENA-SPOT-COUNT" ){
+  	     	    splice $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE},$a,1;
+  	     		}
+	     	}
+			 @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
+	     	for my $a ( 0..$#attrs){
+  	     	  if ( $attrs[$a]->{TAG}->[0] eq "ENA-BASE-COUNT" ){
+  	     	    splice $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE},$a,1;
+				last;
+  	     		}
+	     	}
+	   
+		}
 	  
 		@attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
 		foreach my $a ( 0..$#attrs){
