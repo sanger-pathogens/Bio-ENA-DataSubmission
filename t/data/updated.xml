@@ -3,7 +3,6 @@
   <SAMPLE accession="ERS001491">
     <IDENTIFIERS>
       <PRIMARY_ID>ERS001491</PRIMARY_ID>
-      <EXTERNAL_ID namespace="BioSample">SAMEA872764</EXTERNAL_ID>
       <SUBMITTER_ID namespace="SC">2007223-sc-2010-05-07-2811</SUBMITTER_ID>
     </IDENTIFIERS>
     <TITLE>[Clostridium] difficile</TITLE>
@@ -38,14 +37,6 @@
         <VALUE>2007223</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
-        <TAG>ENA-SPOT-COUNT</TAG>
-        <VALUE>2466188</VALUE>
-      </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE>
-        <TAG>ENA-BASE-COUNT</TAG>
-        <VALUE>283611620</VALUE>
-      </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE>
         <TAG>serovar</TAG>
         <VALUE>666</VALUE>
       </SAMPLE_ATTRIBUTE>
@@ -58,7 +49,6 @@
   <SAMPLE accession="ERS002783">
     <IDENTIFIERS>
       <PRIMARY_ID>ERS002783</PRIMARY_ID>
-      <EXTERNAL_ID namespace="BioSample">SAMEA677572</EXTERNAL_ID>
       <SUBMITTER_ID namespace="SC">3PN00133-sc-2010-05-07-10268</SUBMITTER_ID>
     </IDENTIFIERS>
     <TITLE>Streptococcus pneumoniae</TITLE>
@@ -91,14 +81,6 @@
       <SAMPLE_ATTRIBUTE>
         <TAG>strain</TAG>
         <VALUE>3PN00133</VALUE>
-      </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE>
-        <TAG>ENA-SPOT-COUNT</TAG>
-        <VALUE>10064422</VALUE>
-      </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE>
-        <TAG>ENA-BASE-COUNT</TAG>
-        <VALUE>1161642276</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
         <TAG>isolation_source</TAG>

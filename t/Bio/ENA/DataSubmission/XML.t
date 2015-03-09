@@ -248,7 +248,7 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
                                   ]
           }
         ]
-        , 'Check external id has been removed');
+        , 'Check ena spot and ena base count have been removed');
 
 
 remove_tree($tmp);
