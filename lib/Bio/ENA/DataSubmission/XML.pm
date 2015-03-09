@@ -142,7 +142,7 @@ sub _update_fields {
 		{
 	      @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
 	      for my $a ( 0..$#attrs){
-	     	  if ( $attrs[$a]->{TAG}->[0] eq "Strain" ){
+	     	  if ( $attrs[$a]->{TAG}->[0] eq "Strain" || $attrs[$a]->{TAG}->[0] eq "STRAIN"){
 	     	    splice $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE},$a,1;
 	     		}
 	     	}
