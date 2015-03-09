@@ -172,5 +172,84 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},[
           }
         ], 'Check Strain has been removed but lowercase strain kept');
 
+
+
+# update_sample to check does it remove EXTERNAL_ID and ENA-BASE-COUNT and ENA-SPOT-COUNT
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
+ok( $updated_xml = $obj->update_sample({'sample_accession' => 'ERS023435', 'anothertag' => 'ABC', 'strain' => 'lowercase strain'}), 'Remove injected values');
+
+is_deeply($updated_xml->{IDENTIFIERS},
+[
+          {
+            'SUBMITTER_ID' => [
+                              {
+                                'namespace' => 'SC',
+                                'content' => '7494-sc-2011-02-15-1079060'
+                              }
+                            ],
+            'PRIMARY_ID' => [
+                            'ERS023435'
+                          ]
+          }
+        ]
+        , 'Check external id has been removed');
+is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
+[
+          {
+            'SAMPLE_ATTRIBUTE' => [
+                                    {
+                                      'VALUE' => [
+                                                 {}
+                                               ],
+                                      'TAG' => [
+                                                 'Sample Description'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                 '2003-07-01'
+                                               ],
+                                      'TAG' => [
+                                                 'collection_date'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                 'human'
+                                               ],
+                                      'TAG' => [
+                                                 'specific_host'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                 'sputum'
+                                               ],
+                                      'TAG' => [
+                                                 'isolation_source'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                   'lowercase strain'
+                                                 ],
+                                      'TAG' => [
+                                                 'strain'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                   'ABC'
+                                                 ],
+                                      'TAG' => [
+                                                 'anothertag'
+                                               ]
+                                    }
+                                  ]
+          }
+        ]
+        , 'Check ena spot and ena base count have been removed');
+
+
 remove_tree($tmp);
 done_testing();
