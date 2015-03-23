@@ -51,6 +51,7 @@ ok ($obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
 	args => \@args,
 	_output_dest  => $tmp, 
 	_timestamp    => 'testtime',
+	_random_tag   => '0003'
 ),'initialise valid object');
 
 # sample XML updating
@@ -97,8 +98,8 @@ $obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
 $obj->_output_dest('t/data/bad_submission/');
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
-remove_tree($tmp);
-remove_tree('ena_updates');
+#remove_tree($tmp);
+#remove_tree('ena_updates');
 done_testing();
 
 sub update_current_user_name_in_file
