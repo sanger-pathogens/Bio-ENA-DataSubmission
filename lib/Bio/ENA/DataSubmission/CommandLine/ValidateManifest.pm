@@ -194,7 +194,18 @@ sub run {
 				identifier => $acc,
 				country    => $row[15]
 			)->validate;
-			push( @errors_found, $country_error ) if ( $country_error->triggered );
+			
+			if ( $country_error->triggered )
+			{
+				if($country_error->fix_it)
+				{
+				    $row[15] = $country_error->country;
+				}
+				else
+				{
+	    			push( @errors_found, $country_error ) ;
+    			}
+			}
 		}
 
 		# lat lon
