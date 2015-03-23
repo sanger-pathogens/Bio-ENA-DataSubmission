@@ -15,12 +15,14 @@ extends "Bio::ENA::DataSubmission::Validator::Error";
 has 'country'              => ( is => 'rw', isa => 'Str', required => 1 );
 has 'identifier'           => ( is => 'ro', isa => 'Str', required => 1 );
 has 'valid_countries'      => ( is => 'ro', isa => 'ArrayRef', lazy => 1, builder => '_build_valid_countries');
-has 'valid_countries_file' => ( is => 'ro', isa => 'Str', default => 'data/valid_countries.txt' );
+has 'valid_countries_file' => ( is => 'ro', isa => 'Str', default => 'valid_countries.txt' );
+has 'data_root'            => ( is => 'ro', isa => 'Str', default => './data' );
+
 
 sub _build_valid_countries
 {
 	my($self) = @_;
-	my @countries = read_lines($self->valid_countries_file, chomp => 1);
+	my @countries = read_lines($self->data_root.'/'.$self->valid_countries_file, chomp => 1);
 	return \@countries;
 }
 
