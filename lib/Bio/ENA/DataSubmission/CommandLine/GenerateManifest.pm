@@ -53,7 +53,7 @@ has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    
 sub _build__warehouse {
 	my $self = shift;
 
-	my $warehouse_dbh = DBI->connect( "DBI:mysql:host=mcs7:port=3379;database=sequencescape_warehouse",
+	my $warehouse_dbh = DBI->connect( "DBI:mysql:host=seqw-db:port=3379;database=sequencescape_warehouse",
         "warehouse_ro", undef, { 'RaiseError' => 1, 'PrintError' => 0 } )
       or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw( error => "Failed to create connect to warehouse.\n");
     return $warehouse_dbh;
