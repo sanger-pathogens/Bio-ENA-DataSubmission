@@ -83,12 +83,12 @@
         <VALUE>3PN00133</VALUE>
       </SAMPLE_ATTRIBUTE>
       <SAMPLE_ATTRIBUTE>
-        <TAG>host_status</TAG>
-        <VALUE>Diseased</VALUE>
-      </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE>
         <TAG>isolation_source</TAG>
         <VALUE>Throat</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>host_status</TAG>
+        <VALUE>Diseased</VALUE>
       </SAMPLE_ATTRIBUTE>
     </SAMPLE_ATTRIBUTES>
   </SAMPLE>

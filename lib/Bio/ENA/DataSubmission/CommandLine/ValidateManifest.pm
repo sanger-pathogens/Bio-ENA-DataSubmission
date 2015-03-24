@@ -28,6 +28,9 @@ use Moose;
 use File::Slurp;
 
 use Getopt::Long qw(GetOptionsFromArray);
+
+@INC = grep { $_ ne "/software/pathogen/internal/prod/lib" } @INC;
+
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::Validator::Report;
