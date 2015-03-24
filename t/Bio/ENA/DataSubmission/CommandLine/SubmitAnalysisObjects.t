@@ -101,7 +101,12 @@ ok( compare( 't/data/analysis_submission2.xml', $obj->_output_dest . "/submissio
 # Mock out FTP
 
 @args = ( '-f', 't/data/analysis_submission_manifest.xls', '-o', "$tmp/analysis_submission_report.xls", '-c', 't/data/test_ena_data_submission.conf' );
-ok( $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( args => \@args ), 'Initialize object for valid run' );
+ok( 
+    $obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new( 
+        args => \@args,
+        _output_dest => $tmp
+    ), 
+'Initialize object for valid run' );
 is_deeply($obj->_convert_gffs_to_flatfiles_cmds, 
   [], 'no commands to convert from gff to embl because its fasta files');
 
@@ -131,7 +136,11 @@ ok( $obj->_update_analysis_xml,                         'XML update successful' 
 ok(-e $obj->_output_dest . "/analysis_2014-01-01.xml", 'file exists');
 ok( compare( 't/data/analysis_updated_with_contigs_fa.xml', $obj->_output_dest . "/analysis_2014-01-01.xml" ) == 0, 'XML contains modified filenames' );
 
-ok($obj->_keep_local_copy_of_submitted_files,'keep local copy of submitted files method');
+my $files = { 
+    "$tmp/test_genome_1.fasta.gz" => 'test_genome_1.fasta.gz',
+    "$tmp/test_genome_2.fasta.gz" => 'test_genome_2.fasta.gz' 
+};
+ok($obj->_keep_local_copy_of_submitted_files( $files ),'keep local copy of submitted files method');
 
 ok(-e $obj->_output_dest . "/datafiles/test_genome_1.fasta.gz", "Saved local copy of test_genome_1.fa.gz @ " . $obj->_output_dest );
 ok(-e $obj->_output_dest . "/datafiles/test_genome_2.fasta.gz", "Saved local copy of test_genome_2.fa.gz @ " . $obj->_output_dest );

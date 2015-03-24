@@ -59,7 +59,7 @@ ok( $obj->_updated_xml, 'XML update successful' );
 ok( -e $obj->_output_dest."/samples_testtime.xml", 'XML exists' );
 ok(
 	compare( 't/data/updated.xml', $obj->_output_dest."/samples_testtime.xml" ) == 0,
-	'Updated XML file correct'
+	'Updated XML file correct '
 );
 
 # submission XML generation
@@ -98,8 +98,8 @@ $obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
 $obj->_output_dest('t/data/bad_submission/');
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
-#remove_tree($tmp);
-#remove_tree('ena_updates');
+remove_tree($tmp);
+remove_tree('ena_updates');
 done_testing();
 
 sub update_current_user_name_in_file

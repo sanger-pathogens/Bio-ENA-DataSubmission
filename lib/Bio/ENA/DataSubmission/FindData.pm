@@ -28,6 +28,7 @@ use Moose;
 
 use Path::Find;
 use Path::Find::Lanes;
+use Data::Dumper;
 
 has 'type' => ( is => 'rw', isa => 'Str', required => 1 );
 has 'id'   => ( is => 'rw', isa => 'Str', required => 1 );
@@ -58,11 +59,12 @@ sub find {
     	# set key order as per file
     	open( my $fh, '<', $self->id );
     	my @ids = <$fh>;
-	chomp @ids;
+	    chomp @ids;
     	$data{key_order} = \@ids;
 
     	# match returned lane objects to their ID
     	my @found_ids = $self->_found_ids( \@lanes );
+
     	for my $id ( @ids ){
     		$data{$id} = undef;
     		my ($index) = grep { $found_ids[$_] eq $id } 0..$#found_ids;
