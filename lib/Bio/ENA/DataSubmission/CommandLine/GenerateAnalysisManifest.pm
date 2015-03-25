@@ -315,7 +315,7 @@ sub _get_assembly_details {
     my @matching_lanes = $lane_filter->filter;
     return undef unless defined $matching_lanes[0];
 
-    return ($self->_calculate_coverage($matching_lanes[0]->{path}.'.stats',$yield),$self->_get_assembly_program($matching_lanes[0]->{path}),$matching_lanes[0]->{path}, 'fasta');
+    return ($self->_calculate_coverage($matching_lanes[0]->{path}.'.stats',$yield),$self->_get_assembly_program($matching_lanes[0]->{path}),$matching_lanes[0]->{path}, 'scaffold_fasta');
 }
 
 sub _get_assembly_program
