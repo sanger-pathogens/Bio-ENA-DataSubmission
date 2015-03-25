@@ -51,6 +51,7 @@ ok ($obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
 	args => \@args,
 	_output_dest  => $tmp, 
 	_timestamp    => 'testtime',
+	_random_tag   => '0003'
 ),'initialise valid object');
 
 # sample XML updating
@@ -58,7 +59,7 @@ ok( $obj->_updated_xml, 'XML update successful' );
 ok( -e $obj->_output_dest."/samples_testtime.xml", 'XML exists' );
 ok(
 	compare( 't/data/updated.xml', $obj->_output_dest."/samples_testtime.xml" ) == 0,
-	'Updated XML file correct'
+	'Updated XML file correct '
 );
 
 # submission XML generation

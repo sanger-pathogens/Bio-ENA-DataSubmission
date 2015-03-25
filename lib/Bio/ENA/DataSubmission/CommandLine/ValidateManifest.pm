@@ -28,6 +28,9 @@ use Moose;
 use File::Slurp;
 
 use Getopt::Long qw(GetOptionsFromArray);
+
+@INC = grep { $_ ne "/software/pathogen/internal/prod/lib" } @INC;
+
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::Validator::Report;
@@ -52,7 +55,7 @@ has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default
 
 has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
 has 'taxon_lookup_service' => ( is => 'rw', isa => 'Str', default  => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=' );
-
+has 'data_root'                   => ( is => 'rw', isa => 'Maybe[Str]');
 
 sub BUILD {
 	my ( $self ) = @_;
@@ -88,6 +91,7 @@ sub _populate_attributes_from_config_file
 
   $self->ena_base_path($config_values->{ena_base_path});
   $self->taxon_lookup_service($config_values->{taxon_lookup_service});
+  $self->data_root(   $config_values->{data_root} );
 }
 
 sub check_inputs{
@@ -192,9 +196,21 @@ sub run {
 		if ( $row[15] ){
 			my $country_error = Bio::ENA::DataSubmission::Validator::Error::Country->new(
 				identifier => $acc,
-				country    => $row[15]
+				country    => $row[15],
+				data_root  => $self->data_root,
 			)->validate;
-			push( @errors_found, $country_error ) if ( $country_error->triggered );
+			
+			if ( $country_error->triggered )
+			{
+				if($country_error->fix_it)
+				{
+				    $row[15] = $country_error->country;
+				}
+				else
+				{
+	    			push( @errors_found, $country_error ) ;
+    			}
+			}
 		}
 
 		# lat lon

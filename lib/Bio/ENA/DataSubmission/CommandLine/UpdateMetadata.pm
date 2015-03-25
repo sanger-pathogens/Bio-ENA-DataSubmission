@@ -64,6 +64,7 @@ has 'help'            => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_current_user'   => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
 has '_timestamp'      => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
+has '_random_tag'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_sample_xml'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_submission_xml' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 
@@ -92,7 +93,8 @@ sub _build__output_dest{
 
 	my $user      = $self->_current_user;
 	my $timestamp = $self->_timestamp;
-	$dir .= '/' . $user . '_' . $timestamp;
+	my $random    = $self->_random_tag;
+	$dir .= '/' . $user . '_' . $timestamp . '_' . $random;
 
 	my $mode = 0774;
 	make_path( $dir, {
@@ -115,7 +117,7 @@ sub _build__current_user {
 sub _build__timestamp {
 	my @timestamp = localtime(time);
 	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
-	my $time = sprintf("%02d-%02d", $timestamp[2], $timestamp[1]);
+	my $time = sprintf("%02d-%02d-%02d", $timestamp[2], $timestamp[1], $timestamp[0]);
 
 	return $day . '_' . $time;
 }
@@ -132,6 +134,10 @@ sub _build__submission_xml {
 
 	my $time = $self->_timestamp;
 	return "submission_$time.xml";
+}
+
+sub _build__random_tag {
+	return sprintf("%04d", rand(10000));
 }
 
 sub BUILD {

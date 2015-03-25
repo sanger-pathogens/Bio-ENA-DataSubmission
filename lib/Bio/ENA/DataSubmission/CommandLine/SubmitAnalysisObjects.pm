@@ -60,6 +60,7 @@ has 'processors'      => ( is => 'rw', isa => 'Int',      default  => 1 );
 
 has '_current_user'   => ( is => 'rw', isa => 'Str',      lazy => 1, builder => '_build__current_user');
 has '_timestamp'      => ( is => 'rw', isa => 'Str',      lazy => 1, builder => '_build__timestamp');
+has '_random_tag'     => ( is => 'rw', isa => 'Str',      lazy_build => 1 );
 
 # Need to be built after the object is constructed
 has '_output_dest'    => ( is => 'rw', isa => 'Str'      );
@@ -141,7 +142,8 @@ sub _build__output_dest{
 
 	my $user      = $self->_current_user;
 	my $timestamp = $self->_timestamp;
-	$dir .= '/' . $user . '_' . $timestamp;
+	my $random    = $self->_random_tag;
+	$dir .= '/' . $user . '_' . $timestamp . '_' . $random;
 
 	make_path( $dir );
 	return $dir;
@@ -167,7 +169,7 @@ sub _build__timestamp {
   my $self = shift;
 	my @timestamp = localtime(time);
 	my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
-	my $time = sprintf("%02d-%02d", $timestamp[2], $timestamp[1]);
+	my $time = sprintf("%02d-%02d-%02d", $timestamp[2], $timestamp[1], $timestamp[0]);
 
 	return $day . '_' . $time;
 }
@@ -183,6 +185,10 @@ sub _build__server_dest {
 	my $self = shift;
 
 	return '/' . $self->analysis_type . '/' . $self->_current_user . '_' . $self->_timestamp;
+}
+
+sub _build__random_tag {
+	return sprintf("%04d", rand(10000));
 }
 
 

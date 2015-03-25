@@ -60,9 +60,9 @@ has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default
 
 sub _build__filetypes {
 	my $self = shift;
-	return [ 'cram', 'vcf', 'vcf_aggregate', 'tabix', 'wig', 'bed', 'gff',
-			'fasta', 'contig_fasta', 'contig_flatfile', 'scaffold_fasta',
-			'scaffold_flatfile', 'scaffold_agp', 'chromosome_fasta',
+	return [ 'tab', 'bam', 'bai', 'cram', 'vcf', 'vcf_aggregate', 'tabix',
+			'wig', 'bed', 'gff', 'fasta', 'contig_fasta', 'contig_flatfile',
+			'scaffold_fasta', 'scaffold_flatfile', 'scaffold_agp', 'chromosome_fasta',
 			'chromosome_flatfile', 'chromosome_agp', 'chromosome_list',
 			'unlocalised_contig_list', 'unlocalised_scaffold_list',
 			'sample_list', 'readme_file', 'phenotype_file', 'other'

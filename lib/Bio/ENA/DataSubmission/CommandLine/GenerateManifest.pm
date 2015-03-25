@@ -26,6 +26,11 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 use File::Slurp;
+use Data::Dumper;
+
+# use lib "/software/pathogen/internal/prod/lib";
+use lib "../lib";
+use lib "./lib";
 
 use Path::Find;
 use Path::Find::Lanes;
@@ -53,7 +58,7 @@ has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    
 sub _build__warehouse {
 	my $self = shift;
 
-	my $warehouse_dbh = DBI->connect( "DBI:mysql:host=mcs7:port=3379;database=sequencescape_warehouse",
+	my $warehouse_dbh = DBI->connect( "DBI:mysql:host=seqw-db:port=3379;database=sequencescape_warehouse",
         "warehouse_ro", undef, { 'RaiseError' => 1, 'PrintError' => 0 } )
       or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw( error => "Failed to create connect to warehouse.\n");
     return $warehouse_dbh;
@@ -144,6 +149,9 @@ sub _build_sample_data {
 	);
 	my %data = %{ $finder->find };
 
+	#print "DATA: ";
+	#print Dumper \%data;
+
 	my @manifest;
 	for my $k ( @{ $data{key_order} } ){
 		push( @manifest, $self->_manifest_row( $finder, $data{$k}, $k ) );
@@ -151,6 +159,9 @@ sub _build_sample_data {
 
 	# handle duplicates - e.g. same data for plexed lanes
 	@manifest = $self->_remove_dups(\@manifest);
+
+	#print Dumper \@manifest;
+	#print "TOTAL: " . scalar(@manifest) . "\n";
 
 	return \@manifest;
 }
@@ -191,6 +202,7 @@ sub _manifest_row{
   }
 	
 	return [ $sample_acc, $sample_name, $supplier_name, $sample_alias, $taxon_id, $common_name,$common_name, $sample_anonymized_name, $lane_name,'','','','','','1800/2014','','','NA','','NA','','','','','',$sample_name,'','','NA'];
+
 }
 
 sub _error_row {
