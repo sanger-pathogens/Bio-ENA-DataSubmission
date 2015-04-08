@@ -35,7 +35,7 @@ for my $country (@invalid_date_format)
 	is($obj->fix_it, 0, "Country cant be corrected");
 }
    
-my @invalid_but_fixable = ('UK','Great Britain','England', 'Scotland',  'Wales',  'London',  'Cambridge',  'US', 'UK' );
+my @invalid_but_fixable = ('UK','Great Britain','England', 'Scotland',  'Wales',  'London',  'Cambridge',  'US', 'UK', 'Vietnam' );
 for my $country (@invalid_but_fixable)
 {
     ok(my $obj = Bio::ENA::DataSubmission::Validator::Error::Country->new(country => $country, identifier => 'ABC'), "initialise object for $country");
