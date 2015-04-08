@@ -65,6 +65,7 @@ sub fix_it {
 		'London'        => 'United Kingdom: England, London',
 		'Cambridge'     => 'United Kingdom: England, Cambridge',
 		'US'            => 'USA',
+		'Vietnam'       => 'Viet Nam', 
 	);
 	
 	for my $alias (keys %alias_to_country)
