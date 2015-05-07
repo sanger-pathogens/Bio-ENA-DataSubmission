@@ -306,7 +306,7 @@ sub _email {
 
 	my $message = Email::MIME->create(
     	header_str => [
-        	From    => 'cc21@sanger.ac.uk',
+        	From    => 'pathpipe@sanger.ac.uk',
         	To      => $to,
         	Cc      => $user . '@sanger.ac.uk',
         	Subject => "ENA Metadata Update Request : $alias",
