@@ -251,5 +251,51 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
         , 'Check ena spot and ena base count have been removed');
 
 
+
+# update_sample to check does it remove duplicated sample attributes inserted by ENA
+$obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
+ok( $updated_xml = $obj->update_sample({'sample_accession' => 'ERS092760','strain' => 'lowercase strain'}), 'Remove injected values');
+
+is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
+[
+          {
+            'SAMPLE_ATTRIBUTE' => [
+                                    {
+                                      'VALUE' => [
+                                                 'Staphylococcus aureus'
+                                               ],
+                                      'TAG' => [
+                                                 'ArrayExpress-Species'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                 'ST8'
+                                               ],
+                                      'TAG' => [
+                                                 'serovar'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                   'lowercase strain'
+                                                 ],
+                                      'TAG' => [
+                                                 'strain'
+                                               ]
+                                    },
+                                    {
+                                      'VALUE' => [
+                                                 '1350789'
+                                               ],
+                                      'TAG' => [
+                                                 'anonymized_name'
+                                               ]
+                                    }
+                                  ]
+          }
+        ]
+        , 'Check duplicated inserted tags have been removed');
+
 remove_tree($tmp);
 done_testing();
