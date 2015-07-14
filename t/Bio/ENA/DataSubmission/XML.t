@@ -136,22 +136,6 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},[
                                                  'Sample Description'
                                                ]
                                     },
-                                    {
-                                      'VALUE' => [
-                                                 'Human'
-                                               ],
-                                      'TAG' => [
-                                                 'ArrayExpress-StrainOrLine'
-                                               ]
-                                    },
-                                    {
-                                      'VALUE' => [
-                                                 'Campylobacter sp.'
-                                               ],
-                                      'TAG' => [
-                                                 'ArrayExpress-Species'
-                                               ]
-                                    },         
                                      {
                                        'VALUE' => [
                                                   'lowercase strain'
@@ -260,14 +244,6 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
 [
           {
             'SAMPLE_ATTRIBUTE' => [
-                                    {
-                                      'VALUE' => [
-                                                 'Staphylococcus aureus'
-                                               ],
-                                      'TAG' => [
-                                                 'ArrayExpress-Species'
-                                               ]
-                                    },
                                     {
                                       'VALUE' => [
                                                  'ST8'

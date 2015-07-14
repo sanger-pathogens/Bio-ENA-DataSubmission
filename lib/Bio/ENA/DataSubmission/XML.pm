@@ -53,7 +53,7 @@ has 'proxy'              => ( is => 'rw', isa => 'Str',                default  
 has 'attributes_to_delete' => (
     is      => 'ro',
     isa     => 'HashRef',
-    default => sub { { 'ENA-SPOT-COUNT' => 1, 'ENA-BASE-COUNT' => 1, 'ENA-CHECKLIST' => 1, 'Strain' => 1, 'STRAIN' => 1 } }
+    default => sub { { 'ENA-SPOT-COUNT' => 1, 'ENA-BASE-COUNT' => 1, 'ENA-CHECKLIST' => 1, 'Strain' => 1, 'STRAIN' => 1, 'ArrayExpress-StrainOrLine' => 1, 'ArrayExpress-Sex' => 1, 'ArrayExpress-Phenotype' => 1, 'ArrayExpress-Species' => 1 } }
 );
 
 sub _build__fields {
