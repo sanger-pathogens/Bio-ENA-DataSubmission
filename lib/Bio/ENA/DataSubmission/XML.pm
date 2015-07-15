@@ -56,6 +56,14 @@ has 'attributes_to_delete' => (
     default => sub { { 'ENA-SPOT-COUNT' => 1, 'ENA-BASE-COUNT' => 1, 'ENA-CHECKLIST' => 1, 'Strain' => 1, 'STRAIN' => 1, 'ArrayExpress-StrainOrLine' => 1, 'ArrayExpress-Sex' => 1, 'ArrayExpress-Phenotype' => 1, 'ArrayExpress-Species' => 1 } }
 );
 
+has 'countries_to_remove' => (    is      => 'ro',
+    isa     => 'HashRef',
+    default => sub { { 'not available: not collected' => 1, 'not available: restricted access' => 1, 'not available: to be reported later' => 1, 'not applicable' => 1, 'obscured' => 1, 'temporarily obscured' => 1} }
+);
+
+
+
+
 sub _build__fields {
 
     # this will change with schema eventually
@@ -123,6 +131,9 @@ sub update_sample {
         $self->_update_fields( $sample_xml, $k, $v ) if ( defined $v && $v ne '' );
     }
 
+    my $filtered_attributes = $self->_remove_attributes_value_tag( $sample_xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}, $self->countries_to_remove,'country' );
+	$sample_xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} = $filtered_attributes;
+
     return $sample_xml->[0];
 }
 
@@ -144,7 +155,7 @@ sub _update_fields {
 
     # if not found, then check sample attributes list
     unless ($found) {
-        my $filtered_attributes = $self->_remove_attributes_inserted_by_ena( $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} );
+        my $filtered_attributes = $self->_remove_attributes_tag( $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}, $self->attributes_to_delete );
         $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} = $filtered_attributes;
 
         my @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
@@ -164,14 +175,32 @@ sub _update_fields {
 
 }
 
-sub _remove_attributes_inserted_by_ena {
-    my ( $self, $attributes ) = @_;
+sub _remove_attributes_value_tag {
+    my ( $self, $attributes,$attributes_to_remove, $tag ) = @_;
 
     my @filtered_attributes;
     for ( my $a = 0 ; $a < @{$attributes}; $a++ ) {
-        if ( !defined( $self->attributes_to_delete->{ $attributes->[$a]->{TAG}->[0] } ) ) {
-            push( @filtered_attributes, $attributes->[$a] );
-        }
+		  if($attributes->[$a]->{TAG}->[0] ne $tag)
+		  {
+		  	push( @filtered_attributes, $attributes->[$a] );
+			next;
+		  }
+          if ( !defined( $attributes_to_remove->{ $attributes->[$a]->{VALUE}->[0] } ) ) {
+              push( @filtered_attributes, $attributes->[$a] );
+          }
+    }
+
+    return \@filtered_attributes;
+}
+
+sub _remove_attributes_tag {
+    my ( $self, $attributes,$attributes_to_remove ) = @_;
+
+    my @filtered_attributes;
+    for ( my $a = 0 ; $a < @{$attributes}; $a++ ) {
+          if ( !defined( $attributes_to_remove->{ $attributes->[$a]->{TAG}->[0] } ) ) {
+              push( @filtered_attributes, $attributes->[$a] );
+          }
     }
 
     return \@filtered_attributes;
