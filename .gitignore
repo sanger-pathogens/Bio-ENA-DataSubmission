@@ -21,3 +21,4 @@ nytprof.out
 *.bs
 .DS_Store
 ena_updates
+.*.sw?
