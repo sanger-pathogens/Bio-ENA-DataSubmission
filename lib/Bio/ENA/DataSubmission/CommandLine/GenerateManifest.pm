@@ -25,8 +25,6 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 use Moose;
-use Moose::Util::TypeConstraints;
-use namespace::autoclean;
 use File::Slurp;
 use Data::Dumper;
 
@@ -50,7 +48,7 @@ has 'outfile'      => ( is => 'rw', isa => 'Str',      required => 0, default =>
 has 'empty'        => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
 has 'sample_data'  => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
 has 'help'         => ( is => 'rw', isa => 'Bool',     required => 0 );
-has 'file_id_type' => ( is => 'rw', isa => enum( [ qw( lane sample ) ] ), required => 0, default => 'lane' );
+has 'file_id_type' => ( is => 'rw', isa => 'Str',      required => 0, default => 'lane' );
 
 has '_warehouse'   => ( is => 'rw', isa => 'DBI::db',  required => 0, lazy_build => 1 );
 has '_show_errors' => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
@@ -131,6 +129,13 @@ sub run {
 		( -r $id ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $id\n" );
 	}
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
+
+  if ( $self->file_id_type ne 'lane' and
+       $self->file_id_type ne 'sample' ) {
+    Bio::ENA::DataSubmission::Exception::InvalidInput->throw(
+      error => "'file_id_type' must be 'lane' or 'sample'\n"
+    );
+  }
 
 	# write data to spreadsheet
 	my $data = $self->sample_data;

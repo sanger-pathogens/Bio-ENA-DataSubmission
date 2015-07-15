@@ -49,9 +49,9 @@ throws_ok { $obj->run } 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'di
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
 throws_ok { $obj->run } 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid arguments';
 
-@args = ( '-t', 'lane', '-i', '10665_2#81', '-o', 'not/a/file', '-c', 't/data/test_ena_data_submission.conf' );
+@args = ( '-t', 'lane', '--file_id_type', 'wrong', '-i', '10665_2#81', '-o', 'out.xls', '-c', 't/data/test_ena_data_submission.conf' );
 $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@args );
-throws_ok { $obj->run } 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid arguments';
+throws_ok { $obj->run } 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
 
 #--------------#
 # test methods #
