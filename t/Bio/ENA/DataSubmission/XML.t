@@ -273,5 +273,48 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
         ]
         , 'Check duplicated inserted tags have been removed');
 
+for my $country (('not available: not collected','not available: restricted access','not available: to be reported later','not applicable','obscured','temporarily obscured'))
+{
+
+  # update sample should remove countries that are not available
+  $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
+  ok( $updated_xml = $obj->update_sample({'sample_accession' => 'ERS092760','country' =>  $country}), 'Remove country '. $country);
+  is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
+  [
+            {
+              'SAMPLE_ATTRIBUTE' => [
+                                      {
+                                        'VALUE' => [
+                                                   'ST8'
+                                                 ],
+                                        'TAG' => [
+                                                   'serovar'
+                                                 ]
+                                      },
+									  {
+                                      'VALUE' => [
+                                                 'USFL003'
+                                               ],
+                                      'TAG' => [
+                                                 'strain'
+                                               ]
+                                    },
+                                      {
+                                        'VALUE' => [
+                                                   '1350789'
+                                                 ],
+                                        'TAG' => [
+                                                   'anonymized_name'
+                                                 ]
+                                      }
+                                    ]
+            }
+          ]
+          , 'check not available country removed');
+}
+
+
+
+
 remove_tree($tmp);
 done_testing();
