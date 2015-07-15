@@ -302,7 +302,7 @@ sub usage_text {
 Usage: generate_sample_manifest [options]
 
   -t|type          lane|study|file|sample
-  --file_id_type   <lane|sample> define ID types contained in file. default = lane
+  --file_id_type   lane|sample  define ID types contained in file. default = lane
   -i|id            lane ID|study ID|file of lane IDs|file of sample accessions|sample ID
   --empty          generate empty manifest
   -o|outfile       path for output manifest
