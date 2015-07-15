@@ -149,8 +149,9 @@ sub _build_sample_data {
 	return [[]] if ( $self->empty );
 
 	my $finder = Bio::ENA::DataSubmission::FindData->new(
-		type => $self->type,
-		id   => $self->id
+		type         => $self->type,
+		id           => $self->id,
+		file_id_type => $self->file_id_type
 	);
 	my $data = $finder->find;
 
@@ -307,6 +308,9 @@ Usage: generate_sample_manifest [options]
   --empty          generate empty manifest
   -o|outfile       path for output manifest
   -h|help          this help message
+
+  When supplying a file of sample IDs ("-t file --file_id_type sample"), the IDs should
+  be ERS numbers (e.g. "ERS123456"), not sample accessions.
 
 USAGE
 }

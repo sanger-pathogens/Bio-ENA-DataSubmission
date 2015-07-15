@@ -90,8 +90,13 @@ is_deeply $obj->sample_data, \@exp_ers, 'Correct file ERSs with lane IDs';
 
 # file of samples
 @exp_ers = (
-  [ 'ERS003416', 'HO51380626', '', '', '1336', 'Streptococcus equi', 'Streptococcus equi', '29631', '4516_1', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA',  '', '', '', '', '', 'HO51380626', '', '', 'NA' ],
-  [ '11111_1', 'not found', 'not found' ]
+  [ 'ERS044413', 'EQUI0200', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252837, '6903_8#56', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0200', '', '', 'NA' ],
+  [ 'ERS044414', 'EQUI0201', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252838, '6903_8#57', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0201', '', '', 'NA' ],
+  [ 'ERS044415', 'EQUI0202', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252839, '6903_8#58', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0202', '', '', 'NA' ],
+  [ 'ERS044416', 'EQUI0203', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252840, '6903_8#59', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0203', '', '', 'NA' ],
+  [ 'ERS044417', 'EQUI0204', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252841, '6903_8#60', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0204', '', '', 'NA' ],
+  [ 'ERS044418', 'EQUI0205', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252842, '6903_8#61', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0205', '', '', 'NA' ],
+  [ 'ERS000000', 'not found', 'not found' ]
 );
 @args = (
   '-t', 'file',

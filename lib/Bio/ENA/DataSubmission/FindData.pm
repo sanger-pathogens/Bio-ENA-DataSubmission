@@ -100,6 +100,7 @@ sub _get_lanes_from_db {
         my $find_lanes = Path::Find::Lanes->new(
             search_type    => $self->type,
             search_id      => $self->id,
+            file_id_type   => $self->file_id_type,
             pathtrack      => $pathtrack,
             dbh            => $dbh,
             processed_flag => $processed_flag
@@ -119,25 +120,32 @@ sub _get_lanes_from_db {
 }
 
 sub _found_ids {
-  my ( $self, $lanes ) = @_;
+    my ( $self, $lanes ) = @_;
+    my $vrtrack = $self->_vrtrack;
 
-  my @got_ids;
-  ID: foreach my $lane ( @$lanes ) {
-    if ( $self->file_id_type eq 'lane' ) {
-       push @got_ids, $lane->{name};
-    }
-    else {
-      my $library = VRTrack::Library->new( $self->_vrtrack, $lane->library_id );
-      if ( not defined $library ) {
-        warn q(WARNING: no sample for library ') . $lane->library_id . q(');
-        next ID;
+    open( my $fh, '<', $self->id );
+    my @ids = <$fh>;
+
+    # extract IDs from lane objects
+    my @got_ids;
+
+    # detect whether lane names or sample accessions
+    foreach my $lane ( @$lanes ) {
+      if ( $self->file_id_type eq 'lane' ) {
+        push @got_ids, $lane->{name};
       }
-      my $sample = VRTrack::Sample->new( $self->_vrtrack, $library->sample_id );
-      push @got_ids, $sample->individual->acc;
+      else {
+        my $library = VRTrack::Library->new( $self->_vrtrack, $lane->library_id );
+        if ( not defined $library ) {
+          warn q(WARNING: no sample for library ') . $lane->library_id . q(');
+          next ID;
+        }
+        my $sample = VRTrack::Sample->new( $self->_vrtrack, $library->sample_id );
+        push @got_ids, $sample->individual->acc;
+      }
     }
-  }
 
-  return @got_ids;
+    return @got_ids;
 }
 
 __PACKAGE__->meta->make_immutable;
