@@ -40,14 +40,15 @@ use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::FindData;
 use List::MoreUtils qw(uniq);
 
-has 'args'        => ( is => 'ro', isa => 'ArrayRef', required => 1 );
-
-has 'type'        => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'id'          => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'outfile'     => ( is => 'rw', isa => 'Str',      required => 0, default => 'manifest.xls' );
-has 'empty'       => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
-has 'sample_data' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
-has 'help'        => ( is => 'rw', isa => 'Bool',     required => 0 );
+has 'args'         => ( is => 'ro', isa => 'ArrayRef', required => 1 );
+                   
+has 'type'         => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'id'           => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'outfile'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'manifest.xls' );
+has 'empty'        => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
+has 'sample_data'  => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
+has 'help'         => ( is => 'rw', isa => 'Bool',     required => 0 );
+has 'file_id_type' => ( is => 'rw', isa => 'Str',      required => 0, default => 'lane' );
 
 has '_warehouse'   => ( is => 'rw', isa => 'DBI::db',  required => 0, lazy_build => 1 );
 has '_show_errors' => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
@@ -67,28 +68,30 @@ sub _build__warehouse {
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $type, $id, $outfile, $empty, $no_errors, $help,$config_file );
+	my ( $type, $file_id_type, $id, $outfile, $empty, $no_errors, $help,$config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
 		$args,
-		't|type=s'    => \$type,
-		'i|id=s'      => \$id,
-		'o|outfile=s' => \$outfile,
-		'empty'       => \$empty,
-		'no_errors'   => \$no_errors,
-		'h|help'      => \$help,
+		't|type=s'        => \$type,
+    'file_id_type=s'  => \$file_id_type,
+		'i|id=s'          => \$id,
+		'o|outfile=s'     => \$outfile,
+		'empty'           => \$empty,
+		'no_errors'       => \$no_errors,
+		'h|help'          => \$help,
 		'c|config_file=s' => \$config_file
 	);
 
-	$self->type($type)               if ( defined $type );
-	$self->id($id)                   if ( defined $id );
-	$self->outfile($outfile)         if ( defined $outfile );
-	$self->empty($empty)             if ( defined $empty );
-	$self->help($help)               if ( defined $help );
-	$self->_show_errors(!$no_errors) if ( defined $no_errors );
+	$self->type($type)                 if ( defined $type );
+	$self->file_id_type($file_id_type) if ( defined $file_id_type );
+	$self->id($id)                     if ( defined $id );
+	$self->outfile($outfile)           if ( defined $outfile );
+	$self->empty($empty)               if ( defined $empty );
+	$self->help($help)                 if ( defined $help );
+	$self->_show_errors(!$no_errors)   if ( defined $no_errors );
 	
-	$self->config_file($config_file) if ( defined $config_file );
+	$self->config_file($config_file)   if ( defined $config_file );
 	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
 	$self->_populate_attributes_from_config_file;
 }
@@ -127,6 +130,13 @@ sub run {
 	}
 	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
 
+  if ( $self->file_id_type ne 'lane' and
+       $self->file_id_type ne 'sample' ) {
+    Bio::ENA::DataSubmission::Exception::InvalidInput->throw(
+      error => "'file_id_type' must be 'lane' or 'sample'\n"
+    );
+  }
+
 	# write data to spreadsheet
 	my $data = $self->sample_data;
 	my $manifest = Bio::ENA::DataSubmission::Spreadsheet->new(
@@ -144,17 +154,18 @@ sub _build_sample_data {
 	return [[]] if ( $self->empty );
 
 	my $finder = Bio::ENA::DataSubmission::FindData->new(
-		type => $self->type,
-		id   => $self->id
+		type         => $self->type,
+		id           => $self->id,
+		file_id_type => $self->file_id_type
 	);
-	my %data = %{ $finder->find };
+	my $data = $finder->find;
 
 	#print "DATA: ";
 	#print Dumper \%data;
 
 	my @manifest;
-	for my $k ( @{ $data{key_order} } ){
-		push( @manifest, $self->_manifest_row( $finder, $data{$k}, $k ) );
+	for my $k ( @{ $data->{key_order} } ){
+		push( @manifest, $self->_manifest_row( $finder, $data->{$k}, $k ) );
 	}
 
 	# handle duplicates - e.g. same data for plexed lanes
@@ -296,11 +307,15 @@ sub usage_text {
 	return <<USAGE;
 Usage: generate_sample_manifest [options]
 
-	-t|type     lane|study|file|sample
-	-i|id       lane ID|study ID|file of lane IDs|file of sample accessions|sample ID
-	--empty		generate empty manifest
-	-o|outfile  path for output manifest
-	-h|help     this help message
+  -t|type          lane|study|file|sample
+  --file_id_type   lane|sample  define ID types contained in file. default = lane
+  -i|id            lane ID|study ID|file of lane IDs|file of sample accessions|sample ID
+  --empty          generate empty manifest
+  -o|outfile       path for output manifest
+  -h|help          this help message
+
+  When supplying a file of sample IDs ("-t file --file_id_type sample"), the IDs should
+  be ERS numbers (e.g. "ERS123456"), not sample accessions.
 
 USAGE
 }
