@@ -17,7 +17,7 @@ use NCBI::Exceptions;
 has 'taxon_id'             => ( is => 'ro', isa => 'Int', required => 1 );
 has 'taxon_lookup_service' => ( is => 'ro', isa => 'Str', default  => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=' );
 
-has 'common_name' => ( is => 'ro', isa => 'Str', lazy_build => 1 );
+has 'common_name' => ( is => 'rw', isa => 'Str', lazy_build => 1 );
 
 sub _build_common_name
 {
