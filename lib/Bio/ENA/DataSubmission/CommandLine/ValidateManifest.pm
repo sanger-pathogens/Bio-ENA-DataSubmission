@@ -134,6 +134,8 @@ sub run {
 	#------------#
 	# validation #
 	#------------#
+    
+    my %taxon_id_to_ncbi_taxon_name;
 
 	my @errors_found;
 	foreach my $r ( 0..$#manifest ){
@@ -174,12 +176,23 @@ sub run {
 
 		# taxon ID and scientific name
 		if ( $row[4] && $row[5] ){
-			my $taxid_error = Bio::ENA::DataSubmission::Validator::Error::TaxID->new(
+			my $taxon_obj = Bio::ENA::DataSubmission::Validator::Error::TaxID->new(
 				identifier       => $acc,
 				tax_id           => $row[4],
 				scientific_name  => $row[5],
-				taxon_lookup_service => $self->taxon_lookup_service
-			)->validate;
+				taxon_lookup_service => $self->taxon_lookup_service,
+			);
+            # lookup cached taxon IDs to names so that we dont hit NCBIs service
+            if(defined($taxon_id_to_ncbi_taxon_name{$row[4]}))
+            {
+                $taxon_obj->common_name($taxon_id_to_ncbi_taxon_name{$row[4]});
+            }
+            else
+            {
+                $taxon_id_to_ncbi_taxon_name{$row[4]} = $taxon_obj->common_name;
+            }
+
+            my $taxid_error = $taxon_obj->validate;
 			push( @errors_found, $taxid_error ) if ( $taxid_error->triggered );
 		}
 
