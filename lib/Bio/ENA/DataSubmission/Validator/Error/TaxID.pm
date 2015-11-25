@@ -17,7 +17,7 @@ has 'scientific_name'      => ( is => 'ro', isa => 'Str', required => 0 );
 has 'identifier'           => ( is => 'ro', isa => 'Str', required => 1 );
 has 'taxon_lookup_service' => ( is => 'ro', isa => 'Str', default  => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=' );
 
-has 'common_name'           => ( is => 'ro', isa => 'Maybe[Str]', lazy => 1, builder => '_build_common_name' );
+has 'common_name'           => ( is => 'rw', isa => 'Maybe[Str]', lazy => 1, builder => '_build_common_name' );
 
 sub _build_common_name
 {
