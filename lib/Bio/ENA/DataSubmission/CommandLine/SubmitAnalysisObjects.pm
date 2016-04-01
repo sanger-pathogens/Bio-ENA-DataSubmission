@@ -229,6 +229,7 @@ sub run {
   my $outfile = $self->outfile;
 
   $self->_convert_secondary_project_accession_to_primary_manifest_data();
+	$self->_convert_secondary_sample_accession_to_biosample_manifest_data();
 	# first, validate the manifest
 	unless( $self->no_validate ){
 		my @args = ( '-f', $self->manifest, '-r', $outfile, '-c', $self->config_file );
@@ -306,6 +307,28 @@ sub _convert_secondary_project_accession_to_primary
      defined($xml->{STUDY}->[0]->{IDENTIFIERS}->[0]->{SECONDARY_ID}->[0])  )
   {
     return $xml->{STUDY}->[0]->{IDENTIFIERS}->[0]->{SECONDARY_ID}->[0];
+  }
+  return $accession;
+}
+
+sub _convert_secondary_sample_accession_to_biosample
+{
+  my ($self, $accession) = @_;
+  return $accession unless(defined($accession));
+  return $accession unless($accession =~ /ERS/);
+
+  my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$accession&display=xml",ena_base_path => $self->ena_base_path )->parse_from_url;
+
+  if(defined($xml) && 
+     defined($xml->{SAMPLE}) && 
+     defined($xml->{SAMPLE}->[0]) && 
+     defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}) && 
+     defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]) && 
+     defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}) && 
+		 defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0]) &&
+     defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0]->{content})  )
+  {
+    return $xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0]->{content};
   }
   return $accession;
 }
@@ -414,6 +437,7 @@ sub _calc_md5
   $ctx->addfile($fh);
   return $ctx->hexdigest; 
 }
+
 sub _gzip_input_files
 {
   my ($self)     = @_;
@@ -448,13 +472,25 @@ sub _gzip_input_files
 sub _convert_secondary_project_accession_to_primary_manifest_data
 {
   my ($self)     = @_;
-  my @manifest = @{ $self->_manifest_data };
 	my %updated_data;
-	foreach my $row (@manifest){
+	foreach my $row ( @{ $self->_manifest_data }){
 	  $row->{study} = $self->_convert_secondary_project_accession_to_primary($row->{study});
 	}
 	1;
 }
+
+
+sub _convert_secondary_sample_accession_to_biosample_manifest_data
+{
+  my ($self)     = @_;
+	my %updated_data;
+	foreach my $row (@{ $self->_manifest_data }){
+	  $row->{sample} = $self->_convert_secondary_sample_accession_to_biosample($row->{sample});
+	}
+	1;
+}
+
+
 
 sub _update_analysis_xml {
 	my ($self)     = @_;
@@ -464,6 +500,7 @@ sub _update_analysis_xml {
 	my %updated_data;
 	foreach my $row (@manifest){
 	  $row->{study} = $self->_convert_secondary_project_accession_to_primary($row->{study});
+		$row->{sample} = $self->_convert_secondary_sample_accession_to_biosample($row->{sample});
 		$row->{checksum} = $self->_calc_md5($row->{file}); # add MD5 checksum 
 		$row->{file} = $self->_server_path( $row->{file}, $row->{name} ); # change file path from local to server
 		$row->{chromosome_list_file_checksum} = $self->_calc_md5($row->{chromosome_list_file}) if(defined($row->{chromosome_list_file}));
