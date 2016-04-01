@@ -4,7 +4,7 @@
     <TITLE>Assembly of test genome 1</TITLE>
     <DESCRIPTION>We assembled some crap! Who cares?</DESCRIPTION>
     <STUDY_REF accession="PRJEB2779" refcenter="SC" />
-    <SAMPLE_REF accession="ERS311560" refcenter="SC" />
+    <SAMPLE_REF accession="SAMEA1968765" refcenter="SC" />
     <RUN_REF accession="ERR363472" refcenter="SC" />
     <ANALYSIS_TYPE>
       <SEQUENCE_ASSEMBLY>
