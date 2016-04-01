@@ -325,9 +325,10 @@ sub _convert_secondary_sample_accession_to_biosample
      defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}) && 
      defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]) && 
      defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}) && 
-     defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0])  )
+		 defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0]) &&
+     defined($xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0]->{content})  )
   {
-    return $xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0];
+    return $xml->{SAMPLE}->[0]->{IDENTIFIERS}->[0]->{EXTERNAL_ID}->[0]->{content};
   }
   return $accession;
 }

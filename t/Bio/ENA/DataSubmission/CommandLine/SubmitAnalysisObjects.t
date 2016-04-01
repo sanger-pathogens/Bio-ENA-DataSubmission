@@ -26,6 +26,7 @@ use Cwd;
 use File::Temp;
 use Data::Dumper;
 use File::Slurp;
+use Test::Files;
 
 my $temp_directory_obj = File::Temp->newdir( DIR => getcwd, CLEANUP => 0   );
 my $tmp = $temp_directory_obj->dirname();
@@ -68,13 +69,14 @@ ok($obj->_gzip_input_files(),'gzip the input files');
 ok($obj->_parse_filelist($tmp),'convert the names of the files');
 ok( $obj->_update_analysis_xml,                         'XML update successful' );
 ok( -e $obj->_output_dest . "/analysis_2014-01-01.xml", 'XML exists analysis_2014-01-01.xml' );
-ok( compare( 't/data/analysis_updated.xml', $obj->_output_dest . "/analysis_2014-01-01.xml" ) == 0, 'Updated XML file correct' );
+compare_ok( 't/data/analysis_updated.xml', $obj->_output_dest . "/analysis_2014-01-01.xml",'Updated XML file correct');
 
 # test release date comparison
 ok( !$obj->_later_than_today('2000-01-01'), 'Date comparison correct' );
 ok( $obj->_later_than_today('2050-01-01'),  'Date comparison correct' );
 
 is($obj->_convert_secondary_project_accession_to_primary('ERP001039'), 'PRJEB2779','convert secondary project accession to primary');
+is($obj->_convert_secondary_sample_accession_to_biosample('ERS311560'), 'SAMEA1968765','convert ers accession to biosample');
 
 remove_tree( $obj->_output_dest );
 
@@ -134,7 +136,8 @@ ok($obj->_gzip_input_files(),'gzip the input files');
 ok($obj->_parse_filelist($tmp),'convert the names of the files');
 ok( $obj->_update_analysis_xml,                         'XML update successful' );
 ok(-e $obj->_output_dest . "/analysis_2014-01-01.xml", 'file exists');
-ok( compare( 't/data/analysis_updated_with_contigs_fa.xml', $obj->_output_dest . "/analysis_2014-01-01.xml" ) == 0, 'XML contains modified filenames' );
+compare_ok( 't/data/analysis_updated_with_contigs_fa.xml', $obj->_output_dest . "/analysis_2014-01-01.xml",'XML contains modified filenames');
+
 
 my $files = { 
     "$tmp/test_genome_1.fasta.gz" => 'test_genome_1.fasta.gz',
