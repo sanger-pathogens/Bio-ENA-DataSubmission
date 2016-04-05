@@ -22,14 +22,14 @@ sub validate {
 	my $acc  = $self->accession;
 	my $id   = $self->identifier;
 
-	unless ( $acc =~ m/^ERS/ || $acc =~ m/^SAMEA/ ){
-		$self->set_error_message( $id, "Invalid sample accession - must take format ERSXXXXXX" );
-		return $self;
-	}
-	else {
+	if( $acc =~ m/^ERS/ || $acc =~ m/^SAM/ || $acc =~ m/^SRS/){
 		# pull XML from ENA and verify that it isn't empty
 		my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$acc&display=xml",ena_base_path => $self->ena_base_path )->parse_from_url;
 		$self->set_error_message( $id, "Invalid sample accession - could not be found at the ENA" ) unless ( defined $xml->{SAMPLE} );		
+	}
+	else {
+		$self->set_error_message( $id, "Invalid sample accession - must take format ERSxxxx, SAMxxxx, or SRSxxxxx" );
+		return $self;
 	}
 
 	return $self;
