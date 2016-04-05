@@ -1,11 +1,11 @@
 Validation report for: t/data/analysis_manifest_bad.xls	Result: FAIL	Errors: 10
 Test1 genome assembly: Cannot find file: t/data/no_test.fa
-Test1 genome assembly: Invalid run accession - must take format ERRXXXXXX
+Test1 genome assembly: Invalid run accession - must take format ERRxxxxx or SRRxxxxx
 Test1 genome assembly: Incorrect date format. Must match YYYY, YYYY-MM, YYYY-MM-DD,... full list at http://www.ebi.ac.uk/ena/WebFeat/qualifiers/collection_date.html
 Test2 genome assembly: Not a boolean value (TRUE or FALSE)
 Test2 genome assembly: embl is not a valid file type
-Test2 genome assembly: Invalid study accession - must take format ERPXXXXXX
+Test2 genome assembly: Invalid study accession - must take format ERPxxxxx, SRPxxxxx or PRJxxxx
 Test2 genome assembly: Incorrect date format. Must match YYYY, YYYY-MM, YYYY-MM-DD,... full list at http://www.ebi.ac.uk/ena/WebFeat/qualifiers/collection_date.html
 Test3 genome assembly: 'B===D' is not a number
-Test3 genome assembly: Invalid sample accession - must take format ERSXXXXXX
+Test3 genome assembly: Invalid sample accession - must take format ERSxxxx, SAMxxxx, or SRSxxxxx
 Test3 genome assembly: ID could not be found in PubMed
