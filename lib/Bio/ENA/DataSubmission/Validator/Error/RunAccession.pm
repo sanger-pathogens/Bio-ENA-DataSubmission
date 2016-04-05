@@ -22,14 +22,14 @@ sub validate {
 	my $acc  = $self->accession;
 	my $id   = $self->identifier;
 
-	unless ( $acc =~ m/^ERR/ ){
-		$self->set_error_message( $id, "Invalid run accession - must take format ERRXXXXXX" );
-		return $self;
-	}
-	else {
+	if( $acc =~ m/^ERR/ || $acc =~ m/^SRR/){
 		# pull XML from ENA and verify that it isn't empty
 		my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$acc&display=xml",ena_base_path => $self->ena_base_path )->parse_from_url;
 		$self->set_error_message( $id, "Invalid run accession - could not be found at the ENA" ) unless ( defined $xml->{RUN} );		
+	}
+	else {
+		$self->set_error_message( $id, "Invalid run accession - must take format ERRxxxxx or SRRxxxxx" );
+		return $self;
 	}
 
 	return $self;

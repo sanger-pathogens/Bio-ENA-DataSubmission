@@ -22,14 +22,14 @@ sub validate {
 	my $acc  = $self->accession;
 	my $id   = $self->identifier;
 
-	unless ( $acc =~ m/^ERP/ ){
-		$self->set_error_message( $id, "Invalid study accession - must take format ERPXXXXXX" );
-		return $self;
-	}
-	else {
+	if( $acc =~ m/^ERP/ || $acc =~ m/^SRP/ || $acc =~ m/^PRJ/ ){
 		# pull XML from ENA and verify that it isn't empty
 		my $xml = Bio::ENA::DataSubmission::XML->new( url => $self->ena_base_path."$acc&display=xml",ena_base_path => $self->ena_base_path )->parse_from_url;
 		$self->set_error_message( $id, "Invalid study accession - could not be found at the ENA" ) unless ( defined $xml->{STUDY} );		
+	}
+	else {
+		$self->set_error_message( $id, "Invalid study accession - must take format ERPxxxxx, SRPxxxxx or PRJxxxx" );
+		return $self;
 	}
 
 	return $self;
