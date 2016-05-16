@@ -64,7 +64,7 @@ sub _build__current_date {
 }
 
 sub _build__analysis_center {
-	return 'SC';
+	return 'WTSI';
 }
 
 sub BUILD {

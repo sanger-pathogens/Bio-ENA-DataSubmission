@@ -62,7 +62,7 @@ throws_ok { $obj->run } 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'di
 # lane
 @exp_ers = (
     [
-        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552104', '', '', 'NA'
+        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', '2047STDY5552104', '', '', 'not applicable'
     ]
 );
 @args = ( '-t', 'lane', '-i', '10665_2#81', '-o', "$tmp/manifest.xls", '-c', 't/data/test_ena_data_submission.conf' );
@@ -73,13 +73,13 @@ is_deeply $obj->sample_data, \@exp_ers, 'Correct lane ERS';
 # file of lanes
 @exp_ers = (
     [
-        'ERS311560', '2047STDY5552273', 'UNC718', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648682', '10660_2#13', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552273', '', '', 'NA'
+        'ERS311560', '2047STDY5552273', 'UNC718', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648682', '10660_2#13', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', '2047STDY5552273', '', '', 'not applicable'
     ],
     [
-        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552104', '', '', 'NA'
+        'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', '2047STDY5552104', '', '', 'not applicable'
     ],
     [
-        'ERS311489', '2047STDY5552201', 'UNC647', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648610', '10665_2#90', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552201', '', '', 'NA'
+        'ERS311489', '2047STDY5552201', 'UNC647', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648610', '10665_2#90', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', '2047STDY5552201', '', '', 'not applicable'
     ],
     [ '11111_1#1', 'not found', 'not found' ]
 );
@@ -90,12 +90,12 @@ is_deeply $obj->sample_data, \@exp_ers, 'Correct file ERSs with lane IDs';
 
 # file of samples
 @exp_ers = (
-  [ 'ERS044413', 'EQUI0200', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252837, '6903_8#56', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0200', '', '', 'NA' ],
-  [ 'ERS044414', 'EQUI0201', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252838, '6903_8#57', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0201', '', '', 'NA' ],
-  [ 'ERS044415', 'EQUI0202', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252839, '6903_8#58', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0202', '', '', 'NA' ],
-  [ 'ERS044416', 'EQUI0203', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252840, '6903_8#59', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0203', '', '', 'NA' ],
-  [ 'ERS044417', 'EQUI0204', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252841, '6903_8#60', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0204', '', '', 'NA' ],
-  [ 'ERS044418', 'EQUI0205', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252842, '6903_8#61', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', 'EQUI0205', '', '', 'NA' ],
+  [ 'ERS044413', 'EQUI0200', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252837, '6903_8#56', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', 'EQUI0200', '', '', 'not applicable' ],
+  [ 'ERS044414', 'EQUI0201', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252838, '6903_8#57', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', 'EQUI0201', '', '', 'not applicable' ],
+  [ 'ERS044415', 'EQUI0202', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252839, '6903_8#58', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', 'EQUI0202', '', '', 'not applicable' ],
+  [ 'ERS044416', 'EQUI0203', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252840, '6903_8#59', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', 'EQUI0203', '', '', 'not applicable' ],
+  [ 'ERS044417', 'EQUI0204', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252841, '6903_8#60', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', 'EQUI0204', '', '', 'not applicable' ],
+  [ 'ERS044418', 'EQUI0205', '', '', 1336, 'Streptococcus equi', 'Streptococcus equi', 1252842, '6903_8#61', '', '', '', '', '', '1900/2016', '', '', 'not provided', '', 'not provided', '', '', '', '', '', 'EQUI0205', '', '', 'not applicable' ],
   [ 'ERS000000', 'not found', 'not found' ]
 );
 @args = (

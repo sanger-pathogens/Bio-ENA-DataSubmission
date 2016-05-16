@@ -252,9 +252,17 @@ sub update_analysis {
     else {
         delete $template->{TITLE};
     }
+		
+    if ( defined $row->{analysis_center} ) {
+        $template->{analysis_center}              = $row->{analysis_center};
+        $template->{center_name}                  = $row->{analysis_center};
+		}
+	  else
+	  {
+        delete $template->{analysis_center};
+        delete $template->{center_name};
+	  }
 
-    delete $template->{analysis_center};
-    delete $template->{center_name};
     delete $template->{STUDY_REF}->[0]->{refcenter};
     delete $template->{SAMPLE_REF}->[0]->{refcenter};
     delete $template->{RUN_REF}->[0]->{refcenter};
@@ -267,9 +275,8 @@ sub update_analysis {
         delete $template->{analysis_date};
     }
 
-    unless ( defined( $row->{run} ) ) {
-        delete $template->{RUN_REF};
-    }
+   
+    delete $template->{RUN_REF};
 
     # add file checksum
     $template->{FILES}->[0]->{FILE}->[0]->{checksum} = $row->{checksum};

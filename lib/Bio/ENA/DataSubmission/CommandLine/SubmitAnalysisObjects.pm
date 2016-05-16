@@ -576,7 +576,7 @@ sub _generate_submissions {
 		my $sub_template = { 
 			ACTIONS     => [{ ACTION => \@actions }],
 			alias       => $self->_current_user . '_' . $self->_timestamp . "_release_$date",
-			center_name => 'SC'
+			center_name => 'WTSI'
 		};
 		
 		# write to file

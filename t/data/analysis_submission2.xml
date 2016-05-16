@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION alias="testuser_testtime_release_2050-01-01" center_name="SC">
+<SUBMISSION alias="testuser_testtime_release_2050-01-01" center_name="WTSI">
   <ACTIONS>
     <ACTION>
       <ADD schema="analysis" source="analysis_2050-01-01.xml" />

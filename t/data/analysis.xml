@@ -3,7 +3,7 @@
   <ANALYSIS alias="test_genome_1" center_name="SC" analysis_center="SC" analysis_date="2014-09-01"> 
     <TITLE>Assembly of test genome 1</TITLE>
     <DESCRIPTION>
-      We assembled some crap! Who cares?
+      We assembled stuff
     </DESCRIPTION>
     <STUDY_REF accession="ERP001039" refcenter="SC"/>
     <SAMPLE_REF accession="ERS311560" refcenter="SC"/>
