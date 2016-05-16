@@ -273,7 +273,7 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
         ]
         , 'Check duplicated inserted tags have been removed');
 
-for my $country (('not available: not collected','not available: restricted access','not available: to be reported later','not applicable','obscured','temporarily obscured'))
+for my $country (('not available: not collected','not available: restricted access','not available: to be reported later','not applicable','obscured','temporarily obscured', 'temporarily obscured', 'missing', 'not collected', 'not provided', 'restricted access'))
 {
 
   # update sample should remove countries that are not available

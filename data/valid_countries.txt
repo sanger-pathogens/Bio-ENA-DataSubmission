@@ -1,9 +1,8 @@
-not available: not collected
-not available: restricted access
-not available: to be reported later
+not collected
+not provided
+restricted access
 not applicable
-obscured
-temporarily obscured
+missing
 Afghanistan
 Albania
 Algeria

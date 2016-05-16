@@ -40,7 +40,7 @@ use Getopt::Long qw(GetOptionsFromArray);
 has 'args'     => ( is => 'ro', isa => 'ArrayRef',   required => 1 );
 
 has 'manifest' => ( is => 'rw', isa => 'Str',        required => 0 );
-has 'schema'   => ( is => 'rw', isa => 'Str',        required => 0, default => 'data/ERC000028.xml' );
+has 'schema'   => ( is => 'rw', isa => 'Str',        required => 0, default => 'data/ERC000029.xml' );
 has 'outfile'  => ( is => 'rw', isa => 'Maybe[Str]', required => 0 );
 has 'help'     => ( is => 'rw', isa => 'Bool',       required => 0 );
 

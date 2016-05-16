@@ -58,7 +58,7 @@ has 'attributes_to_delete' => (
 
 has 'countries_to_remove' => (    is      => 'ro',
     isa     => 'HashRef',
-    default => sub { { 'not available: not collected' => 1, 'not available: restricted access' => 1, 'not available: to be reported later' => 1, 'not applicable' => 1, 'obscured' => 1, 'temporarily obscured' => 1} }
+    default => sub { { 'not available: not collected' => 1, 'not available: restricted access' => 1, 'not available: to be reported later' => 1, 'not applicable' => 1, 'obscured' => 1, 'temporarily obscured' => 1, 'missing' => 1, 'not collected' => 1, 'not provided' => 1, 'restricted access' => 1} }
 );
 
 
@@ -228,7 +228,6 @@ sub update_analysis {
     $template->{DESCRIPTION}->[0]                                              = $row->{description};
     $template->{STUDY_REF}->[0]->{accession}                                   = $row->{study};
     $template->{SAMPLE_REF}->[0]->{accession}                                  = $row->{sample};
-    $template->{RUN_REF}->[0]->{accession} = $row->{run} if ( defined( $row->{run} ) );
 
     if ( defined( $row->{chromosome_list_file} ) ) {
         my ( $cl_filename, $d, $s ) = fileparse( $row->{chromosome_list_file} );
@@ -254,20 +253,11 @@ sub update_analysis {
         delete $template->{TITLE};
     }
 
-    if ( defined $row->{analysis_center} ) {
-        $template->{analysis_center}              = $row->{analysis_center};
-        $template->{center_name}                  = $row->{analysis_center};
-        $template->{STUDY_REF}->[0]->{refcenter}  = $row->{analysis_center};
-        $template->{SAMPLE_REF}->[0]->{refcenter} = $row->{analysis_center};
-        $template->{RUN_REF}->[0]->{refcenter}    = $row->{analysis_center};
-    }
-    else {
-        delete $template->{analysis_center};
-        delete $template->{center_name};
-        delete $template->{STUDY_REF}->[0]->{refcenter};
-        delete $template->{SAMPLE_REF}->[0]->{refcenter};
-        delete $template->{RUN_REF}->[0]->{refcenter};
-    }
+    delete $template->{analysis_center};
+    delete $template->{center_name};
+    delete $template->{STUDY_REF}->[0]->{refcenter};
+    delete $template->{SAMPLE_REF}->[0]->{refcenter};
+    delete $template->{RUN_REF}->[0]->{refcenter};
 
     if ( defined $row->{analysis_date} ) {
         my $fulldate = $row->{analysis_date} . 'T00:00:00';
