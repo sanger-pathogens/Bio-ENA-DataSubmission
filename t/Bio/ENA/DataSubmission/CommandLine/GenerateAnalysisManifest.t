@@ -72,7 +72,7 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
             'ERP001039',
             'ERS311560',
             'ERR363472',
-            'SC',
+            'WTSI',
             'current_date',
             'current_date',
             '',
