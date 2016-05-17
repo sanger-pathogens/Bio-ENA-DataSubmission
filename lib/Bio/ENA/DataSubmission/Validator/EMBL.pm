@@ -21,7 +21,7 @@ sub validate {
 	my @files = @{ $self->embl_files };
 	my $jar   = $self->jar_path;
 
-	my $cmd = "java -classpath $jar uk.ac.ebi.client.EnaValidator " . join( " ", @files );
+	my $cmd = "java -classpath $jar uk.ac.ebi.client.EnaValidator -r " . join( " ", @files );
 	system($cmd);
 }
 
