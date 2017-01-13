@@ -349,7 +349,12 @@ sub _convert_gffs_to_flatfiles_cmds
      my $input_file = $row->{file};
      my $output_file = $directories.$sample_name.'.embl' ;
      my $locus_tag = "";
-     if(defined($row->{sample}) && $row->{sample} ne "")
+     
+     if(defined($row->{locus_tag}) && $row->{locus_tag} ne "")
+     {
+     	 $locus_tag = "--locus_tag ".$row->{locus_tag};
+     }
+     elsif(defined($row->{sample}) && $row->{sample} ne "")
      {
        $locus_tag = "--locus_tag ".$row->{sample};
      }

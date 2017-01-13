@@ -141,7 +141,7 @@ sub run {
 	my $header = [
 		'name*', 'partial*', 'coverage*', 'program*', 'platform*', 'minimum_gap',
 		'file*', 'file_type*', 'title', 'description*', 'study*', 'sample*', 'run',
-		'analysis_center', 'analysis_date', 'release_date', 'pubmed_id','tax_id','common_name'
+		'analysis_center', 'analysis_date', 'release_date', 'pubmed_id','tax_id','common_name', 'locus_tag'
 	];
 
 	# write data to spreadsheet
@@ -180,7 +180,7 @@ sub _build_manifest_data {
 sub _manifest_row{
 	my ($self, $f, $lane, $k) = @_;
 
-	my @row = ('', 'FALSE', 'not found', '', 'SLX', '0', '', '', '', '', 'not found', 'not found', 'not found', $self->_analysis_center, $self->_current_date, $self->_current_date, $self->pubmed_id);
+	my @row = ('', 'FALSE', 'not found', '', 'SLX', '0', '', '', '', '', 'not found', 'not found', 'not found', $self->_analysis_center, $self->_current_date, $self->_current_date, $self->pubmed_id,'','','');
 	@row = $self->_error_row(\@row) if ( $self->_show_errors );
 	unless ( defined $lane ) {
 	    $row[12] = $k;
