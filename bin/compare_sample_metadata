@@ -10,7 +10,6 @@ package Bio::ENA::DataSubmission::Bin::CompareMetadata;
 
 =cut
 
-BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
 BEGIN { unshift( @INC, '../lib' ) }
 BEGIN { unshift( @INC, './lib' ) }
 

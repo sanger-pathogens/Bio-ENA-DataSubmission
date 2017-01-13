@@ -12,7 +12,6 @@ package Bio::ENA::DataSubmission::Bin::SubmitAnalysisObjects;
 
 BEGIN { unshift( @INC, '../lib' ) }
 BEGIN { unshift( @INC, './lib' ) }
-#BEGIN { unshift( @INC, '/software/pathogen/internal/prod/lib/' ) }
 
 use Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects;
 
