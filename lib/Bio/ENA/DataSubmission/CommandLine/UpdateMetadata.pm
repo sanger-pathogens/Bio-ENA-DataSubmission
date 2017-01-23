@@ -221,7 +221,7 @@ sub run {
 	# validate both with XSD
 	$self->_validate_with_xsd;
 
-	# copy spreadsheet to /lustre/scratch118/pathogen/pathpipe/ena_updates/
+	# copy spreadsheet to /lustre/scratch118/infgen/pathogen/pathpipe/ena_updates/
 	$self->_record_spreadsheet;
 
 	# email Rob
