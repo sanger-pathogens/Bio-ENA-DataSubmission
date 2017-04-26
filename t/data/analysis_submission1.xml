@@ -4,8 +4,5 @@
     <ACTION>
       <ADD schema="analysis" source="analysis_2014-01-01.xml" />
     </ACTION>
-    <ACTION>
-      <RELEASE></RELEASE>
-    </ACTION>
   </ACTIONS>
 </SUBMISSION>

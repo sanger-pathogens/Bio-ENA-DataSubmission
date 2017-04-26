@@ -572,10 +572,6 @@ sub _generate_submissions {
 			# hold until release date
 			push( @actions, { HOLD => [ { HoldUntilDate => $date } ] } );
 		}
-		else {
-			# release immediately
-			push( @actions, { RELEASE => [ {} ] } );
-		}
 
 		# construct XML data structure
 		my $sub_template = { 
