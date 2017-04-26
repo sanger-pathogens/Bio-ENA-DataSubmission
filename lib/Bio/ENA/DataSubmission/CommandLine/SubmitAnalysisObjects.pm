@@ -572,10 +572,6 @@ sub _generate_submissions {
 			# hold until release date
 			push( @actions, { HOLD => [ { HoldUntilDate => $date } ] } );
 		}
-		else {
-			# release immediately
-			push( @actions, { RELEASE => [ {} ] } );
-		}
 
 		# construct XML data structure
 		my $sub_template = { 
@@ -678,10 +674,12 @@ sub _parse_receipt {
 	if(defined($xml->{MESSAGES}) && defined($xml->{MESSAGES}->[0]) && defined( $xml->{MESSAGES}->[0]->{ERROR}))
 	{
 	  $receipt_details{errors} = join( ';', @{ $xml->{MESSAGES}->[0]->{ERROR} } );
+	  print "ERRORS in your submission\n";
   }
   
   if(defined($xml->{success}))
   {
+	  print "Successful submission\n";
     $receipt_details{success} = $xml->{success};
   }
 	
