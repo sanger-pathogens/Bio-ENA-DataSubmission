@@ -36,6 +36,7 @@ use File::Path qw(make_path);
 use Cwd 'abs_path';
 use Cwd;
 use Parallel::ForkManager;
+use Bio::SeqIO;
 
 use Bio::ENA::DataSubmission;
 use Bio::ENA::DataSubmission::Exception;
@@ -333,6 +334,30 @@ sub _convert_secondary_sample_accession_to_biosample
   return $accession;
 }
 
+
+sub _generate_chromosome_file
+{
+	my ($self, $input_file, $output_file) = @_;
+	open(my $chr_list_fh, '+>', $output_file);
+	my $in  = Bio::SeqIO->new(-file => $input_file , '-format' => 'Fasta');
+	
+	my $counter = 1;
+	while ( my $seq = $in->next_seq() ) {
+	  my $cur_size = $seq->length();
+	  my $seq_name = $seq->display_id();
+	  
+	  if($cur_size > 1000000)
+	  {
+		  print {$chr_list_fh} join("\t",($seq_name, $counter, 'Chromosome')). "\n";
+	  }
+	  else
+	  {
+	  	print {$chr_list_fh} join("\t",($seq_name, $counter, 'Plasmid')). "\n";
+	  }
+	  $counter++;
+  }
+}
+
 sub _convert_gffs_to_flatfiles_cmds
 {
    my ($self) = @_;
@@ -343,10 +368,18 @@ sub _convert_gffs_to_flatfiles_cmds
    for my $row ( @manifest ) {
      chomp($row->{name});
      my $sample_name = $row->{name};
+	 my $input_file = $row->{file};
      my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, qr/\.[^.]*/ );
+	 
+     if(defined($row->{file_type}) && $row->{file_type} eq 'chromosome_fasta')
+     {
+		 my $chromosome_filename = $directories.$sample_name.".chromosome_list" ;
+		 $self->_generate_chromosome_file($input_file, $chromosome_filename);
+         $row->{chromosome_list_file} = $chromosome_filename ;
+     }
+
      next unless(  $row->{file} =~ /gff$/);
      
-     my $input_file = $row->{file};
      my $output_file = $directories.$sample_name.'.embl' ;
      my $locus_tag = "";
      
