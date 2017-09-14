@@ -56,6 +56,7 @@ has 'args'            => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 has 'analysis_type'   => ( is => 'rw', isa => 'Str',      required => 0, default    => 'sequence_assembly' );
 has 'manifest'        => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile'         => ( is => 'rw', isa => 'Str',      required => 0 );
+has 'action'          => ( is => 'rw', isa => 'Str',      required => 0, default => 'ADD' );
 has 'help'            => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'processors'      => ( is => 'rw', isa => 'Int',      default  => 1 );
 
@@ -90,7 +91,7 @@ sub BUILD {
 
 	my ( 
 		$file, $outfile, $analysis_type,
-		$no_validate, $no_upload, $help, $config_file,$processors
+		$no_validate, $no_upload, $help, $config_file,$processors, $action
 	);
 	my $args = $self->args;
 
@@ -99,6 +100,7 @@ sub BUILD {
 		'f|file=s'    => \$file,
 		'o|outfile=s' => \$outfile,
 		't|type'      => \$analysis_type,
+		'a|action=s'  => \$action,
 		'no_validate' => \$no_validate,
 		'c|config_file=s' => \$config_file,
 		'p|processors=i'  => \$processors,
@@ -112,6 +114,8 @@ sub BUILD {
 	$self->help($help)                   if ( defined $help );
 	$self->config_file($config_file)     if ( defined $config_file );
 	$self->processors($processors)       if ( defined $processors );
+	$self->action($action)               if ( defined $action && ($action eq 'ADD' || $action eq 'MODIFY'));
+	
 	
 	$self->_check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
 	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file for Submit Analysis Objects\n" );
@@ -600,7 +604,8 @@ sub _generate_submissions {
 		my ( $filename, $directories, $suffix ) = fileparse( $self->_analysis_xml( $date ), ('.xml') );
 		my $file = "$filename$suffix"; # remove directories
 
-		my @actions = ( { ADD => [ { source => $file, schema => 'analysis' } ] } );
+        my $action = $self->action;
+		my @actions = ( { $action => [ { source => $file, schema => 'analysis' } ] } );
 		if ( $self->_later_than_today( $date ) ){
 			# hold until release date
 			push( @actions, { HOLD => [ { HoldUntilDate => $date } ] } );
@@ -721,13 +726,14 @@ sub _parse_receipt {
 
 sub usage_text {
 	return <<USAGE;
-Usage: submit_analysis_objects [options]
+Usage: submit_analysis_objects [options] -f manifest.xls
 
-	-f|file    
+	-f|file        Input file in .xls format (required) 
+	-a|action      Add a new or modify an existing assembly (ADD|MODIFY) [ADD]
 	-o|outfile     Output file for report ( .xls format )
-	-t|type        Default = sequence_assembly
-	--no_validate  Do not run manifest validation step
-	-p|processors  Number of threads to use (default is 1)
+	-t|type        Type of assembly [sequence_assembly]
+	--no_validate  Do not run manifest validation step [FALSE]
+	-p|processors  Number of threads to use [1]
 	-h|help        This help message
 
 USAGE
