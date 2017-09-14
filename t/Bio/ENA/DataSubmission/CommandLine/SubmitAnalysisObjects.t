@@ -80,6 +80,27 @@ is($obj->_convert_secondary_sample_accession_to_biosample('ERS311560'), 'SAMEA19
 
 remove_tree( $obj->_output_dest );
 
+@args = ( '-f', 't/data/analysis_submission_manifest.xls',  '-a', 'MODIFY', '-o', "$tmp/analysis_submission_report.xls", '-c', 't/data/test_ena_data_submission.conf' );
+
+# submission XML generation
+# test with the modify action
+$obj = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjects->new(
+    args          => \@args,
+    _current_user => 'testuser',
+    _timestamp    => 'testtime',
+    _random_tag   => '0003',
+    _output_dest  => $tmp,
+    _no_upload    => 1,
+    _no_validate  => 1
+);
+ok( $obj->_generate_submissions(),                        'Submission XMLs generated successfully with modify action' );
+ok( -e $obj->_output_dest . "/submission_2014-01-01.xml", 'XML exists submission_2014-01-01.xml  with modify action' );
+ok( -e $obj->_output_dest . "/submission_2050-01-01.xml", 'XML exists submission_2050-01-01.xml  with modify action' );
+ok( compare( 't/data/analysis_submission_modify1.xml', $obj->_output_dest . "/submission_2014-01-01.xml" ) == 0, 'Submission XML correct  with modify action' );
+ok( compare( 't/data/analysis_submission_modify2.xml', $obj->_output_dest . "/submission_2050-01-01.xml" ) == 0, 'Submission XML correct  with modify action' );
+
+
+
 @args = ( '-f', 't/data/analysis_submission_manifest.xls', '-o', "$tmp/analysis_submission_report.xls", '-c', 't/data/test_ena_data_submission.conf' );
 
 # submission XML generation
@@ -98,6 +119,10 @@ ok( -e $obj->_output_dest . "/submission_2014-01-01.xml", 'XML exists submission
 ok( -e $obj->_output_dest . "/submission_2050-01-01.xml", 'XML exists submission_2050-01-01.xml' );
 ok( compare( 't/data/analysis_submission1.xml', $obj->_output_dest . "/submission_2014-01-01.xml" ) == 0, 'Submission XML correct' );
 ok( compare( 't/data/analysis_submission2.xml', $obj->_output_dest . "/submission_2050-01-01.xml" ) == 0, 'Submission XML correct' );
+
+
+
+
 
 # test full run
 # Mock out FTP
