@@ -98,6 +98,8 @@ sub _cleanup_whitespace {
 			my $cell = $row->[$c];
 			push(@trimmed_row, $cell);
 			next unless( defined $cell );
+			# remove whitespace at the start and end of a cell
+			$cell =~ s/^\s+|\s+$//g;
 			if ( $cell =~ /\S/ ){
 				$keep = 1;
 			}
