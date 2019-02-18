@@ -2,6 +2,10 @@ package Bio::ENA::DataSubmission::WEBINCli;
 
 # ABSTRACT: Wrapper around webin cli
 
+=head1 NAME
+
+Bio::ENA::DataSubmission::WEBINCli
+
 =head1 SYNOPSIS
 
 Wrapper around ENA's webin cli for analysis submissions

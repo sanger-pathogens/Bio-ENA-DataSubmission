@@ -22,6 +22,8 @@ my($fh, $filename) = tempfile(CLEANUP => 1);
 my($manifest_file, $manifest_filename) = tempfile(CLEANUP => 1);
 my $temp_dir = File::Temp->newdir(CLEANUP => 1 );
 my $temp_dir_name = $temp_dir->dirname();
+my($unreadable_manifest_handle, $unreadable_manifest) = tempfile(CLEANUP => 1);
+chmod 0333, ($unreadable_manifest);
 use constant WEB_IN_CLIENT_JAR => "WEB_IN_CLIENT_JAR";
 use constant A_PROXY_HOST => "A_HOST";
 use constant A_PROXY_PORT => 1010;
@@ -52,7 +54,7 @@ use Test::Mock::Cmd 'system' => sub { $system_call_args = \@_ };
     use_ok('Bio::ENA::DataSubmission::WEBINCli');
 }
 
-#Test the system call is made properly if one file
+#Test the system call is made properly
 {
 
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%full_args);
@@ -189,14 +191,14 @@ sub test_directory_not_a_directory {
 
 # Check manifest validation when file is not readable
 {
-    my($fh, $filename) = tempfile(CLEANUP => 1);
     my $args = {%full_args};
-    $args->{'manifest'} = $filename;
+    $args->{'manifest'} = $unreadable_manifest;
     my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
-    chmod 0333, ($filename);
     throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::CannotReadFile', "dies if manifest is not a readable file";
 
 }
 
-remove_tree($temp_input_dir_name, $temp_output_dir_name, $filename, $manifest_filename, $temp_dir_name);
+remove_tree($temp_input_dir_name, $temp_output_dir_name, $filename, $manifest_filename, $temp_dir_name, $unreadable_manifest);
 done_testing();
+
+no Moose;
