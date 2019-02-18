@@ -22,3 +22,7 @@ nytprof.out
 .DS_Store
 ena_updates
 .*.sw?
+
+#IntelliJ files
+/.idea
+*.iml
