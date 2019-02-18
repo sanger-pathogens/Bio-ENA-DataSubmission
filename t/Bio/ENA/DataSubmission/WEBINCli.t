@@ -49,13 +49,13 @@ use Test::Mock::Cmd 'system' => sub { $system_call_args = \@_ };
 # Test the module can be used
 {
 
-    use_ok('Bio::ENA::DataSubmission::WEBIN');
+    use_ok('Bio::ENA::DataSubmission::WEBINCli');
 }
 
 #Test the system call is made properly if one file
 {
 
-    my ($under_test) = Bio::ENA::DataSubmission::WEBIN->new(%full_args);
+    my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%full_args);
     $under_test->run();
     my $expected = ["java", "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
@@ -68,7 +68,7 @@ use Test::Mock::Cmd 'system' => sub { $system_call_args = \@_ };
 
     my $args = {%full_args};
     $args->{'context'} = 'a_context';
-    my ($under_test) = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
     my $expected = ["java", "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
@@ -81,7 +81,7 @@ use Test::Mock::Cmd 'system' => sub { $system_call_args = \@_ };
 
     my $args = {%full_args};
     $args->{'test'} = 1;
-    my ($under_test) = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
     my $expected = ["java", "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
@@ -94,7 +94,7 @@ use Test::Mock::Cmd 'system' => sub { $system_call_args = \@_ };
 
     my $args = {%full_args};
     $args->{'validate'} = 0;
-    my ($under_test) = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
     my $expected = ["java", "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
@@ -107,7 +107,7 @@ use Test::Mock::Cmd 'system' => sub { $system_call_args = \@_ };
 
     my $args = {%full_args};
     $args->{'submit'} = 0;
-    my ($under_test) = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
     my $expected = ["java", "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
@@ -120,7 +120,7 @@ sub test_mandatory_args {
     my ($input) = @_;
     my $args_with_missing_required_arg = {%full_args};
     delete $args_with_missing_required_arg->{$input};
-    throws_ok {Bio::ENA::DataSubmission::WEBIN->new(%$args_with_missing_required_arg)} 'Moose::Exception::AttributeIsRequired', "dies if mandatory arg $input is missing";
+    throws_ok {Bio::ENA::DataSubmission::WEBINCli->new(%$args_with_missing_required_arg)} 'Moose::Exception::AttributeIsRequired', "dies if mandatory arg $input is missing";
 }
 
 # Check mandatory arguments
@@ -138,7 +138,7 @@ sub test_mandatory_args {
 {
     my $args = {%full_args};
     $args->{"http_proxy_port"} = 13.3;
-    throws_ok {Bio::ENA::DataSubmission::WEBIN->new(%$args)} 'Moose::Exception::ValidationFailedForInlineTypeConstraint', "dies if http_proxy_port is not an int";
+    throws_ok {Bio::ENA::DataSubmission::WEBINCli->new(%$args)} 'Moose::Exception::ValidationFailedForInlineTypeConstraint', "dies if http_proxy_port is not an int";
 }
 
 
@@ -146,7 +146,7 @@ sub test_directory_missing {
     my ($input) = @_;
     my $args = {%full_args};
     $args->{$input} = 'Not/An/Existing/Directory';
-    my $under_test = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::DirectoryNotFound', "dies if $input is not found";
 }
 
@@ -154,7 +154,7 @@ sub test_directory_not_a_directory {
     my ($input) = @_;
     my $args = {%full_args};
     $args->{$input} = $filename;
-    my $under_test = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::DirectoryNotFound', "dies if $input is a file and not a dir";
 }
 
@@ -173,7 +173,7 @@ sub test_directory_not_a_directory {
 {
     my $args = {%full_args};
     $args->{'manifest'} = 'Not/An/Existing/File';
-    my $under_test = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::FileNotFound', "dies if manifest is not found";
 
 }
@@ -182,7 +182,7 @@ sub test_directory_not_a_directory {
 {
     my $args = {%full_args};
     $args->{'manifest'} = $temp_dir_name;
-    my $under_test = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::CannotReadFile', "dies if manifest is not a readable file";
 
 }
@@ -192,7 +192,7 @@ sub test_directory_not_a_directory {
     my($fh, $filename) = tempfile(CLEANUP => 1);
     my $args = {%full_args};
     $args->{'manifest'} = $filename;
-    my $under_test = Bio::ENA::DataSubmission::WEBIN->new(%$args);
+    my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     chmod 0333, ($filename);
     throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::CannotReadFile', "dies if manifest is not a readable file";
 

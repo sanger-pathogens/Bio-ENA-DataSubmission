@@ -1,4 +1,4 @@
-package Bio::ENA::DataSubmission::WEBIN;
+package Bio::ENA::DataSubmission::WEBINCli;
 
 # ABSTRACT: Wrapper around webin cli
 
