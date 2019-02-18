@@ -68,7 +68,7 @@ has '_random_tag'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_bu
 has '_sample_xml'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_submission_xml' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 
-has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
 
 sub _populate_attributes_from_config_file
 {

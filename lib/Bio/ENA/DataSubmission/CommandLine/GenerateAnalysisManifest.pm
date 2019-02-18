@@ -53,7 +53,7 @@ has '_show_errors'     => ( is => 'rw', isa => 'Bool',     required => 0, defaul
 has 'file_type'   => ( is => 'rw', isa => 'Str',      required => 0, default    => 'assembly' );
 has 'assembly_directories' => ( is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'annotation_directories' => ( is => 'rw', isa => 'Maybe[ArrayRef]');
-has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
 
 sub _build__current_date {
 	my $self = shift;

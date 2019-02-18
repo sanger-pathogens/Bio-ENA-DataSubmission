@@ -51,7 +51,7 @@ has 'report'  => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'outfile' => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'edit'    => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'    => ( is => 'rw', isa => 'Bool',     required => 0 );
-has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
 
 has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
 has 'taxon_lookup_service' => ( is => 'rw', isa => 'Str', default  => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=' );
