@@ -75,7 +75,7 @@ has 'ena_base_path'    => ( is => 'rw', isa => 'Str'     );
 has 'no_validate'     => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
 has '_no_upload'      => ( is => 'rw', isa => 'Bool',     required => 0, default    => 0 );
 
-has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
 
 # Populated after the object is constructed and the config file is read
 has 'data_root'                   => ( is => 'rw', isa => 'Maybe[Str]');

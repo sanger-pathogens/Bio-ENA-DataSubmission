@@ -44,7 +44,7 @@ has 'schema'   => ( is => 'rw', isa => 'Str',        required => 0, default => '
 has 'outfile'  => ( is => 'rw', isa => 'Maybe[Str]', required => 0 );
 has 'help'     => ( is => 'rw', isa => 'Bool',       required => 0 );
 
-has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/etc/ena_data_submission.conf');
+has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
 has 'proxy'           => ( is => 'rw', isa => 'Maybe[Str]');
 has 'ena_base_path'   => ( is => 'rw', isa => 'Maybe[Str]');
 

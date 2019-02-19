@@ -11,6 +11,7 @@ Exceptions for input data
 use Exception::Class (
     Bio::ENA::DataSubmission::Exception::InvalidInput          => { description => 'Input arguments are invalid' },
     Bio::ENA::DataSubmission::Exception::FileNotFound          => { description => 'Cannot find file' },
+    Bio::ENA::DataSubmission::Exception::DirectoryNotFound     => { description => 'Cannot find directory or is not a directory' },
     Bio::ENA::DataSubmission::Exception::ConnectionFail        => { description => 'Failed to connect to database' },
     Bio::ENA::DataSubmission::Exception::NoData                => { description => 'No data was supplied to the spreadsheet writer' },
     Bio::ENA::DataSubmission::Exception::CannotWriteFile       => { description => 'Supplied path does not have write access' },
