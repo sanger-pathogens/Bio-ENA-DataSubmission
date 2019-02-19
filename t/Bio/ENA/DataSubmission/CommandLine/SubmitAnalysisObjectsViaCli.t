@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-#TODO find a way to compare objects
 BEGIN {unshift(@INC, './lib')}
 
 BEGIN {

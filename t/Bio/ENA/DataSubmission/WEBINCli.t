@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-#TODO to refactor, messy test, but decent coverage at least.
 BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {

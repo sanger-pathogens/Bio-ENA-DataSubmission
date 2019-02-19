@@ -17,34 +17,34 @@ Wrapper around ENA's webin cli for analysis submissions
 use Moose;
 use Bio::ENA::DataSubmission::Exception;
 
-has 'jar_path' => ( is => 'rw', isa => 'Str',  required => 1 );
-has 'username' => ( is => 'rw', isa => 'Str',  required => 1 );
-has 'password' => ( is => 'rw', isa => 'Str',  required => 1 );
-has 'http_proxy_host' => ( is => 'rw', isa => 'Str',  required => 1 );
-has 'http_proxy_port' => ( is => 'rw', isa => 'Int',  required => 1 );
-has 'context'  => ( is => 'rw', isa => 'Str',  required => 0, default    => 'genome' );
-has 'input_dir' => ( is => 'rw', isa => 'Str',  required => 1);
-has 'output_dir'=> ( is => 'rw', isa => 'Str',  required => 1);
-has 'manifest' => ( is => 'rw', isa => 'Str',  required => 1);
-has 'test'     => ( is => 'rw', isa => 'Bool', required => 0, default    => 0 );
-has 'validate' => ( is => 'rw', isa => 'Bool', required => 0, default    => 1 );
-has 'submit'   => ( is => 'rw', isa => 'Bool', required => 0, default    => 1 );
+has 'jar_path' => (is => 'rw', isa => 'Str', required => 1);
+has 'username' => (is => 'rw', isa => 'Str', required => 1);
+has 'password' => (is => 'rw', isa => 'Str', required => 1);
+has 'http_proxy_host' => (is => 'rw', isa => 'Str', required => 1);
+has 'http_proxy_port' => (is => 'rw', isa => 'Int', required => 1);
+has 'context' => (is => 'rw', isa => 'Str', required => 0, default => 'genome');
+has 'input_dir' => (is => 'rw', isa => 'Str', required => 1);
+has 'output_dir' => (is => 'rw', isa => 'Str', required => 1);
+has 'manifest' => (is => 'rw', isa => 'Str', required => 1);
+has 'test' => (is => 'rw', isa => 'Bool', required => 0, default => 0);
+has 'validate' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
+has 'submit' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
 
 sub run {
-	my ($self) = @_;
+    my ($self) = @_;
 
     $self->_validate();
-	my @args = $self->_build_arguments_to_system_call();
-	return system(@args)
+    my @args = $self->_build_arguments_to_system_call();
+    return system(@args)
 }
 
 sub _validate {
     my ($self) = @_;
 
-    ( -e $self->input_dir && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw( error => "Cannot find input directory\n" );
-    ( -e $self->output_dir && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw( error => "Cannot find output directory\n" );
-    ( -e $self->manifest ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find manifest file\n" );
-    ( -f $self->manifest && -r _) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot find manifest file\n" );
+    (-e $self->input_dir && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot find input directory\n");
+    (-e $self->output_dir && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot find output directory\n");
+    (-e $self->manifest) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find manifest file\n");
+    (-f $self->manifest && -r _) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw(error => "Cannot find manifest file\n");
 }
 
 sub _build_arguments_to_system_call {
