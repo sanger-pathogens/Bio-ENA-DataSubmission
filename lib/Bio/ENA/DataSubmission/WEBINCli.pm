@@ -22,13 +22,13 @@ has 'username' => (is => 'ro', isa => 'Str', required => 1);
 has 'password' => (is => 'ro', isa => 'Str', required => 1);
 has 'http_proxy_host' => (is => 'ro', isa => 'Str', required => 1);
 has 'http_proxy_port' => (is => 'ro', isa => 'Int', required => 1);
-has 'context' => (is => 'ro', isa => 'Str', required => 0, default => 'genome');
+has 'context' => (is => 'ro', isa => 'Str', required => 1);
 has 'input_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'manifest' => (is => 'ro', isa => 'Str', required => 1);
-has 'test' => (is => 'ro', isa => 'Bool', required => 0, default => 0);
-has 'validate' => (is => 'ro', isa => 'Bool', required => 0, default => 1);
-has 'submit' => (is => 'ro', isa => 'Bool', required => 0, default => 1);
+has 'test' => (is => 'ro', isa => 'Bool', required => 1);
+has 'validate' => (is => 'ro', isa => 'Bool', required => 1);
+has 'submit' => (is => 'ro', isa => 'Bool', required => 1);
 has 'jvm' => (is => 'ro', isa => 'Str', required => 1);
 
 sub run {

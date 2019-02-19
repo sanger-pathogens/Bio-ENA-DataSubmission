@@ -35,6 +35,9 @@ my %full_args = (
     manifest      => $manifest_filename,
     input_dir     => $temp_input_dir_name,
     output_dir    => $temp_output_dir_name,
+    context       => 'genome',
+    test          => 0,
+    validate      => 1,
 );
 
 
@@ -57,18 +60,12 @@ my %full_args = (
     };
     can_build_cli_based_on_input($args);
 }
+
 # Test can suppress validation using command line parameters
 {
     my $args = {
         args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf', '--no_validate' ]
     };
-    can_suppress_validation($args);
-}
-
-# Test can suppress validation using direct arguments
-{
-    my $args = { %full_args };
-    $args->{validate} = 0;
     can_suppress_validation($args);
 }
 
@@ -80,13 +77,6 @@ my %full_args = (
     can_override_test($args);
 }
 
-# Test can override test using direct input
-{
-    my $args = { %full_args };
-    $args->{test} = 1;
-    can_override_test($args);
-}
-
 # Test can change the context using command line args
 {
 
@@ -94,15 +84,6 @@ my %full_args = (
         args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf', '-t', 'another context' ]
     };
     can_change_the_context($args);
-}
-
-# Test can change the context using direct input
-{
-
-    my $args = { %full_args };
-    $args->{context} = 'another context';
-    can_change_the_context($args);
-
 }
 
 sub can_build_cli_based_on_input {

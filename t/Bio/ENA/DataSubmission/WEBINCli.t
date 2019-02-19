@@ -28,7 +28,8 @@ use constant A_PROXY_HOST => "A_HOST";
 use constant A_PROXY_PORT => 1010;
 use constant A_USER => "A_USER";
 use constant A_PASSWORD => "A_PASSWORD";
-use constant JVM_PATH => "PATH/TO/JVM";
+use constant A_JVM_PATH => "PATH/TO/JVM";
+use constant A_CONTEXT => "A_CONTEXT";
 
 my %full_args = (
     http_proxy_host => A_PROXY_HOST,
@@ -39,7 +40,11 @@ my %full_args = (
     input_dir       => $temp_input_dir_name,
     output_dir      => $temp_output_dir_name,
     manifest        => $manifest_filename,
-    jvm             => JVM_PATH,
+    jvm             => A_JVM_PATH,
+    context         => A_CONTEXT,
+    submit          => 1,
+    validate        => 1,
+    test            => 1,
 );
 
 #Mock the system function by capturing it's input
@@ -58,35 +63,22 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
 
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%full_args);
     $under_test->run();
-    my $expected = [ JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", "genome", "-validate", "-submit" ];
+        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test", "-validate", "-submit" ];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
 
-#Test can change the context
+#Test can switch off test mode
 {
 
     my $args = { %full_args };
-    $args->{'context'} = 'a_context';
+    $args->{'test'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", "a_context", "-validate", "-submit" ];
-    is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
-}
-
-#Test can change the test mode
-{
-
-    my $args = { %full_args };
-    $args->{'test'} = 1;
-    my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
-    $under_test->run();
-    my $expected = [ JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
-        A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", "genome", "-test", "-validate", "-submit" ];
+        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-validate", "-submit" ];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
 
@@ -97,9 +89,9 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'validate'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", "genome", "-submit" ];
+        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test", "-submit" ];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
 
@@ -110,11 +102,12 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'submit'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
         A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", "genome", "-validate" ];
+        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test", "-validate" ];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
+
 
 
 sub test_mandatory_args {
@@ -127,7 +120,7 @@ sub test_mandatory_args {
 # Check mandatory arguments
 {
     my (@mandatory_args) = ('input_dir', 'output_dir', 'manifest', 'http_proxy_host', 'http_proxy_port', 'username',
-        'password', 'jvm');
+        'password', 'jvm', 'context', 'submit', 'validate');
 
     foreach (@mandatory_args) {
         test_mandatory_args($_);

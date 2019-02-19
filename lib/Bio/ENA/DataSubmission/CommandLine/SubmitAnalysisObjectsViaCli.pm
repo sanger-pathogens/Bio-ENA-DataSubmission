@@ -45,9 +45,9 @@ has 'config_reader' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::ConfigRead
 has 'manifest' => (is => 'ro', isa => 'Str', required => 1);
 has 'input_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
-has 'validate' => (is => 'ro', isa => 'Bool', required => 0, default => 1);
-has 'test' => (is => 'ro', isa => 'Bool', required => 0, default => 0);
-has 'context' => (is => 'ro', isa => 'Str', required => 0, default => 'genome');
+has 'validate' => (is => 'ro', isa => 'Bool', required => 1);
+has 'test' => (is => 'ro', isa => 'Bool', required => 1);
+has 'context' => (is => 'ro', isa => 'Str', required => 1);
 
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
@@ -74,15 +74,9 @@ around BUILDARGS => sub {
         $args{manifest} = $manifest;
         $args{output_dir} = $output_dir;
         $args{input_dir} = $input_dir;
-        if (defined $context) {
-            $args{context} = $context;
-        }
-        if (defined $no_validate) {
-            $args{validate} = 0;
-        }
-        if (defined $test) {
-            $args{test} = 1;
-        }
+        $args{context} = (defined $context) ? $context : "genome";
+        $args{validate} = (defined $no_validate) ? 0 : 1;
+        $args{test} = (defined $test) ? 1 : 0;
         if (defined $config_file) {
             $args{config_reader} = Bio::ENA::DataSubmission::ConfigReader->new(config_file => $config_file);
         }
@@ -109,6 +103,7 @@ sub BUILD {
         test            => $self->test,
         context         => $self->context,
         jvm             => $config->{jvm},
+        submit          => 1,
     );
 
 }
