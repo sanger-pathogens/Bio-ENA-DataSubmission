@@ -37,7 +37,8 @@ BEGIN {
         'proxy'                      => 'http://wwwcache.sanger.ac.uk:3128',
         'embl_jar_path'              => 't/bin/embl-client.jar',
         'assembly_directories'       => [ '/velvet_assembly', '/spades_assembly', '/iva_assembly', '/pacbio_assembly' ],
-        'annotation_directories'     => [ '/velvet_assembly/annotation', '/spades_assembly/annotation', '/iva_assembly/annotation', '/pacbio_assembly/annotation' ]
+        'annotation_directories'     => [ '/velvet_assembly/annotation', '/spades_assembly/annotation', '/iva_assembly/annotation', '/pacbio_assembly/annotation' ],
+        'jvm'                        => 'customjava',
     };
     my ($under_test) = Bio::ENA::DataSubmission::ConfigReader->new(config_file => 't/data/test_ena_data_submission.conf');
     my $actual = $under_test->get_config();
