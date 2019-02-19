@@ -19,14 +19,15 @@ my $config = {
     'webin_pass'    => 'pass',
     'webin_cli_jar' => 't/bin/webin-cli-1.6.0.jar',
     'proxy'         => 'http://wwwcache.sanger.ac.uk:3128',
+    'jvm'           => 'customjava',
 };
 mock_class 'Bio::ENA::DataSubmission::ConfigReader' => 'Bio::ENA::DataSubmission::ConfigReader::Mock';
 my $mock_config_reader = Bio::ENA::DataSubmission::ConfigReader::Mock->new;
 $mock_config_reader->mock_return(get_config => $config, args => []);
 my ($manifest_file, $manifest_filename) = tempfile(CLEANUP => 1);
-my $temp_input_dir = File::Temp->newdir(CLEANUP => 1 );
+my $temp_input_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_input_dir_name = $temp_input_dir->dirname();
-my $temp_output_dir = File::Temp->newdir(CLEANUP => 1 );
+my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_output_dir_name = $temp_output_dir->dirname();
 
 my %full_args = (
@@ -79,7 +80,7 @@ my %full_args = (
     can_override_test($args);
 }
 
-# Test can override test uing direct input
+# Test can override test using direct input
 {
     my $args = { %full_args };
     $args->{test} = 1;
@@ -90,7 +91,7 @@ my %full_args = (
 {
 
     my $args = {
-        args => ['-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf', '-t', 'another context']
+        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf', '-t', 'another context' ]
     };
     can_change_the_context($args);
 }
@@ -121,6 +122,7 @@ sub can_build_cli_based_on_input {
     is($cli->test, 0, 'test is populated correctly');
     is($cli->validate, 1, 'validate is populated correctly');
     is($cli->submit, 1, 'submit is populated correctly');
+    is($cli->jvm, 'customjava', 'jvm is populated correctly');
 }
 sub can_suppress_validation {
     my ($args) = @_;
@@ -139,7 +141,9 @@ sub can_suppress_validation {
     is($cli->test, 0, 'test is populated correctly');
     is($cli->validate, 0, 'validate is populated correctly');
     is($cli->submit, 1, 'submit is populated correctly');
+    is($cli->jvm, 'customjava', 'jvm is populated correctly');
 }
+
 sub can_change_the_context {
     my ($args) = @_;
 
@@ -157,6 +161,7 @@ sub can_change_the_context {
     is($cli->test, 0, 'test is populated correctly');
     is($cli->validate, 1, 'validate is populated correctly');
     is($cli->submit, 1, 'submit is populated correctly');
+    is($cli->jvm, 'customjava', 'jvm is populated correctly');
 
 }
 sub can_override_test {
@@ -176,6 +181,7 @@ sub can_override_test {
     is($cli->test, 1, 'test is populated correctly');
     is($cli->validate, 1, 'validate is populated correctly');
     is($cli->submit, 1, 'submit is populated correctly');
+    is($cli->jvm, 'customjava', 'jvm is populated correctly');
 
 }
 sub test_mandatory_args {
@@ -197,7 +203,7 @@ sub test_mandatory_args {
 
 
 
-remove_tree($temp_input_dir_name, $temp_output_dir_name, $manifest_filename, );
+remove_tree($temp_input_dir_name, $temp_output_dir_name, $manifest_filename,);
 done_testing();
 
 no Moose;

@@ -17,18 +17,19 @@ Wrapper around ENA's webin cli for analysis submissions
 use Moose;
 use Bio::ENA::DataSubmission::Exception;
 
-has 'jar_path' => (is => 'rw', isa => 'Str', required => 1);
-has 'username' => (is => 'rw', isa => 'Str', required => 1);
-has 'password' => (is => 'rw', isa => 'Str', required => 1);
-has 'http_proxy_host' => (is => 'rw', isa => 'Str', required => 1);
-has 'http_proxy_port' => (is => 'rw', isa => 'Int', required => 1);
-has 'context' => (is => 'rw', isa => 'Str', required => 0, default => 'genome');
-has 'input_dir' => (is => 'rw', isa => 'Str', required => 1);
-has 'output_dir' => (is => 'rw', isa => 'Str', required => 1);
-has 'manifest' => (is => 'rw', isa => 'Str', required => 1);
-has 'test' => (is => 'rw', isa => 'Bool', required => 0, default => 0);
-has 'validate' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
-has 'submit' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
+has 'jar_path' => (is => 'ro', isa => 'Str', required => 1);
+has 'username' => (is => 'ro', isa => 'Str', required => 1);
+has 'password' => (is => 'ro', isa => 'Str', required => 1);
+has 'http_proxy_host' => (is => 'ro', isa => 'Str', required => 1);
+has 'http_proxy_port' => (is => 'ro', isa => 'Int', required => 1);
+has 'context' => (is => 'ro', isa => 'Str', required => 0, default => 'genome');
+has 'input_dir' => (is => 'ro', isa => 'Str', required => 1);
+has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
+has 'manifest' => (is => 'ro', isa => 'Str', required => 1);
+has 'test' => (is => 'ro', isa => 'Bool', required => 0, default => 0);
+has 'validate' => (is => 'ro', isa => 'Bool', required => 0, default => 1);
+has 'submit' => (is => 'ro', isa => 'Bool', required => 0, default => 1);
+has 'jvm' => (is => 'ro', isa => 'Str', required => 1);
 
 sub run {
     my ($self) = @_;
@@ -50,7 +51,7 @@ sub _validate {
 sub _build_arguments_to_system_call {
     my ($self) = @_;
 
-    my @args = ("java", "-Dhttp.proxyHost=" . $self->http_proxy_host, "-Dhttp.proxyPort=" . $self->http_proxy_port,
+    my @args = ($self->jvm, "-Dhttp.proxyHost=" . $self->http_proxy_host, "-Dhttp.proxyPort=" . $self->http_proxy_port,
         "-jar", $self->jar_path, "-username", $self->username, "-password", $self->password, "-inputDir",
         $self->input_dir, "-outputDir", $self->output_dir, "-manifest", $self->manifest, "-context", $self->context);
     if ($self->test) {

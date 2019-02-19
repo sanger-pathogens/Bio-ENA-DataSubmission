@@ -42,33 +42,33 @@ use Bio::ENA::DataSubmission::ConfigReader;
 
 has 'config_reader' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::ConfigReader', required => 0, default =>
     sub {return Bio::ENA::DataSubmission::ConfigReader->new();});
-has 'manifest'      => (is => 'ro', isa => 'Str', required => 1);
-has 'input_dir'     => (is => 'ro', isa => 'Str', required => 1);
-has 'output_dir'    => (is => 'ro', isa => 'Str', required => 1);
-has 'validate'      => (is => 'ro', isa => 'Bool', required => 0, default => 1);
-has 'test'          => (is => 'ro', isa => 'Bool', required => 0, default => 0);
-has 'context'       => (is => 'rw', isa => 'Str',  required => 0, default    => 'genome' );
+has 'manifest' => (is => 'ro', isa => 'Str', required => 1);
+has 'input_dir' => (is => 'ro', isa => 'Str', required => 1);
+has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
+has 'validate' => (is => 'ro', isa => 'Bool', required => 0, default => 1);
+has 'test' => (is => 'ro', isa => 'Bool', required => 0, default => 0);
+has 'context' => (is => 'ro', isa => 'Str', required => 0, default => 'genome');
 
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
     if (exists $args{args}) {
         my $arguments = $args{args};
-        my($manifest, $output_dir, $input_dir, $context, $no_validate, $test, $config_file, $help);
+        my ($manifest, $output_dir, $input_dir, $context, $no_validate, $test, $config_file, $help);
 
         GetOptionsFromArray(
             $arguments,
-            'f|file=s'    => \$manifest,
-            'o|output_dir=s' => \$output_dir,
-            'i|input_dir=s' => \$input_dir,
-            't|type=s'      => \$context,
-            'no_validate' => \$no_validate,
-            'test' => \$test,
+            'f|file=s'        => \$manifest,
+            'o|output_dir=s'  => \$output_dir,
+            'i|input_dir=s'   => \$input_dir,
+            't|type=s'        => \$context,
+            'no_validate'     => \$no_validate,
+            'test'            => \$test,
             'c|config_file=s' => \$config_file,
-            'h|help'      => \$help
+            'h|help'          => \$help
         );
 
-        if (defined $help || ! defined $manifest || ! defined $output_dir || ! defined $input_dir) {
-            Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => USAGE );
+        if (defined $help || !defined $manifest || !defined $output_dir || !defined $input_dir) {
+            Bio::ENA::DataSubmission::Exception::InvalidInput->throw(error => USAGE);
         }
 
         $args{manifest} = $manifest;
@@ -108,8 +108,8 @@ sub BUILD {
         validate        => $self->validate,
         test            => $self->test,
         context         => $self->context,
+        jvm             => $config->{jvm},
     );
-
 
 }
 
