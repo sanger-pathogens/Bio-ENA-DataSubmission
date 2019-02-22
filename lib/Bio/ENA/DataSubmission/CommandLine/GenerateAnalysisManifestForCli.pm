@@ -35,7 +35,9 @@ use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::FindData;
+use Bio::ENA::DataSubmission::AnalysisManifest;
 use List::MoreUtils qw(uniq);
+use Data::Dumper;
 
 has 'args'             => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
@@ -146,14 +148,14 @@ sub run {
 
 	# write data to spreadsheet
 	my $data = $self->manifest_data;
-	my $manifest = Bio::ENA::DataSubmission::Spreadsheet->new(
-		data                => $data,
-		outfile             => $outfile,
-		_header             => $header,
-		add_manifest_header => 1
-	);
-	$manifest->write_xls;
-	print "Created manifest file:\t".$self->outfile."\n";
+	#my $manifest = Bio::ENA::DataSubmission::Spreadsheet->new(
+	#	data                => $data,
+	#	outfile             => $outfile,
+	#	_header             => $header,
+	#	add_manifest_header => 1
+	#);
+	#$manifest->write_xls;
+	#print "Created manifest file:\t".$self->outfile."\n";
 
 	1;
 }
@@ -161,7 +163,7 @@ sub run {
 sub _build_manifest_data {
 	my $self = shift;
 
-	return [[]] if ( $self->empty );
+	return [] if ( $self->empty );
 
 	my $finder = Bio::ENA::DataSubmission::FindData->new(
 		type => $self->type,
@@ -170,11 +172,47 @@ sub _build_manifest_data {
 	);
 	my %data = %{ $finder->find };
 
-	my @manifest;
+	my @manifest = ();
 	for my $k ( @{ $data{key_order} } ){
-		push( @manifest, $self->_manifest_row( $finder, $data{$k}, $k ) );
+                push( @manifest, $self->_manifest_from_db($finder, $data{$k}, $k)->get_content());
 	}
 	return \@manifest;
+}
+
+sub _manifest_from_db {
+        my ($self, $f, $lane, $k) = @_;
+
+        if (not defined $lane) {
+                return Bio::ENA::DataSubmission::AnalysisManifest->new(
+                        study          => 'not found',
+                        sample         => 'not found',
+                        assembly_name  => '',
+                        assembly_type  => "clone or isolate",
+                        coverage       => 0,
+                        program        => '',
+                        platform       => '',
+                        molecule_type  => "genomic DNA",
+                        flat_file      => "I",
+                        chromosom_list => "J",
+                        fasta          => "K",
+                );
+        }
+        my($coverage, $program, $file, $file_type) = $self->_get_file_details( $f, $lane );
+
+        my $man = Bio::ENA::DataSubmission::AnalysisManifest->new(
+                study          => $self->_get_study_from_lane( $f->_vrtrack, $lane ),
+                sample         => $self->_get_sample_from_lane( $f->_vrtrack, $lane ),
+                assembly_name  => $lane->name,
+                assembly_type  => "clone or isolate",
+                coverage       => $coverage,
+                program        => $program,
+                platform       => $self->_get_seq_tech_from_lane( $f->_vrtrack, $lane ),
+                molecule_type  => "genomic DNA",
+                flat_file      => "I",
+                chromosom_list => "J",
+                fasta          => "K",
+        );
+        return $man;
 }
 
 sub _manifest_row{
