@@ -30,9 +30,11 @@ use constant A_USER => "A_USER";
 use constant A_PASSWORD => "A_PASSWORD";
 use constant A_JVM_PATH => "PATH/TO/JVM";
 use constant A_CONTEXT => "A_CONTEXT";
+use constant A_CENTER_NAME => "A_CONTEXT";
 
 my %full_args = (
     http_proxy_host => A_PROXY_HOST,
+    center_name     => A_CENTER_NAME,
     http_proxy_port => A_PROXY_PORT,
     username        => A_USER,
     password        => A_PASSWORD,
@@ -63,9 +65,10 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
 
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%full_args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
-        A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test", "-validate", "-submit" ];
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+        "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
+        "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test",
+        "-validate", "-submit" ];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
 
@@ -76,9 +79,10 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'test'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
-        A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-validate", "-submit" ];
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+        "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
+        "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-validate",
+        "-submit" ];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
 
@@ -89,9 +93,10 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'validate'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
-        A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test", "-submit" ];
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+        "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
+        "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test",
+        "-submit"];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
 
@@ -102,9 +107,10 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'submit'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR, "-username",
-        A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name, "-outputDir", $temp_output_dir_name,
-        "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test", "-validate" ];
+    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+        "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
+        "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test",
+        "-validate" ];
     is_deeply($system_call_args, $expected, 'run() calls system() with correct arguments');
 }
 
@@ -120,7 +126,7 @@ sub test_mandatory_args {
 # Check mandatory arguments
 {
     my (@mandatory_args) = ('input_dir', 'output_dir', 'manifest', 'http_proxy_host', 'http_proxy_port', 'username',
-        'password', 'jvm', 'context', 'submit', 'validate');
+        'password', 'jvm', 'context', 'submit', 'validate', 'center_name');
 
     foreach (@mandatory_args) {
         test_mandatory_args($_);

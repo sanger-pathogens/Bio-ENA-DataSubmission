@@ -17,6 +17,7 @@ Wrapper around ENA's webin cli for analysis submissions
 use Moose;
 use Bio::ENA::DataSubmission::Exception;
 
+has 'center_name' => (is => 'ro', isa => 'Str', required => 1);
 has 'jar_path' => (is => 'ro', isa => 'Str', required => 1);
 has 'username' => (is => 'ro', isa => 'Str', required => 1);
 has 'password' => (is => 'ro', isa => 'Str', required => 1);
@@ -52,8 +53,9 @@ sub _build_arguments_to_system_call {
     my ($self) = @_;
 
     my @args = ($self->jvm, "-Dhttp.proxyHost=" . $self->http_proxy_host, "-Dhttp.proxyPort=" . $self->http_proxy_port,
-        "-jar", $self->jar_path, "-username", $self->username, "-password", $self->password, "-inputDir",
-        $self->input_dir, "-outputDir", $self->output_dir, "-manifest", $self->manifest, "-context", $self->context);
+        "-jar", $self->jar_path, "-centerName", $self->center_name, "-username", $self->username, "-password",
+        $self->password, "-inputDir", $self->input_dir, "-outputDir", $self->output_dir, "-manifest", $self->manifest,
+        "-context", $self->context);
     if ($self->test) {
         push @args, "-test";
     }
