@@ -1,63 +1,43 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
+BEGIN {unshift(@INC, './lib')}
 
 BEGIN {
     use Test::Most;
-	use Test::Output;
-	use Test::Exception;
+    use Test::Output;
+    use Test::Exception;
 }
 
+
+use Bio::ENA::DataSubmission::MockGffConverter;
 use Moose;
 use File::Temp;
+use File::Temp qw(tempfile tempdir);
 use Bio::ENA::DataSubmission::Spreadsheet;
 use File::Compare;
-use File::Path qw( remove_tree);
+use File::Path qw(remove_tree);
 use Cwd;
-
-my $temp_directory_obj = File::Temp->newdir(DIR => getcwd, CLEANUP => 1 );
-my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli');
 
-my ( @args, $obj, @exp );
+my $mock_gff_converter = Bio::ENA::DataSubmission::MockGffConverter->new(); #TODO Try to keep this internal to the test
 
-#----------------------#
-# test illegal options #
-#----------------------#
-
-@args = ('-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
-
-@args = ('-t', 'rex','-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
-
-@args = ('-i', 'pod','-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
-
-@args = ('-t', 'rex', '-i', '10665_2#81','-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
-
-@args = ('-t', 'file', '-i', 'not/a/file','-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid arguments';
-
-@args = ('-t', 'lane', '-i', '10665_2#81', '-o', 'not/a/file','-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args );
-throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid arguments';
+my @temp_dirs_to_clean = ();
+my ($fh, $filename) = tempfile(CLEANUP => 1);
+my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
+my $temp_output_dir_name = $temp_output_dir->dirname();
+push @temp_dirs_to_clean, $temp_output_dir_name;
+my %full_args = (
+    manifest_spreadsheet => [],
+    output_dir           => $temp_output_dir_name,
+    gff_converter        => $mock_gff_converter
+);
 
 
-#--------------#
-# test methods #
-#--------------#
-
-# check correct ERS numbers, sample names, supplier names
-
-# lane
-my $expected = <<EXPECTED;
+# Test fasta assemblies without chromosome list
+{
+    my $temp_output_dir_name = create_temp_dir();
+    # file
+    my $expected = <<EXPECTED;
 STUDY ERP001039
 SAMPLE ERS311560
 ASSEMBLYNAME 10660_2#13
@@ -66,53 +46,9 @@ COVERAGE 52
 PROGRAM velvet
 PLATFORM SLX
 MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
+FASTA $temp_output_dir_name/10660_2#13.fasta.gz
 EXPECTED
-@exp = ($expected);
-#[
-#          '10660_2#13',
-#            'FALSE',
-#            '52',
-#            'velvet',
-#            'SLX',
-#            '0',
-#            '/lustre/scratch118/infgen/pathogen/pathpipe/prokaryotes/seq-pipelines/Mycobacterium/abscessus/TRACKING/2047/2047STDY5552273/SLX/8020157/10660_2#13/velvet_assembly/contigs.fa',
-#            'scaffold_fasta',
-#            'Assembly of Mycobacterium abscessus',
-#            'Assembly of Mycobacterium abscessus',
-#            'ERP001039',
-#            'ERS311560',
-#            'ERR363472',
-#            'SC',
-#            'current_date',
-#            'current_date',
-#            '',
-#            '36809',
-#            'Mycobacterium abscessus',
-#	    ''
-#          ]
-@args = ( '-t', 'lane', '-i', '10660_2#13', '-o', "$tmp/manifest.xls" ,'-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args, _current_date => 'current_date' );
-ok( $obj->run, 'Manifest generated' );
-is_deeply $obj->manifest_data, \@exp, 'Correct lane data';
-
-# file
-$expected = <<EXPECTED;
-STUDY ERP001039
-SAMPLE ERS311560
-ASSEMBLYNAME 10660_2#13
-ASSEMBLY_TYPE clone or isolate
-COVERAGE 52
-PROGRAM velvet
-PLATFORM SLX
-MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
-EXPECTED
-my $expected2 = <<EXPECTED;
+    my $expected2 = <<EXPECTED;
 STUDY ERP001039
 SAMPLE ERS311393
 ASSEMBLYNAME 10665_2#81
@@ -121,56 +57,130 @@ COVERAGE 54
 PROGRAM velvet
 PLATFORM SLX
 MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
+FASTA $temp_output_dir_name/10665_2#81.fasta.gz
 EXPECTED
-my $expected3 = <<EXPECTED;
+
+    my $args = { %full_args };
+    $args->{output_dir} = $temp_output_dir_name;
+    $args->{manifest_spreadsheet} = _to_spreadsheet_manifest(
+        [ "10660_2#13", "FALSE", 52, "velvet", "SLX", "0", "t/data/analysis_submission/testfile1.fa", "scaffold_fasta", "Assembly of Mycobacterium abscessus", "Assembly of Mycobacterium abscessus", "ERP001039", "ERS311560", "ERR363472", "SC", "current_date", "current_date", "im_a_paper", "36809", "Mycobacterium abscessus" ],
+        [ "10665_2#81", "FALSE", "54", "velvet", "SLX", "0", "t/data/analysis_submission/testfile2.fa", "scaffold_fasta", "Assembly of Mycobacterium abscessus", "Assembly of Mycobacterium abscessus", "ERP001039", "ERS311393", "ERR369155", "SC", "current_date", "current_date", "im_a_paper", "36809", "Mycobacterium abscessus" ]
+    );
+    my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new(%$args);
+    ok($obj->run, 'Manifest generated');
+    my @actual = map {$_->get_content()} @{$obj->manifest_for_submission};
+    is_deeply \@actual, [ $expected, $expected2 ], 'Correct file data';
+    ok(-e $temp_output_dir_name . "/10660_2#13.manifest", 'manifest file for 10660_2#13 exists');
+    ok(-e $temp_output_dir_name . "/10660_2#13.fasta.gz", 'compressed fasta file for 10660_2#13 exists');
+    ok(-e $temp_output_dir_name . "/10665_2#81.manifest", 'manifest file for 10665_2#81 exists');
+    ok(-e $temp_output_dir_name . "/10665_2#81.fasta.gz", 'compressed fasta file for 10665_2#81 exists');
+    ok(-e $temp_output_dir_name . "/submission_spreadsheet.xls", 'submission spreadsheet exists');
+
+}
+
+
+# Test fasta assemblies with chromosome list
+{
+    my $temp_output_dir_name = create_temp_dir();
+    # file
+    my $expected = <<EXPECTED;
+STUDY ERP001039
+SAMPLE ERS311560
+ASSEMBLYNAME test_genome_1
+ASSEMBLY_TYPE clone or isolate
+COVERAGE 52
+PROGRAM velvet
+PLATFORM SLX
+MOLECULETYPE genomic DNA
+FASTA $temp_output_dir_name/test_genome_1.fasta.gz
+CHROMOSOME_LIST $temp_output_dir_name/test_genome_1.chromosome_list.gz
+EXPECTED
+    my $expected2 = <<EXPECTED;
 STUDY ERP001039
 SAMPLE ERS311489
-ASSEMBLYNAME 10665_2#90
+ASSEMBLYNAME test_genome_2
 ASSEMBLY_TYPE clone or isolate
 COVERAGE 81
 PROGRAM velvet
 PLATFORM SLX
 MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
+FASTA $temp_output_dir_name/test_genome_2.fasta.gz
+CHROMOSOME_LIST $temp_output_dir_name/test_genome_2.chromosome_list.gz
 EXPECTED
-my $expected4 = <<EXPECTED;
-STUDY not found
-SAMPLE not found
-ASSEMBLYNAME 
+
+
+    my $args = { %full_args };
+    $args->{output_dir} = $temp_output_dir_name;
+    $args->{manifest_spreadsheet} = _to_spreadsheet_manifest(
+        [ "test_genome_1", "FALSE", "52", "velvet", "SLX", "0", "t/data/analysis_submission/testfile1.fa", "chromosome_fasta", "Assembly of Stap A", "Assembly of Stap A", "ERP001039", "ERS311560", "ERR363472", "SC", "01/09/2014", "01/01/2014", "111111", "1234", "Stap A" ],
+        [ "test_genome_2", "TRUE", "81", "velvet", "SLX", "0", "t/data/analysis_submission/testfile2.fa", "chromosome_fasta", "Assembly of Ecoli", "Assembly of Ecoli", "ERP001039", "ERS311489", "ERR369164", "SC", "01/09/2014", "01/01/2050", "111111", "1234", "Ecoli" ]
+    );
+    my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new(%$args);
+    ok($obj->run, 'Manifest generated');
+    my @actual = map {$_->get_content()} @{$obj->manifest_for_submission};
+    is_deeply \@actual, [ $expected, $expected2 ], 'Correct file data';
+    ok(-e $temp_output_dir_name . "/test_genome_1.manifest", 'manifest file for test_genome_1 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_1.fasta.gz", 'compressed fasta file for test_genome_1 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_1.chromosome_list.gz", 'compressed chromosome list file for test_genome_1 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_2.manifest", 'manifest file for test_genome_2 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_2.fasta.gz", 'compressed fasta file for test_genome_2 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_2.chromosome_list.gz", 'compressed chromosome list file for test_genome_2 exists');
+    ok(-e $temp_output_dir_name . "/submission_spreadsheet.xls", 'submission spreadsheet exists');
+}
+
+
+# Test annotated assemblies with chromosome list
+{
+    my $temp_output_dir_name = create_temp_dir();
+    my $expected = <<EXPECTED;
+STUDY ERP001039
+SAMPLE ERS311560
+ASSEMBLYNAME test_genome_1
 ASSEMBLY_TYPE clone or isolate
-COVERAGE 0
-PROGRAM 
-PLATFORM 
+COVERAGE 52
+PROGRAM velvet
+PLATFORM SLX
 MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
+FLATFILE $temp_output_dir_name/test_genome_1.embl.gz
+CHROMOSOME_LIST $temp_output_dir_name/test_genome_1.chromosome_list.gz
 EXPECTED
-@exp = ($expected,$expected2,$expected3,$expected4);
-#  ['10660_2#13','FALSE','52','velvet','SLX','0','/lustre/scratch118/infgen/pathogen/pathpipe/prokaryotes/seq-pipelines/Mycobacterium/abscessus/TRACKING/2047/2047STDY5552273/SLX/8020157/10660_2#13/velvet_assembly/contigs.fa','scaffold_fasta','Assembly of Mycobacterium abscessus','Assembly of Mycobacterium abscessus','ERP001039','ERS311560','ERR363472','SC','current_date','current_date','','36809','Mycobacterium abscessus',''],
-#  ['10665_2#81','FALSE','54','velvet','SLX','0','/lustre/scratch118/infgen/pathogen/pathpipe/prokaryotes/seq-pipelines/Mycobacterium/abscessus/TRACKING/2047/2047STDY5552104/SLX/7939790/10665_2#81/velvet_assembly/contigs.fa','scaffold_fasta','Assembly of Mycobacterium abscessus','Assembly of Mycobacterium abscessus','ERP001039','ERS311393','ERR369155','SC','current_date','current_date','','36809','Mycobacterium abscessus',''],
-#  ['10665_2#90','FALSE','81','velvet','SLX','0','/lustre/scratch118/infgen/pathogen/pathpipe/prokaryotes/seq-pipelines/Mycobacterium/abscessus/TRACKING/2047/2047STDY5552201/SLX/7939803/10665_2#90/velvet_assembly/contigs.fa','scaffold_fasta','Assembly of Mycobacterium abscessus','Assembly of Mycobacterium abscessus','ERP001039','ERS311489','ERR369164','SC','current_date','current_date','','36809','Mycobacterium abscessus',''],
-#  ['','FALSE','not found','','SLX','0','','','','','not found','not found','11111_1#1','SC','current_date','current_date','','','','']
+    my $expected2 = <<EXPECTED;
+STUDY ERP001039
+SAMPLE ERS311489
+ASSEMBLYNAME test_genome_2
+ASSEMBLY_TYPE clone or isolate
+COVERAGE 81
+PROGRAM velvet
+PLATFORM SLX
+MOLECULETYPE genomic DNA
+FLATFILE $temp_output_dir_name/test_genome_2.embl.gz
+CHROMOSOME_LIST $temp_output_dir_name/test_genome_2.chromosome_list.gz
+EXPECTED
+    my $args = { %full_args };
+    $args->{output_dir} = $temp_output_dir_name;
+    $args->{manifest_spreadsheet} = _to_spreadsheet_manifest(
+        [ "test_genome_1", "FALSE", "52", "velvet", "SLX", "0", "t/data/analysis_submission/testfile1.gff", "chromosome_flatfile", "Assembly of test genome 1", "We assembled stuff", "ERP001039", "ERS311560", "ERR363472", "SC", "01/09/2014", "01/01/2014", "111111", "1234", "Stap A", "ABC123" ],
+        [ "test_genome_2", "TRUE", "81", "velvet", "SLX", "0", "t/data/analysis_submission/testfile2.gff", "chromosome_flatfile", "Assembly of test genome 2", "Assembly of stuff", "ERP001039", "ERS311489", "ERR369164", "SC", "01/09/2014", "01/01/2050", "111111", "1234", "Ecoli" ]
+    );
 
-@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls" ,'-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args, _current_date => 'current_date' );
-ok( $obj->run, 'Manifest generated' );
-is_deeply $obj->manifest_data, \@exp, 'Correct file data';
+    my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new(%$args);
+    ok($obj->run, 'Manifest generated for annotation data');
+    my @actual = map {$_->get_content()} @{$obj->manifest_for_submission};
+    is_deeply \@actual, [ $expected, $expected2 ], 'Correct file data';
+    ok(-e $temp_output_dir_name . "/test_genome_1.manifest", 'manifest file for test_genome_1 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_1.embl.gz", 'compressed embl file for test_genome_1 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_1.chromosome_list.gz", 'compressed chromosome list file for test_genome_1 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_2.manifest", 'manifest file for test_genome_2 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_2.embl.gz", 'compressed embl file for test_genome_2 exists');
+    ok(-e $temp_output_dir_name . "/test_genome_2.chromosome_list.gz", 'compressed chromosome list file for test_genome_2 exists');
+    ok(-e $temp_output_dir_name . "/submission_spreadsheet.xls", 'submission spreadsheet exists');
+}
 
-# check empty spreadsheet
-@args = ("--empty", '-o', "$tmp/empty.xls",'-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args );
-ok( $obj->run, 'Manifest generated' );
-is_deeply $obj->manifest_data, [], 'Empty data correct';
 
-
-# file with annotation
-$expected = <<EXPECTED;
+# Test annotated assemblies without chromosome list
+{
+    my $temp_output_dir_name = create_temp_dir();
+    my $expected = <<EXPECTED;
 STUDY ERP001039
 SAMPLE ERS311560
 ASSEMBLYNAME 10660_2#13
@@ -179,11 +189,9 @@ COVERAGE 100
 PROGRAM Prokka
 PLATFORM SLX
 MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
+FLATFILE $temp_output_dir_name/10660_2#13.embl.gz
 EXPECTED
-$expected2 = <<EXPECTED;
+    my $expected2 = <<EXPECTED;
 STUDY ERP001039
 SAMPLE ERS311393
 ASSEMBLYNAME 10665_2#81
@@ -192,36 +200,98 @@ COVERAGE 100
 PROGRAM Prokka
 PLATFORM SLX
 MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
+FLATFILE $temp_output_dir_name/10665_2#81.embl.gz
 EXPECTED
-$expected3 = <<EXPECTED;
-STUDY ERP001039
-SAMPLE ERS311489
-ASSEMBLYNAME 10665_2#90
-ASSEMBLY_TYPE clone or isolate
-COVERAGE 100
-PROGRAM Prokka
-PLATFORM SLX
-MOLECULETYPE genomic DNA
-FLATFILE I
-FASTA K
-CHROMOSOME_LIST J
-EXPECTED
-@exp = ($expected,$expected2,$expected3,$expected4);
-#push @exp,$expected,$expected,$expected,$expected;
-#  ['10660_2#13','FALSE','100','Prokka','SLX','0','/lustre/scratch118/infgen/pathogen/pathpipe/prokaryotes/seq-pipelines/Mycobacterium/abscessus/TRACKING/2047/2047STDY5552273/SLX/8020157/10660_2#13/velvet_assembly/annotation/10660_2#13.gff','scaffold_flatfile','Annotated assembly of Mycobacterium abscessus','Annotated assembly of Mycobacterium abscessus','ERP001039','ERS311560','ERR363472','SC','current_date','current_date','','36809','Mycobacterium abscessus',''],
-#  ['10665_2#81','FALSE','100','Prokka','SLX','0','/lustre/scratch118/infgen/pathogen/pathpipe/prokaryotes/seq-pipelines/Mycobacterium/abscessus/TRACKING/2047/2047STDY5552104/SLX/7939790/10665_2#81/velvet_assembly/annotation/10665_2#81.gff','scaffold_flatfile','Annotated assembly of Mycobacterium abscessus','Annotated assembly of Mycobacterium abscessus','ERP001039','ERS311393','ERR369155','SC','current_date','current_date','','36809','Mycobacterium abscessus',''],
-#  ['10665_2#90','FALSE','100','Prokka','SLX','0','/lustre/scratch118/infgen/pathogen/pathpipe/prokaryotes/seq-pipelines/Mycobacterium/abscessus/TRACKING/2047/2047STDY5552201/SLX/7939803/10665_2#90/velvet_assembly/annotation/10665_2#90.gff','scaffold_flatfile','Annotated assembly of Mycobacterium abscessus','Annotated assembly of Mycobacterium abscessus','ERP001039','ERS311489','ERR369164','SC','current_date','current_date','','36809','Mycobacterium abscessus',''],
-#  ['','FALSE','not found','','SLX','0','','','','','not found','not found','11111_1#1','SC','current_date','current_date','','','','']
 
-@args = ( '-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls",'-a', 'annotation', '-c', 't/data/test_ena_data_submission.conf');
-$obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new( args => \@args, _current_date => 'current_date' );
-ok( $obj->run, 'Manifest generated for annotation data' );
-is_deeply $obj->manifest_data, \@exp, 'Correct file data';
+    my $args = { %full_args };
+    $args->{output_dir} = $temp_output_dir_name;
+    $args->{manifest_spreadsheet} = _to_spreadsheet_manifest(
+        [ "10660_2#13", "FALSE", "100", "Prokka", "SLX", "0", "t/data/analysis_submission/testfile1.gff", "scaffold_flatfile", "Annotated assembly of Mycobacterium abscessus", "Annotated assembly of Mycobacterium abscessus", "ERP001039", "ERS311560", "ERR363472", "SC", "current_date", "current_date", "im_a_paper", "36809", "Mycobacterium abscessus" ],
+        [ "10665_2#81", "FALSE", "100", "Prokka", "SLX", "0", "t/data/analysis_submission/testfile2.gff", "scaffold_flatfile", "Annotated assembly of Mycobacterium abscessus", "Annotated assembly of Mycobacterium abscessus", "ERP001039", "ERS311393", "ERR369155", "SC", "current_date", "current_date", "im_a_paper", "36809", "Mycobacterium abscessus" ]
+    );
+    my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new(%$args);
+    ok($obj->run, 'Manifest generated for annotation data');
+    my @actual = map {$_->get_content()} @{$obj->manifest_for_submission};
+    is_deeply \@actual, [ $expected, $expected2 ], 'Correct file data';
+    ok(-e $temp_output_dir_name . "/10660_2#13.manifest", 'manifest file for 10660_2#13 exists');
+    ok(-e $temp_output_dir_name . "/10660_2#13.embl.gz", 'compressed embl file for 10660_2#13 exists');
+    ok(-e $temp_output_dir_name . "/10665_2#81.manifest", 'manifest file for 10665_2#81 exists');
+    ok(-e $temp_output_dir_name . "/10665_2#81.embl.gz", 'compressed embl file for 10665_2#81 exists');
+    ok(-e $temp_output_dir_name . "/submission_spreadsheet.xls", 'submission spreadsheet exists');
+}
+
+sub test_mandatory_args {
+    my ($input) = @_;
+    my $args_with_missing_required_arg = { %full_args };
+    delete $args_with_missing_required_arg->{$input};
+    throws_ok {Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new(%$args_with_missing_required_arg)} 'Moose::Exception::AttributeIsRequired', "dies if mandatory arg $input is missing";
+}
+
+# Check mandatory arguments
+{
+    my (@mandatory_args) = ('manifest_spreadsheet', 'output_dir');
+
+    foreach (@mandatory_args) {
+        test_mandatory_args($_);
+    }
+
+}
 
 
-remove_tree($tmp);
+# Check directories validation
+{
+    my (@dir_args) = ('output_dir');
+    foreach (@dir_args) {
+        test_directory_missing($_);
+        test_directory_not_a_directory($_);
+    }
+
+}
+
+sub _to_spreadsheet_manifest {
+
+    my @values = @_;
+    my $result = [];
+    my $header = [
+        'name', 'partial', 'coverage', 'program', 'platform', 'minimum_gap',
+        'file', 'file_type', 'title', 'description', 'study', 'sample', 'run',
+        'analysis_center', 'analysis_date', 'release_date', 'pubmed_id', 'tax_id', 'common_name', 'locus_tag'
+    ];
+
+    for my $row (@values) {
+        my %hash;
+        @hash{@$header} = @$row;
+        push $result, \%hash;
+    }
+
+    return $result;
+}
+
+sub test_directory_missing {
+    my ($input) = @_;
+    my $args = { %full_args };
+    $args->{$input} = 'Not/An/Existing/Directory';
+    throws_ok {Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new(%$args)} 'Bio::ENA::DataSubmission::Exception::DirectoryNotFound', "dies if $input is not found";
+}
+
+sub test_directory_not_a_directory {
+    my ($input) = @_;
+    my $args = { %full_args };
+    $args->{$input} = $filename;
+    throws_ok {Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli->new(%$args)} 'Bio::ENA::DataSubmission::Exception::DirectoryNotFound', "dies if $input is a file and not a dir";
+}
+
+sub create_temp_dir {
+    my $temp_output_dir = File::Temp->newdir(CLEANUP => 0);
+    my $temp_output_dir_name = $temp_output_dir->dirname();
+    push @temp_dirs_to_clean, $temp_output_dir_name;
+    return $temp_output_dir_name;
+
+}
+
+remove_tree(@temp_dirs_to_clean);
+
 done_testing();
 
+
+no Moose;

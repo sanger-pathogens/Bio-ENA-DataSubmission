@@ -32,9 +32,9 @@ has 'coverage' => (is => 'ro', isa => 'Int', required => 1); #TODO Validate the 
 has 'program' => (is => 'ro', isa => 'Str', required => 1);
 has 'platform' => (is => 'ro', isa => 'Str', required => 1);
 has 'molecule_type' => (is => 'ro', isa => 'Str', required => 1);
-has 'flat_file' => (is => 'ro', isa => 'Str', required => 0);
-has 'fasta' => (is => 'ro', isa => 'Str', required => 0);
-has 'chromosom_list' => (is => 'ro', isa => 'Str', required => 0);
+has 'flat_file' => (is => 'ro', isa => 'Maybe[Str]', required => 0);
+has 'fasta' => (is => 'ro', isa => 'Maybe[Str]', required => 0);
+has 'chromosom_list' => (is => 'ro', isa => 'Maybe[Str]', required => 0);
 
 sub get_content {
     my ($self) = @_;
