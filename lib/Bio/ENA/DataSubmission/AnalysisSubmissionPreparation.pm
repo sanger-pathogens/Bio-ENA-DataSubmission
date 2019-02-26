@@ -1,10 +1,10 @@
-package Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli;
+package Bio::ENA::DataSubmission::AnalysisSubmissionPreparation;
 
 # ABSTRACT: module for generation of manifest files for ENA genome update
 
 =head1 NAME
 
-Bio::ENA::DataSubmission::CommandLine::GenerateAnalysisManifestForCli
+Bio::ENA::DataSubmission::AnalysisSubmissionPreparation
 
 =head1 SYNOPSIS
 
@@ -47,16 +47,8 @@ use List::MoreUtils qw(uniq);
 
 has 'manifest_spreadsheet' => (is => 'ro', isa => 'ArrayRef', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
-has 'gff_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::GffConverter', required => 1,
-    default => sub {return Bio::ENA::DataSubmission::GffConverter->new();});
+has 'gff_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::GffConverter', required => 1);
 has 'manifest_for_submission' => (is => 'ro', isa => 'ArrayRef', required => 0, lazy_build => 1);
-has 'help' => (is => 'ro', isa => 'Bool', required => 0);
-
-sub build_manifest_spreadsheet {
-    my ($manifest) = @_;
-    my $manifest_handler = Bio::ENA::DataSubmission::Spreadsheet->new(infile => $manifest);
-    return $manifest_handler->parse_manifest;
-}
 
 
 sub BUILD {
@@ -65,7 +57,7 @@ sub BUILD {
 
 }
 
-sub run {
+sub prepare_for_submission {
     my ($self) = @_;
 
     $self->_copy_data_files();
@@ -75,7 +67,18 @@ sub run {
     my $manifests = $self->manifest_for_submission;
     $self->_write_manifest_files($manifests);
     $self->_write_transformed_sheet();
-    1;
+    return $self->_generate_data_for_submission();
+}
+
+sub _generate_data_for_submission {
+    my ($self) = @_;
+    my @spreadsheet = @{$self->manifest_spreadsheet};
+    my @ready_for_submission = ();
+    for my $row (@spreadsheet) {
+        push @ready_for_submission, [$row->{manifest}, $row->{analysis_center}];
+    }
+    return @ready_for_submission;
+
 }
 
 sub _write_manifest_files {
@@ -102,8 +105,8 @@ sub _write_transformed_sheet {
     my $header = [
         'name', 'partial', 'coverage', 'program', 'platform', 'minimum_gap',
         'file', 'file_type', 'title', 'description', 'study', 'sample', 'run',
-        'analysis_center', 'analysis_date', 'release_date', 'pubmed_id','tax_id','common_name', 'locus_tag',
-        'chromosome_list_file'
+        'analysis_center', 'analysis_date', 'release_date', 'pubmed_id', 'tax_id', 'common_name', 'locus_tag',
+        'chromosome_list_file', 'manifest',
     ];
     my $data = [];
     my ($self) = @_;
@@ -119,7 +122,6 @@ sub _write_transformed_sheet {
         push @$data, $row_as_array;
     }
 
-
     my $manifest_handler = Bio::ENA::DataSubmission::Spreadsheet->new(outfile => $temp_file, _header => $header, data => $data, add_manifest_header => 1);
     $manifest_handler->write_xls();
 }
@@ -129,10 +131,12 @@ sub _to_analysis_manifest_for_cli {
 
     my ($flat_file) = $row->{file_type} eq 'chromosome_flatfile' || $row->{file_type} eq 'scaffold_flatfile' ? $row->{file} : undef;
     my ($fasta_file) = $row->{file_type} eq 'chromosome_fasta' || $row->{file_type} eq 'scaffold_fasta' ? $row->{file} : undef;
+    my ($assembly_name) = $row->{name};
+    $row->{manifest} = $self->output_dir . "/" . $assembly_name . ".manifest";
     return Bio::ENA::DataSubmission::AnalysisManifest->new(
         study          => $row->{study},
         sample         => $row->{sample},
-        assembly_name  => $row->{name},
+        assembly_name  => $assembly_name,
         assembly_type  => "clone or isolate",
         coverage       => $row->{coverage},
         program        => $row->{program},

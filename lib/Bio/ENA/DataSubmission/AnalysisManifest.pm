@@ -28,7 +28,7 @@ has 'study' => (is => 'ro', isa => 'Str', required => 1);
 has 'sample' => (is => 'ro', isa => 'Str', required => 1);
 has 'assembly_name' => (is => 'ro', isa => 'Str', required => 1);
 has 'assembly_type' => (is => 'ro', isa => 'Str', required => 1);
-has 'coverage' => (is => 'ro', isa => 'Int', required => 1); #TODO Validate the type
+has 'coverage' => (is => 'ro', isa => 'Int', required => 1);
 has 'program' => (is => 'ro', isa => 'Str', required => 1);
 has 'platform' => (is => 'ro', isa => 'Str', required => 1);
 has 'molecule_type' => (is => 'ro', isa => 'Str', required => 1);

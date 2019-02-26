@@ -4,7 +4,7 @@ BEGIN {unshift(@INC, './lib')}
 
 BEGIN {
     use Test::Most;
-    use Test::Mock::Class ':all';
+    use Test::MockObject;
 
 }
 
@@ -21,23 +21,22 @@ my $config = {
     'proxy'         => 'http://wwwcache.sanger.ac.uk:3128',
     'jvm'           => 'customjava',
 };
-mock_class 'Bio::ENA::DataSubmission::ConfigReader' => 'Bio::ENA::DataSubmission::ConfigReader::Mock';
-my $mock_config_reader = Bio::ENA::DataSubmission::ConfigReader::Mock->new;
-$mock_config_reader->mock_return(get_config => $config, args => []);
 my ($manifest_file, $manifest_filename) = tempfile(CLEANUP => 1);
 my $temp_input_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_input_dir_name = $temp_input_dir->dirname();
 my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_output_dir_name = $temp_output_dir->dirname();
+use constant A_CONFIG_FILE => 't/data/test_ena_data_submission.conf';
 
 my %full_args = (
-    config_reader => $mock_config_reader,
-    manifest      => $manifest_filename,
-    input_dir     => $temp_input_dir_name,
-    output_dir    => $temp_output_dir_name,
-    context       => 'genome',
-    test          => 0,
-    validate      => 1,
+    config_file => A_CONFIG_FILE,
+    spreadsheet => $manifest_filename,
+    input_dir   => $temp_input_dir_name,
+    output_dir  => $temp_output_dir_name,
+    context     => 'genome',
+    test        => 0,
+    validate    => 1,
+    submit      => 1,
 );
 
 
@@ -56,7 +55,7 @@ my %full_args = (
 # Test CLI is build correctly using command line arguments
 {
     my $args = {
-        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf' ],
+        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf' ],
     };
     can_build_cli_based_on_input($args);
 }
@@ -64,15 +63,23 @@ my %full_args = (
 # Test can suppress validation using command line parameters
 {
     my $args = {
-        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf', '--no_validate' ]
+        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '--no_validate' ]
     };
     can_suppress_validation($args);
+}
+
+# Test can suppress submission using command line parameters
+{
+    my $args = {
+        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '--no_submit' ]
+    };
+    can_suppress_submission($args);
 }
 
 # Test can override test using command line args
 {
     my $args = {
-        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf', '--test' ]
+        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '--test' ]
     };
     can_override_test($args);
 }
@@ -81,100 +88,113 @@ my %full_args = (
 {
 
     my $args = {
-        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '-c', 't/data/test_ena_data_submission.conf', '-t', 'another context' ]
+        args => [ '-f', $manifest_filename, '-i', $temp_input_dir_name, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '-c', 'another context' ]
     };
     can_change_the_context($args);
 }
+
+#Test delegation of run method to the assembler
+{
+    my $container = Test::MockObject->new();
+    $container->set_isa('Bio::ENA::DataSubmission::AnalysisSubmission');
+    $container->set_true('run');
+    my $construction_args = { %full_args };
+    $construction_args->{container} = $container;
+    my ($under_test) = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$construction_args);
+
+    $under_test->run();
+    my ($name, $args) = $container->next_call();
+    is($name, "run", "run was called");
+    is_deeply($args, [ $container ], "run was run with correct arguments");
+    is($container->next_call(), undef, "run was called only once");
+}
+
 
 sub can_build_cli_based_on_input {
     my ($args) = @_;
 
     my ($under_test) = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$args);
-    my $cli = $under_test->{_webincli};
-    is($cli->http_proxy_host, 'http://wwwcache.sanger.ac.uk', 'http_proxy_host is populated correctly');
-    is($cli->http_proxy_port, 3128, 'http_proxy_port is populated correctly');
-    is($cli->username, 'user', 'username is populated correctly');
-    is($cli->password, 'pass', 'password is populated correctly');
-    is($cli->jar_path, 't/bin/webin-cli-1.6.0.jar', 'jar_path is populated correctly');
-    is($cli->manifest, $manifest_filename, 'manifest is populated correctly');
-    is($cli->input_dir, $temp_input_dir_name, 'manifest is populated correctly');
-    is($cli->output_dir, $temp_output_dir_name, 'manifest is populated correctly');
-    is($cli->context, 'genome', 'context is populated correctly');
-    is($cli->test, 0, 'test is populated correctly');
-    is($cli->validate, 1, 'validate is populated correctly');
-    is($cli->submit, 1, 'submit is populated correctly');
-    is($cli->jvm, 'customjava', 'jvm is populated correctly');
+    my $container = $under_test->container;
+    is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
+    is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
+    is($container->input_dir, $temp_input_dir_name, 'input_dir is populated correctly');
+    is($container->output_dir, $temp_output_dir_name, 'output_dir is populated correctly');
+    is($container->context, 'genome', 'context is populated correctly');
+    is($container->test, 0, 'test is populated correctly');
+    is($container->validate, 1, 'validate is populated correctly');
+    is($container->submit, 1, 'submit is populated correctly');
 }
+
+sub can_suppress_submission {
+    my ($args) = @_;
+
+    my ($under_test) = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$args);
+    my $container = $under_test->container;
+    is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
+    is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
+    is($container->input_dir, $temp_input_dir_name, 'input_dir is populated correctly');
+    is($container->output_dir, $temp_output_dir_name, 'output_dir is populated correctly');
+    is($container->context, 'genome', 'context is populated correctly');
+    is($container->test, 0, 'test is populated correctly');
+    is($container->validate, 1, 'validate is populated correctly');
+    is($container->submit, 0, 'submit is populated correctly');
+}
+
 sub can_suppress_validation {
     my ($args) = @_;
 
     my ($under_test) = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$args);
-    my $cli = $under_test->{_webincli};
-    is($cli->http_proxy_host, 'http://wwwcache.sanger.ac.uk', 'http_proxy_host is populated correctly');
-    is($cli->http_proxy_port, 3128, 'http_proxy_port is populated correctly');
-    is($cli->username, 'user', 'username is populated correctly');
-    is($cli->password, 'pass', 'password is populated correctly');
-    is($cli->jar_path, 't/bin/webin-cli-1.6.0.jar', 'jar_path is populated correctly');
-    is($cli->manifest, $manifest_filename, 'manifest is populated correctly');
-    is($cli->input_dir, $temp_input_dir_name, 'manifest is populated correctly');
-    is($cli->output_dir, $temp_output_dir_name, 'manifest is populated correctly');
-    is($cli->context, 'genome', 'context is populated correctly');
-    is($cli->test, 0, 'test is populated correctly');
-    is($cli->validate, 0, 'validate is populated correctly');
-    is($cli->submit, 1, 'submit is populated correctly');
-    is($cli->jvm, 'customjava', 'jvm is populated correctly');
+    my $container = $under_test->container;
+    is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
+    is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
+    is($container->input_dir, $temp_input_dir_name, 'input_dir is populated correctly');
+    is($container->output_dir, $temp_output_dir_name, 'output_dir is populated correctly');
+    is($container->context, 'genome', 'context is populated correctly');
+    is($container->test, 0, 'test is populated correctly');
+    is($container->validate, 0, 'validate is populated correctly');
+    is($container->submit, 1, 'submit is populated correctly');
 }
 
 sub can_change_the_context {
     my ($args) = @_;
 
     my ($under_test) = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$args);
-    my $cli = $under_test->{_webincli};
-    is($cli->http_proxy_host, 'http://wwwcache.sanger.ac.uk', 'http_proxy_host is populated correctly');
-    is($cli->http_proxy_port, 3128, 'http_proxy_port is populated correctly');
-    is($cli->username, 'user', 'username is populated correctly');
-    is($cli->password, 'pass', 'password is populated correctly');
-    is($cli->jar_path, 't/bin/webin-cli-1.6.0.jar', 'jar_path is populated correctly');
-    is($cli->manifest, $manifest_filename, 'manifest is populated correctly');
-    is($cli->input_dir, $temp_input_dir_name, 'manifest is populated correctly');
-    is($cli->output_dir, $temp_output_dir_name, 'manifest is populated correctly');
-    is($cli->context, 'another context', 'context is populated correctly');
-    is($cli->test, 0, 'test is populated correctly');
-    is($cli->validate, 1, 'validate is populated correctly');
-    is($cli->submit, 1, 'submit is populated correctly');
-    is($cli->jvm, 'customjava', 'jvm is populated correctly');
-
+    my $container = $under_test->container;
+    is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
+    is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
+    is($container->input_dir, $temp_input_dir_name, 'input_dir is populated correctly');
+    is($container->output_dir, $temp_output_dir_name, 'output_dir is populated correctly');
+    is($container->context, 'another context', 'context is populated correctly');
+    is($container->test, 0, 'test is populated correctly');
+    is($container->validate, 1, 'validate is populated correctly');
+    is($container->submit, 1, 'submit is populated correctly');
 }
 sub can_override_test {
     my ($args) = @_;
 
-    my ($under_test) = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$args);
-    my $cli = $under_test->{_webincli};
-    is($cli->http_proxy_host, 'http://wwwcache.sanger.ac.uk', 'http_proxy_host is populated correctly');
-    is($cli->http_proxy_port, 3128, 'http_proxy_port is populated correctly');
-    is($cli->username, 'user', 'username is populated correctly');
-    is($cli->password, 'pass', 'password is populated correctly');
-    is($cli->jar_path, 't/bin/webin-cli-1.6.0.jar', 'jar_path is populated correctly');
-    is($cli->manifest, $manifest_filename, 'manifest is populated correctly');
-    is($cli->input_dir, $temp_input_dir_name, 'manifest is populated correctly');
-    is($cli->output_dir, $temp_output_dir_name, 'manifest is populated correctly');
-    is($cli->context, 'genome', 'context is populated correctly');
-    is($cli->test, 1, 'test is populated correctly');
-    is($cli->validate, 1, 'validate is populated correctly');
-    is($cli->submit, 1, 'submit is populated correctly');
-    is($cli->jvm, 'customjava', 'jvm is populated correctly');
 
+    my ($under_test) = Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$args);
+    my $container = $under_test->container;
+    is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
+    is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
+    is($container->input_dir, $temp_input_dir_name, 'input_dir is populated correctly');
+    is($container->output_dir, $temp_output_dir_name, 'output_dir is populated correctly');
+    is($container->context, 'genome', 'context is populated correctly');
+    is($container->test, 1, 'test is populated correctly');
+    is($container->validate, 1, 'validate is populated correctly');
+    is($container->submit, 1, 'submit is populated correctly');
 }
+
 sub test_mandatory_args {
     my ($input) = @_;
     my $args_with_missing_required_arg = { %full_args };
     delete $args_with_missing_required_arg->{$input};
-    throws_ok {Bio::ENA::DataSubmission::WEBINCli->new(%$args_with_missing_required_arg)} 'Moose::Exception::AttributeIsRequired', "dies if mandatory arg $input is missing";
+    throws_ok {Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new(%$args_with_missing_required_arg)} 'Moose::Exception::AttributeIsRequired', "dies if mandatory arg $input is missing";
 }
 
 # Check mandatory arguments
 {
-    my (@mandatory_args) = ('input_dir', 'output_dir', 'manifest');
+    my (@mandatory_args) = ('input_dir', 'output_dir', 'spreadsheet', 'validate', 'test', 'context', 'submit');
 
     foreach (@mandatory_args) {
         test_mandatory_args($_);
