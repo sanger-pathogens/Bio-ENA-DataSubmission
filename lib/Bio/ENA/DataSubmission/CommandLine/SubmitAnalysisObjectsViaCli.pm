@@ -27,8 +27,7 @@ use constant USAGE => <<USAGE;
 Usage: submit_analysis_objects_via_cli [options] -f manifest.xls
 
 	-f|file        Manifest file in tab separated, 2 columns format (required)
-	-i|output_dir  Input directory where the files referenced in the manifest reside (required)
-	-o|output_dir  Output directory for submission details: xml, logs, etc... (required)
+	-o|output_dir  Base output directory. A subdirectory within that will be created for the submission (required)
 	-c|context     Submission context ( one of genome, transcriptome, sequence, reads. Default: genome)
 	--no_validate  Do not run validation step
 	--no_submit    Do not run submit step
@@ -41,7 +40,6 @@ USAGE
 
 has 'config_file' => (is => 'ro', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
 has 'spreadsheet' => (is => 'ro', isa => 'Str', required => 1);
-has 'input_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'validate' => (is => 'ro', isa => 'Bool', required => 1);
 has 'test' => (is => 'ro', isa => 'Bool', required => 1);
@@ -54,13 +52,12 @@ around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
     if (exists $args{args}) {
         my $arguments = $args{args};
-        my ($spreadsheet, $output_dir, $input_dir, $context, $no_validate, $no_submit, $test, $config_file, $help);
+        my ($spreadsheet, $output_dir, $context, $no_validate, $no_submit, $test, $config_file, $help);
 
         GetOptionsFromArray(
             $arguments,
             'f|file=s'        => \$spreadsheet,
             'o|output_dir=s'  => \$output_dir,
-            'i|input_dir=s'   => \$input_dir,
             'c|context=s'        => \$context,
             'no_validate'     => \$no_validate,
             'no_submit'       => \$no_submit,
@@ -69,13 +66,12 @@ around BUILDARGS => sub {
             'h|help'          => \$help
         );
 
-        if (defined $help || !defined $spreadsheet || !defined $output_dir || !defined $input_dir) {
+        if (defined $help || !defined $spreadsheet || !defined $output_dir) {
             Bio::ENA::DataSubmission::Exception::InvalidInput->throw(error => USAGE);
         }
 
         $args{spreadsheet} = $spreadsheet;
         $args{output_dir} = $output_dir;
-        $args{input_dir} = $input_dir;
         $args{context} = (defined $context) ? $context : "genome";
         $args{validate} = (defined $no_validate) ? 0 : 1;
         $args{submit} = (defined $no_submit) ? 0 : 1;
@@ -91,7 +87,6 @@ around BUILDARGS => sub {
 
 sub _build_container {
     my $self = shift;
-    (-e $self->input_dir && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot find input directory\n");
     (-e $self->output_dir && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot find output directory\n");
     (-e $self->spreadsheet) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find spreadsheet manifest file\n");
     (-f $self->spreadsheet && -r _) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw(error => "Cannot find spreadsheet manifest file\n");
@@ -100,8 +95,7 @@ sub _build_container {
     return Bio::ENA::DataSubmission::AnalysisSubmission->new(
         config_file => $self->config_file,
         spreadsheet => $self->spreadsheet,
-        input_dir   => $self->input_dir,
-        output_dir  => $self->output_dir,
+        reference_dir  => $self->output_dir,
         validate    => $self->validate,
         test        => $self->test,
         context     => $self->context,

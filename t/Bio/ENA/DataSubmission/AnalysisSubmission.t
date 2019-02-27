@@ -13,10 +13,8 @@ BEGIN {
 use File::Temp;
 use File::Path qw(remove_tree);
 
-my $temp_input_dir = File::Temp->newdir(CLEANUP => 1);
-my $temp_input_dir_name = $temp_input_dir->dirname();
-my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
-my $temp_output_dir_name = $temp_output_dir->dirname();
+my $temp_reference_dir = File::Temp->newdir(CLEANUP => 1);
+my $temp_reference_dir_name = $temp_reference_dir->dirname();
 
 # Test the module can be used
 {
@@ -50,14 +48,15 @@ my $temp_output_dir_name = $temp_output_dir->dirname();
     };
 
     my $under_test = Bio::ENA::DataSubmission::AnalysisSubmission->new(
-        config_file => 't/data/test_ena_data_submission.conf',
-        spreadsheet => 't/data/exp_analysis_manifest.xls',
-        input_dir   => $temp_input_dir_name,
-        output_dir  => $temp_output_dir_name,
-        validate    => 1,
-        test        => 1,
-        context     => 1,
-        submit      => 1,
+        config_file   => 't/data/test_ena_data_submission.conf',
+        spreadsheet   => 't/data/exp_analysis_manifest.xls',
+        reference_dir => $temp_reference_dir_name,
+        current_user  => 'current_user',
+        timestamp     => 'timestamp',
+        validate      => 1,
+        test          => 1,
+        context       => 1,
+        submit        => 1,
     );
     is_deeply($under_test->config, $expected_config, "Config");
     is_deeply($under_test->proxy, [ "wwwcache.sanger.ac.uk", "3128" ], "Proxy");
@@ -126,6 +125,8 @@ my $temp_output_dir_name = $temp_output_dir->dirname();
         run             => 'ERR369164',
     } ], "Manifest spreadsheet content");
 
+    is($under_test->input_dir, "$temp_reference_dir_name/current_user_timestamp/input");
+    is($under_test->output_dir, "$temp_reference_dir_name/current_user_timestamp/output");
     isa_ok($under_test->gff_converter, 'Bio::ENA::DataSubmission::GffConverter');
     isa_ok($under_test->analysis_submission_coordinator, 'Bio::ENA::DataSubmission::AnalysisSubmissionCoordinator', "Analysis submission coordinator type");
     is($under_test->analysis_submission_coordinator->data_generator, $under_test->data_generator, "Coordinator data generator");
@@ -145,8 +146,8 @@ my $temp_output_dir_name = $temp_output_dir->dirname();
     is($under_test->submitter->http_proxy_port, '3128', "Submitter http_proxy_port");
     is($under_test->submitter->submit, '1', "Submitter submit");
     is($under_test->submitter->context, '1', "Submitter context");
-    is($under_test->submitter->input_dir, $temp_input_dir_name, "Submitter input_dir");
-    is($under_test->submitter->output_dir, $temp_output_dir_name, "Submitter output_dir");
+    is($under_test->submitter->input_dir, "$temp_reference_dir_name/current_user_timestamp/input", "Submitter input_dir");
+    is($under_test->submitter->output_dir, "$temp_reference_dir_name/current_user_timestamp/output", "Submitter output_dir");
     is($under_test->submitter->validate, '1', "Submitter validate");
     is($under_test->submitter->test, '1', "Submitter test");
 }
@@ -160,8 +161,9 @@ my $temp_output_dir_name = $temp_output_dir->dirname();
     my $under_test = Bio::ENA::DataSubmission::AnalysisSubmission->new(
         config_file                     => 't/data/test_ena_data_submission.conf',
         spreadsheet                     => 't/data/exp_analysis_manifest.xls',
-        input_dir                       => $temp_input_dir_name,
-        output_dir                      => $temp_output_dir_name,
+        reference_dir => $temp_reference_dir_name,
+        current_user  => 'current_user',
+        timestamp     => 'timestamp',
         validate                        => 1,
         test                            => 1,
         context                         => 1,
@@ -175,6 +177,6 @@ my $temp_output_dir_name = $temp_output_dir->dirname();
     is($coordinator->next_call(), undef, "run was called only once");
 }
 
-remove_tree($temp_input_dir_name, $temp_output_dir_name);
+remove_tree($temp_reference_dir_name);
 
 done_testing();

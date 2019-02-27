@@ -20,7 +20,6 @@ path-help@sanger.ac.uk
 
 use strict;
 use Moose;
-use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::AnalysisSubmissionPreparation;
 use Bio::ENA::DataSubmission::AnalysisSubmissionExecution;
@@ -28,11 +27,11 @@ use Bio::ENA::DataSubmission::AnalysisSubmissionCoordinator;
 use Bio::ENA::DataSubmission::GffConverter;
 
 use Bio::ENA::DataSubmission::ConfigReader;
+use File::Path qw(make_path);
 
 has 'config_file' => (is => 'ro', isa => 'Str', required => 1);
 has 'spreadsheet' => (is => 'ro', isa => 'Str', required => 1);
-has 'input_dir' => (is => 'ro', isa => 'Str', required => 1);
-has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
+has 'reference_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'validate' => (is => 'ro', isa => 'Bool', required => 1);
 has 'test' => (is => 'ro', isa => 'Bool', required => 1);
 has 'context' => (is => 'ro', isa => 'Str', required => 1);
@@ -45,6 +44,10 @@ has 'data_generator' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::AnalysisS
 has 'submitter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::AnalysisSubmissionExecution', lazy => 1, builder => '_build_submitter');
 has 'proxy' => (is => 'ro', isa => 'ArrayRef', , lazy => 1, builder => '_build_proxy');
 has 'manifest_spreadsheet' => (is => 'ro', isa => 'ArrayRef', lazy => 1, builder => '_build_manifest_spreadsheet');
+has 'input_dir' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_input_dir');
+has 'output_dir' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_output_dir');
+has 'current_user' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_current_user');
+has 'timestamp' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_timestamp');
 
 
 #TODO add all validation/ fail fast stuff...
@@ -127,8 +130,41 @@ sub _build_proxy {
 
 
     return [$host, $port];
-
 }
+
+sub _build_input_dir {
+    my ($self) = @_;
+    my ($result) = $self->reference_dir . "/" . $self->current_user . "_" . $self->timestamp  . "/input";
+    make_path($result);
+    (-e $result && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot create input directory at $result\n");
+
+    return $result;
+}
+
+sub _build_output_dir {
+    my ($self) = @_;
+    my ($result) = $self->reference_dir . "/" . $self->current_user . "_" . $self->timestamp  . "/output";
+    make_path($result);
+    (-e $result && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot create output directory at $result\n");
+
+    return $result;
+}
+
+sub _build_current_user {
+    my ($self) = @_;
+
+    return getpwuid( $< );
+}
+
+sub _build_timestamp {
+    my ($self) = @_;
+    my @timestamp = localtime(time);
+    my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
+    my $time = sprintf("%02d-%02d-%02d", $timestamp[2], $timestamp[1], $timestamp[0]);
+
+    return $day . '_' . $time;
+}
+
 __PACKAGE__->meta->make_immutable;
 no Moose;
 1;
