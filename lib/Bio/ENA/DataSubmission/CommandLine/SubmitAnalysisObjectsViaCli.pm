@@ -26,7 +26,7 @@ use Bio::ENA::DataSubmission::AnalysisSubmission;
 use constant USAGE => <<USAGE;
 Usage: submit_analysis_objects_via_cli [options] -f manifest.xls
 
-	-f|file        Manifest file in tab separated, 2 columns format (required)
+	-f|file        Excel spreadsheet manifest file (required)
 	-o|output_dir  Base output directory. A subdirectory within that will be created for the submission (required)
 	-c|context     Submission context ( one of genome, transcriptome, sequence, reads. Default: genome)
 	--no_validate  Do not run validation step

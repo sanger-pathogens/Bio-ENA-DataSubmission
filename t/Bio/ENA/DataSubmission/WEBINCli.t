@@ -30,7 +30,7 @@ use constant A_USER => "A_USER";
 use constant A_PASSWORD => "A_PASSWORD";
 use constant A_JVM_PATH => "PATH/TO/JVM";
 use constant A_CONTEXT => "A_CONTEXT";
-use constant A_CENTER_NAME => "A_CONTEXT";
+use constant A_CENTER_NAME => "A_CENTER_NAME";
 
 my %full_args = (
     http_proxy_host => A_PROXY_HOST,
