@@ -65,7 +65,7 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
 
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%full_args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+    my $expected = [ A_JVM_PATH, "-Dhttps.proxyHost=A_HOST", "-Dhttps.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
         "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
         "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test",
         "-validate", "-submit" ];
@@ -79,7 +79,7 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'test'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+    my $expected = [ A_JVM_PATH, "-Dhttps.proxyHost=A_HOST", "-Dhttps.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
         "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
         "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-validate",
         "-submit" ];
@@ -93,7 +93,7 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'validate'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+    my $expected = [ A_JVM_PATH, "-Dhttps.proxyHost=A_HOST", "-Dhttps.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
         "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
         "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test",
         "-submit"];
@@ -107,7 +107,7 @@ use Test::Mock::Cmd 'system' => sub {$system_call_args = \@_};
     $args->{'submit'} = 0;
     my ($under_test) = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
     $under_test->run();
-    my $expected = [ A_JVM_PATH, "-Dhttp.proxyHost=A_HOST", "-Dhttp.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
+    my $expected = [ A_JVM_PATH, "-Dhttps.proxyHost=A_HOST", "-Dhttps.proxyPort=1010", "-jar", WEB_IN_CLIENT_JAR,
         "-centerName", A_CENTER_NAME, "-username", A_USER, "-password", A_PASSWORD, "-inputDir", $temp_input_dir_name,
         "-outputDir", $temp_output_dir_name, "-manifest", $manifest_filename, "-context", A_CONTEXT, "-test",
         "-validate" ];

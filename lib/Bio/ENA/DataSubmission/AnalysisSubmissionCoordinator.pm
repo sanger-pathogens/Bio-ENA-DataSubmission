@@ -30,7 +30,7 @@ has 'submitter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::AnalysisSubmis
 sub run {
     my $self = shift;
     my @submission_data = $self->data_generator->prepare_for_submission();
-    $self->submitter->run(@submission_data);
+    $self->submitter->run(\@submission_data);
 }
 
 __PACKAGE__->meta->make_immutable;

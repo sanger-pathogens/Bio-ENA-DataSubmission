@@ -32,6 +32,7 @@ sub convert {
         push @cmd, "--chromosome_list", $chromosome_list_file;
     }
     push @cmd, "--output_filename", $output_file, $common_name, $tax_id, $study, $description, $input_file;
+    print "Executing \"" . join("\" \"", @cmd) . "\"\n";
     system(@cmd);
 }
 

@@ -163,6 +163,7 @@ sub _copy_data_files {
 
         my $temp_file = $self->output_dir . '/' . $sample_name . $suffix;
         copy($row->{file}, $temp_file);
+        print "Copied $row->{file} to $temp_file\n";
         $row->{file} = $temp_file;
     }
     return 1;
@@ -195,6 +196,7 @@ sub _generate_chromosome_file_for_fasta {
         $counter++;
     }
     close($chr_list_fh);
+    print "Generated $output_file\n";
 }
 
 sub _convert_gffs_to_flatfiles {
@@ -240,6 +242,7 @@ sub _populate_flat_file_chromosome_list {
 sub _gzip {
     my ($input) = @_;
     my @cmd = ("gzip", "-f", "-n", $input);
+    print "Executing: \"" . join("\" \"", @cmd) . "\"\n"; 
     system(@cmd);
 }
 

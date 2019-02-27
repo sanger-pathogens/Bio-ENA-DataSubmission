@@ -37,6 +37,7 @@ sub run {
 
     $self->_validate();
     my @args = $self->_build_arguments_to_system_call();
+    print "Running webin cli: \"" . join("\" \"", @args) . "\"\n";
     return system(@args)
 }
 
@@ -52,7 +53,7 @@ sub _validate {
 sub _build_arguments_to_system_call {
     my ($self) = @_;
 
-    my @args = ($self->jvm, "-Dhttp.proxyHost=" . $self->http_proxy_host, "-Dhttp.proxyPort=" . $self->http_proxy_port,
+    my @args = ($self->jvm, "-Dhttps.proxyHost=" . $self->http_proxy_host, "-Dhttps.proxyPort=" . $self->http_proxy_port,
         "-jar", $self->jar_path, "-centerName", $self->center_name, "-username", $self->username, "-password",
         $self->password, "-inputDir", $self->input_dir, "-outputDir", $self->output_dir, "-manifest", $self->manifest,
         "-context", $self->context);

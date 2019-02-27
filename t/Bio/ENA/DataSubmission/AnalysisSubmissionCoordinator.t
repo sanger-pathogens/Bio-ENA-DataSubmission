@@ -35,7 +35,7 @@ sub validate_call_to_submitter {
     my ($submitter, $expected) = @_;
     my ($name, $args) = $submitter->next_call();
     is($name, "run", "run was called");
-    is_deeply($args, [$submitter, @$expected], "run was run with correct arguments");
+    is_deeply($args, [$submitter, $expected], "run was run with correct arguments");
     is($submitter->next_call(), undef, "run was called only once");
 
 }
