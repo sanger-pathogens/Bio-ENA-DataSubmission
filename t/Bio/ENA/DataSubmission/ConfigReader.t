@@ -30,7 +30,7 @@ BEGIN {
         'taxon_lookup_service'       => 't/data/',
         'data_root'                  => 'data',
         'output_root'                => 'ena_updates/',
-        'auth_users'                 => [ 'root', 'pathpipe', 'maa', 'ap13', 'os7' ],
+        'auth_users'                 => [ 'root', 'pathpipe', 'maa', 'ap13', 'os7','pathdb' ],
         'email_to'                   => 'ap13@sanger.ac.uk',
         'schema'                     => 'ERC000028',
         'output_group'               => 'some_group_thats_changed_as_tests_are_run',
