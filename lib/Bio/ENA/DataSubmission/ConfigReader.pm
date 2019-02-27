@@ -22,14 +22,13 @@ use strict;
 use Moose;
 use File::Slurp qw(read_file);
 
-has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
+has 'config_file' => (is => 'rw', isa => 'Str', required => 1);
 
 
-sub get_config
-{
-  my ($self) = @_;
-  my $file_contents = read_file($self->config_file);
-  return eval($file_contents);
+sub get_config {
+    my ($self) = @_;
+    my $file_contents = read_file($self->config_file);
+    return eval($file_contents);
 }
 
 __PACKAGE__->meta->make_immutable;

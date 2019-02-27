@@ -8,7 +8,7 @@ Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli
 
 =head1 SYNOPSIS
 
-Creates and run an instance of Bio::ENA::DataSubmission::WEBINCli based on config file and parameters provided
+Parses arguments, validate inputs and then delegate the submission to Bio::ENA::DataSubmission::Assembler
 
 =head1 METHODS
 
@@ -18,67 +18,66 @@ path-help@sanger.ac.uk
 
 =cut
 
-use strict;
 use Moose;
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
+use Bio::ENA::DataSubmission::AnalysisSubmission;
 
 use constant USAGE => <<USAGE;
 Usage: submit_analysis_objects_via_cli [options] -f manifest.xls
 
-	-f|file        Manifest file in tab separated, 2 columns format (required)
-	-i|input       Input directory where the files referenced in the manifest reside (required)
-	-o|output      Output directory for submission details: xml, logs, etc... (required)
+	-f|file        Excel spreadsheet manifest file (required)
+	-o|output_dir  Base output directory. A subdirectory within that will be created for the submission (required)
 	-c|context     Submission context ( one of genome, transcriptome, sequence, reads. Default: genome)
 	--no_validate  Do not run validation step
+	--no_submit    Do not run submit step
 	--test         Use the ENA test submission service
+	--config_file  Location of config file to use (a default one is provided)
 	-h|help        This help message
 
 USAGE
 
 
-use Bio::ENA::DataSubmission::WEBINCli;
-use Bio::ENA::DataSubmission::ConfigReader;
-
-has 'config_reader' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::ConfigReader', required => 0, default =>
-    sub {return Bio::ENA::DataSubmission::ConfigReader->new();});
-has 'manifest' => (is => 'ro', isa => 'Str', required => 1);
-has 'input_dir' => (is => 'ro', isa => 'Str', required => 1);
+has 'config_file' => (is => 'ro', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
+has 'spreadsheet' => (is => 'ro', isa => 'Str', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'validate' => (is => 'ro', isa => 'Bool', required => 1);
 has 'test' => (is => 'ro', isa => 'Bool', required => 1);
 has 'context' => (is => 'ro', isa => 'Str', required => 1);
+has 'submit' => (is => 'ro', isa => 'Str', required => 1);
+
+has 'container' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::AnalysisSubmission', lazy => 1, builder => '_build_container');
 
 around BUILDARGS => sub {
     my ($orig, $class, %args) = @_;
     if (exists $args{args}) {
         my $arguments = $args{args};
-        my ($manifest, $output_dir, $input_dir, $context, $no_validate, $test, $config_file, $help);
+        my ($spreadsheet, $output_dir, $context, $no_validate, $no_submit, $test, $config_file, $help);
 
         GetOptionsFromArray(
             $arguments,
-            'f|file=s'        => \$manifest,
+            'f|file=s'        => \$spreadsheet,
             'o|output_dir=s'  => \$output_dir,
-            'i|input_dir=s'   => \$input_dir,
-            't|type=s'        => \$context,
+            'c|context=s'        => \$context,
             'no_validate'     => \$no_validate,
+            'no_submit'       => \$no_submit,
             'test'            => \$test,
-            'c|config_file=s' => \$config_file,
+            'config_file=s' => \$config_file,
             'h|help'          => \$help
         );
 
-        if (defined $help || !defined $manifest || !defined $output_dir || !defined $input_dir) {
+        if (defined $help || !defined $spreadsheet || !defined $output_dir) {
             Bio::ENA::DataSubmission::Exception::InvalidInput->throw(error => USAGE);
         }
 
-        $args{manifest} = $manifest;
+        $args{spreadsheet} = $spreadsheet;
         $args{output_dir} = $output_dir;
-        $args{input_dir} = $input_dir;
         $args{context} = (defined $context) ? $context : "genome";
         $args{validate} = (defined $no_validate) ? 0 : 1;
+        $args{submit} = (defined $no_submit) ? 0 : 1;
         $args{test} = (defined $test) ? 1 : 0;
         if (defined $config_file) {
-            $args{config_reader} = Bio::ENA::DataSubmission::ConfigReader->new(config_file => $config_file);
+            $args{config_file} = $config_file;
         }
         delete $args{args};
     }
@@ -86,48 +85,29 @@ around BUILDARGS => sub {
     $class->$orig(%args);
 };
 
-sub BUILD {
+sub _build_container {
     my $self = shift;
-    my $config = $self->config_reader->get_config();
-    my ($host, $port) = $self->_extract_proxy($config->{proxy});
-    $self->{_webincli} = Bio::ENA::DataSubmission::WEBINCli->new(
-        http_proxy_host => $host,
-        http_proxy_port => $port,
-        username        => $config->{webin_user},
-        password        => $config->{webin_pass},
-        jar_path        => $config->{webin_cli_jar},
-        input_dir       => $self->input_dir,
-        output_dir      => $self->output_dir,
-        manifest        => $self->manifest,
-        validate        => $self->validate,
-        test            => $self->test,
-        context         => $self->context,
-        jvm             => $config->{jvm},
-        submit          => 1,
+    (-e $self->output_dir && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot find output directory\n");
+    (-e $self->spreadsheet) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find spreadsheet manifest file\n");
+    (-f $self->spreadsheet && -r _) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw(error => "Cannot find spreadsheet manifest file\n");
+    (-e $self->config_file) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find config file\n");
+    (-f $self->config_file && -r _) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw(error => "Cannot find config file\n");
+    return Bio::ENA::DataSubmission::AnalysisSubmission->new(
+        config_file => $self->config_file,
+        spreadsheet => $self->spreadsheet,
+        reference_dir  => $self->output_dir,
+        validate    => $self->validate,
+        test        => $self->test,
+        context     => $self->context,
+        submit      => $self->submit,
     );
-
 }
 
 sub run {
     my $self = shift;
-    $self->{_webincli}->run();
+    $self->container->run();
 }
 
-sub _extract_proxy {
-    my ($self, $proxy) = @_;
-    my @result = split(/:/, $proxy);
-    my ($host, $port);
-    $port = pop(@result);
-    if (scalar @result > 1) {
-        $host = join(":", @result);
-    }
-    else {
-        $host = pop(@result);
-    }
-
-    return $host, $port;
-
-}
 __PACKAGE__->meta->make_immutable;
 no Moose;
 1;
