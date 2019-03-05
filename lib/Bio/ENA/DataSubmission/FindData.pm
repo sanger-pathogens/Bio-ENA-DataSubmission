@@ -41,24 +41,25 @@ has '_vrtrack' => (is => 'rw', isa => 'VRTrack::VRTrack');
 has '_root' => (is => 'rw', isa => 'Str');
 
 
-sub process_lanes_in_order {
-    my($class, $type, $id, $file_type, $closure) = @_;
+sub map {
+    my($class, $type, $id, $file_type, $mapping) = @_;
 
     my $finder = Bio::ENA::DataSubmission::FindData->new(
         type      => $type,
         id        => $id,
         file_type => $file_type
     );
-    $finder->for_each($closure);
+    return $finder->_map($mapping);
 }
 
-sub for_each {
-    my ($self, $closure) = @_;
-
+sub _map {
+    my ($self, $mapping) = @_;
+    my @result = ();
     my %data = %{$self->find()};
     for my $id (@{$data{key_order}}) {
-        $closure->($self, $id, $data{$id});
+        push @result, $mapping->($self, $id, $data{$id});
     }
+    return \@result;
 }
 
 sub find {

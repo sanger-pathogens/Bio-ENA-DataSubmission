@@ -56,14 +56,6 @@ has 'assembly_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'annotation_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'config_file' => (is => 'rw', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
 
-
-has 'laneinfo_factory' => (is => 'ro', isa => 'CodeRef', required => 0, default => sub {
-    return sub {
-        my %hash = @_;
-        return Bio::ENA::DataSubmission::LaneInfo->new(%hash);
-    }
-});
-
 sub _build__current_date {
     my $self = shift;
 
@@ -171,11 +163,9 @@ sub _build_manifest_data {
 
     return [ [] ] if ($self->empty);
 
-    my @manifest = ();
-
-    Bio::ENA::DataSubmission::FindData->process_lanes_in_order($self->type, $self->id, $self->file_type, sub {
+    my $manifest = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, $self->file_type, sub {
         my($finder, $id, $data) = @_;
-        my ($lane) = (!defined $data) ? undef : $self->laneinfo_factory->(
+        my ($lane) = (!defined $data) ? undef : Bio::ENA::DataSubmission::LaneInfo->new(
             file_type              => $self->file_type,
             assembly_directories   => $self->assembly_directories,
             annotation_directories => $self->annotation_directories,
@@ -184,9 +174,9 @@ sub _build_manifest_data {
             lane                   => $data,
         );
 
-        push(@manifest, $self->_manifest_row($lane, $id));
+        return $self->_manifest_row($lane, $id);
     });
-    return \@manifest;
+    return $manifest;
 }
 
 sub _manifest_row {
