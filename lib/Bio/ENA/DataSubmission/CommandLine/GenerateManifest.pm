@@ -153,7 +153,7 @@ sub _build_sample_data {
 
 	return [[]] if ( $self->empty );
 
-	my $manifest_with_dups = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, $self->file_type, sub {
+	my $manifest_with_dups = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, $self->file_id_type, sub {
 		my($finder, $id, $data) = @_;
 		return $self->_manifest_row( $finder, $data, $id )
 	});
