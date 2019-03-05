@@ -56,6 +56,14 @@ has 'assembly_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'annotation_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'config_file' => (is => 'rw', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
 
+
+has 'laneinfo_factory' => (is => 'ro', isa => 'CodeRef', required => 0, default => sub {
+    return sub {
+        my %hash = @_;
+        return Bio::ENA::DataSubmission::LaneInfo->new(%hash);
+    }
+});
+
 sub _build__current_date {
     my $self = shift;
 
@@ -159,30 +167,25 @@ sub run {
 }
 
 sub _build_manifest_data {
-    my $self = shift;
+    my ($self) = @_;
 
     return [ [] ] if ($self->empty);
 
-    my $finder = Bio::ENA::DataSubmission::FindData->new(
-        type      => $self->type,
-        id        => $self->id,
-        file_type => $self->file_type
-    );
-    my %data = %{$finder->find};
+    my @manifest = ();
 
-    my @manifest;
-    for my $k (@{$data{key_order}}) {
-        my ($lane) = (!defined $data{$k}) ? undef : Bio::ENA::DataSubmission::LaneInfo->new(
+    Bio::ENA::DataSubmission::FindData->process_lanes_in_order($self->type, $self->id, $self->file_type, sub {
+        my($finder, $id, $data) = @_;
+        my ($lane) = (!defined $data) ? undef : $self->laneinfo_factory->(
             file_type              => $self->file_type,
             assembly_directories   => $self->assembly_directories,
             annotation_directories => $self->annotation_directories,
             finder                 => $finder,
             vrtrack                => $finder->_vrtrack,
-            lane                   => $data{$k},
+            lane                   => $data,
         );
 
-        push(@manifest, $self->_manifest_row($lane, $k));
-    }
+        push(@manifest, $self->_manifest_row($lane, $id));
+    });
     return \@manifest;
 }
 
