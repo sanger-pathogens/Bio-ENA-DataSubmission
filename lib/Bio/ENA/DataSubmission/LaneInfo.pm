@@ -183,7 +183,7 @@ sub _calculate_coverage {
 }
 
 sub _assembly_program {
-    my ( $self ) = @_;
+    my ($self) = @_;
 
     return ($self->path =~ /\/(\w+)_assembly/) ? $1 : 'velvet';
 }
