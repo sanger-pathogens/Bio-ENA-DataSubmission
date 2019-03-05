@@ -153,26 +153,12 @@ sub _build_sample_data {
 
 	return [[]] if ( $self->empty );
 
-	my $finder = Bio::ENA::DataSubmission::FindData->new(
-		type         => $self->type,
-		id           => $self->id,
-		file_id_type => $self->file_id_type
-	);
-	my $data = $finder->find;
-
-	#print "DATA: ";
-	#print Dumper \%data;
-
-	my @manifest;
-	for my $k ( @{ $data->{key_order} } ){
-		push( @manifest, $self->_manifest_row( $finder, $data->{$k}, $k ) );
-	}
-
+	my $manifest_with_dups = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, $self->file_type, sub {
+		my($finder, $id, $data) = @_;
+		return $self->_manifest_row( $finder, $data, $id )
+	});
 	# handle duplicates - e.g. same data for plexed lanes
-	@manifest = $self->_remove_dups(\@manifest);
-
-	#print Dumper \@manifest;
-	#print "TOTAL: " . scalar(@manifest) . "\n";
+	@manifest = $self->_remove_dups($manifest_with_dups);
 
 	return \@manifest;
 }
