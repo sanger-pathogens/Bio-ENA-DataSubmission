@@ -47,10 +47,10 @@ has 'taxid' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_taxid');
 has 'sample_name' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_sample_name');
 has 'run' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_run');
 has 'coverage' => (is => 'ro', isa => 'Int', lazy => 1, builder => '_build_coverage');
-has 'program' => (is => 'ro', isa => 'Int', lazy => 1, builder => '_build_program');
-has 'path' => (is => 'ro', isa => 'String', lazy => 1, builder => '_build_path');
-has 'type' => (is => 'ro', isa => 'String', lazy => 1, builder => '_build_type');
-has 'description' => (is => 'ro', isa => 'String', lazy => 1, builder => '_build_description');
+has 'program' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_program');
+has 'path' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_path');
+has 'type' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_type');
+has 'description' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_description');
 
 #vrtrack injected codebase
 has 'seq_tech' => (is => 'ro', isa => 'VRTrack::Seq_tech', required => 1);
@@ -102,12 +102,12 @@ sub _build_study_name {
 
 sub _build_species_name {
     my ($self) = @_;
-    return defined($self->species) ? $species->name : '';
+    return defined($self->species) ? $self->species->name : '';
 }
 
 sub _build_taxid {
     my ($self) = @_;
-    return defined($self->species) ? $species->taxon_id : '';
+    return defined($self->species) ? $self->species->taxon_id : '';
 }
 
 sub _build_sample_name {
@@ -117,9 +117,10 @@ sub _build_sample_name {
 }
 
 sub _build_run {
-    return defined($lane->acc) ? $lane->acc : '';
-}
+    my ($self) = @_;
 
+    return defined($self->lane->acc) ? $self->lane->acc : '';
+}
 
 sub _build_type {
     my ($self) = @_;
@@ -133,7 +134,7 @@ sub _build_coverage {
 
 sub _build_program {
     my ($self) = @_;
-    return ($self->file_type eq "assembly") ? $self->_get_assembly_program() : 'Prokka';
+    return ($self->file_type eq "assembly") ? $self->_assembly_program() : 'Prokka';
 }
 
 sub _build_path {
@@ -179,6 +180,12 @@ sub _calculate_coverage {
     my $assembly = int($1);
     my $coverage = int($self->lane->raw_bases / $assembly);
     return $coverage;
+}
+
+sub _assembly_program {
+    my ( $self ) = @_;
+
+    return ($self->path =~ /\/(\w+)_assembly/) ? $1 : 'velvet';
 }
 
 __PACKAGE__->meta->make_immutable;

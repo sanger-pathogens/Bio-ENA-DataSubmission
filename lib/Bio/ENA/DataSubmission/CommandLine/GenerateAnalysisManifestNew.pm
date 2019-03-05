@@ -35,6 +35,7 @@ use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::FindData;
+use Bio::ENA::DataSubmission::LaneInfo;
 use List::MoreUtils qw(uniq);
 
 has 'args' => (is => 'ro', isa => 'ArrayRef', required => 1);
