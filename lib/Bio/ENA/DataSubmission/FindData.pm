@@ -42,12 +42,13 @@ has '_root' => (is => 'rw', isa => 'Str');
 
 
 sub map {
-    my($class, $type, $id, $file_type, $mapping) = @_;
+    my ($class, $type, $id, $file_type, $file_id_type, $mapping) = @_;
 
     my $finder = Bio::ENA::DataSubmission::FindData->new(
-        type      => $type,
-        id        => $id,
-        file_type => $file_type
+        type         => $type,
+        id           => $id,
+        file_type    => $file_type,
+        file_id_type => $file_id_type,
     );
     return $finder->_map($mapping);
 }

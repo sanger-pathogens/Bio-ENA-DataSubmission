@@ -173,7 +173,7 @@ sub _build_manifest_data {
 
     return [ [] ] if ($self->empty);
 
-    my $manifest = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, $self->file_type, sub {
+    my $manifest = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, $self->file_type, 'lane', sub {
         my($finder, $id, $data) = @_;
         my ($lane) = (!defined $data) ? undef : $self->laneinfo_factory->(
             file_type              => $self->file_type,
