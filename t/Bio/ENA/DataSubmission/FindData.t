@@ -53,6 +53,17 @@ subtest "Study retrieval", sub {
 	is_deeply $obj->find, \%exp, 'study - data correct';
 };
 
+subtest "Map study", sub {
+	check_nfs_dependencies();
+	my $expected = ['9003_1#1','9003_1#2'];
+	my $actual = Bio::ENA::DataSubmission::FindData->map('study', '2460', 'assembly', 'lane', sub {
+		my ($finder, $id, $data) = @_;
+		return $data->name;
+
+	});
+	is_deeply $actual, $expected, 'mapping correct';
+};
+
 # test file of lane ids
 subtest "file of lane ids retrieval", sub {
 	check_nfs_dependencies();
