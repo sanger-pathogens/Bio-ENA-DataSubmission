@@ -126,7 +126,7 @@ sub update_sample {
     delete $sample->{'sanger_sample_name'};
 
     my $v;
-    foreach my $k ( keys $sample ) {
+    foreach my $k ( keys %$sample ) {
         $v = $sample->{$k};
         $self->_update_fields( $sample_xml, $k, $v ) if ( defined $v && $v ne '' );
     }

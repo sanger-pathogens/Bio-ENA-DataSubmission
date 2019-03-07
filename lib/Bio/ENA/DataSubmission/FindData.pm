@@ -72,12 +72,12 @@ sub find {
     return \%data unless @$lanes;
 
     if ($self->type eq 'lane' || $self->type eq 'sample') {
-        push($data{key_order}, $self->id);
+        push(@{$data{key_order}}, $self->id);
         $data{$self->id} = $lanes->[0];
     }
     elsif ($self->type eq 'study') {
         for my $l (@$lanes) {
-            push($data{key_order}, $l->name);
+            push(@{$data{key_order}}, $l->name);
             $data{$l->name} = $l;
         }
     }

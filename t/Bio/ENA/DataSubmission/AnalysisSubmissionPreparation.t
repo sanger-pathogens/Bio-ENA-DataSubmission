@@ -265,7 +265,7 @@ sub _to_spreadsheet_manifest {
     for my $row (@values) {
         my %hash;
         @hash{@$header} = @$row;
-        push $result, \%hash;
+        push @$result, \%hash;
     }
 
     return $result;
