@@ -203,7 +203,7 @@ sub run {
 	( -r $manifest ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $manifest\n" );
 	$outfile = "$manifest.report.txt" unless( defined( $outfile ) );
 	$self->outfile($outfile);
-	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
+	$self->_check_can_write($outfile);
 
 	# first, validate the manifest
 	unless( $self->no_validate ){
@@ -228,6 +228,12 @@ sub run {
 	$self->_email;
 	print "Your request has been sent to: " . $self->_email_to . "\n";
 
+}
+
+sub _check_can_write {
+	my ($self, $outfile) = @_;
+	open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n");
+	close(FILE);
 }
 
 sub _updated_xml {

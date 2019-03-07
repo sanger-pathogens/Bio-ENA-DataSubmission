@@ -127,7 +127,7 @@ sub BUILD {
     (-r $manifest) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw(error => "Cannot read $manifest\n");
     $outfile = "$manifest.report.xls" unless (defined($outfile));
     $self->outfile($outfile);
-    system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n") if (defined $outfile);
+    $self->_check_can_write($outfile);
 
     $self->_output_dest($self->_build__output_dest);
     $self->_manifest_data($self->_build__manifest_data);
@@ -135,6 +135,11 @@ sub BUILD {
     $self->_release_dates($self->_build__release_dates);
 }
 
+sub _check_can_write {
+    my ($self, $outfile) = @_;
+    open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n");
+    close(FILE);
+}
 
 sub _build__output_dest {
     my $self = shift;

@@ -134,6 +134,12 @@ sub check_inputs {
     );
 }
 
+sub _check_can_write {
+    my ($self, $outfile) = @_;
+    open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" );
+    close(FILE);
+}
+
 sub run {
     my ($self) = @_;
 
@@ -146,7 +152,7 @@ sub run {
         (-e $id) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "File $id does not exist\n");
         (-r $id) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw(error => "Cannot read $id\n");
     }
-    system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n") if (defined $outfile);
+    $self->_check_can_write($outfile);
 
     my $header = [
         'name*', 'partial*', 'coverage*', 'program*', 'platform*', 'minimum_gap',

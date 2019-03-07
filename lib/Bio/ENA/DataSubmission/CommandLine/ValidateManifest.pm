@@ -102,6 +102,13 @@ sub check_inputs{
     );
 }
 
+sub _check_can_write {
+	my ($self, $outfile) = @_;
+	open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n");
+	close(FILE);
+}
+
+
 sub run {
 	my $self = shift;
 
@@ -117,11 +124,12 @@ sub run {
 	$self->check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
 	( -e $file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find $file\n" );
 	( -r $file ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $file\n" );
-	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
-	system("touch $report &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $report\n" ) if ( defined $report );
 
 	$report  = "$file.report.txt" unless( defined $report );
 	$outfile = "$file.edit.xls"   unless( defined $outfile );
+
+	$self->_check_can_write($outfile);
+	$self->_check_can_write($report);
 
 	#---------------#
 	# read manifest #

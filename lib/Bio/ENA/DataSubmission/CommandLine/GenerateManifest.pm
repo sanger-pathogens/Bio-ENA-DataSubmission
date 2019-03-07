@@ -40,228 +40,231 @@ use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::FindData;
 use List::MoreUtils qw(uniq);
 
-has 'args'         => ( is => 'ro', isa => 'ArrayRef', required => 1 );
-                   
-has 'type'         => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'id'           => ( is => 'rw', isa => 'Str',      required => 0 );
-has 'outfile'      => ( is => 'rw', isa => 'Str',      required => 0, default => 'manifest.xls' );
-has 'empty'        => ( is => 'rw', isa => 'Bool',     required => 0, default => 0 );
-has 'sample_data'  => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
-has 'help'         => ( is => 'rw', isa => 'Bool',     required => 0 );
-has 'file_id_type' => ( is => 'rw', isa => 'Str',      required => 0, default => 'lane' );
+has 'args' => (is => 'ro', isa => 'ArrayRef', required => 1);
 
-has '_warehouse'   => ( is => 'rw', isa => 'DBI::db',  required => 0, lazy_build => 1 );
-has '_show_errors' => ( is => 'rw', isa => 'Bool',     required => 0, default => 1 );
+has 'type' => (is => 'rw', isa => 'Str', required => 0);
+has 'id' => (is => 'rw', isa => 'Str', required => 0);
+has 'outfile' => (is => 'rw', isa => 'Str', required => 0, default => 'manifest.xls');
+has 'empty' => (is => 'rw', isa => 'Bool', required => 0, default => 0);
+has 'sample_data' => (is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1);
+has 'help' => (is => 'rw', isa => 'Bool', required => 0);
+has 'file_id_type' => (is => 'rw', isa => 'Str', required => 0, default => 'lane');
 
-has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
+has '_warehouse' => (is => 'rw', isa => 'DBI::db', required => 0, lazy_build => 1);
+has '_show_errors' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
+
+has 'config_file' => (is => 'rw', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
 
 
 sub _build__warehouse {
-	my $self = shift;
+    my $self = shift;
 
-	my $warehouse_dbh = DBI->connect( "DBI:mysql:host=seqw-db:port=3379;database=sequencescape_warehouse",
-        "warehouse_ro", undef, { 'RaiseError' => 1, 'PrintError' => 0 } )
-      or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw( error => "Failed to create connect to warehouse.\n");
+    my $warehouse_dbh = DBI->connect("DBI:mysql:host=seqw-db:port=3379;database=sequencescape_warehouse",
+        "warehouse_ro", undef, { 'RaiseError' => 1, 'PrintError' => 0 })
+        or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw(error => "Failed to create connect to warehouse.\n");
     return $warehouse_dbh;
 }
 
 sub BUILD {
-	my ( $self ) = @_;
+    my ($self) = @_;
 
-	my ( $type, $file_id_type, $id, $outfile, $empty, $no_errors, $help,$config_file );
-	my $args = $self->args;
+    my ($type, $file_id_type, $id, $outfile, $empty, $no_errors, $help, $config_file);
+    my $args = $self->args;
 
-	GetOptionsFromArray(
-		$args,
-		't|type=s'        => \$type,
-    'file_id_type=s'  => \$file_id_type,
-		'i|id=s'          => \$id,
-		'o|outfile=s'     => \$outfile,
-		'empty'           => \$empty,
-		'no_errors'       => \$no_errors,
-		'h|help'          => \$help,
-		'c|config_file=s' => \$config_file
-	);
+    GetOptionsFromArray(
+        $args,
+        't|type=s'        => \$type,
+        'file_id_type=s'  => \$file_id_type,
+        'i|id=s'          => \$id,
+        'o|outfile=s'     => \$outfile,
+        'empty'           => \$empty,
+        'no_errors'       => \$no_errors,
+        'h|help'          => \$help,
+        'c|config_file=s' => \$config_file
+    );
 
-	$self->type($type)                 if ( defined $type );
-	$self->file_id_type($file_id_type) if ( defined $file_id_type );
-	$self->id($id)                     if ( defined $id );
-	$self->outfile($outfile)           if ( defined $outfile );
-	$self->empty($empty)               if ( defined $empty );
-	$self->help($help)                 if ( defined $help );
-	$self->_show_errors(!$no_errors)   if ( defined $no_errors );
-	
-	$self->config_file($config_file)   if ( defined $config_file );
-	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
-	$self->_populate_attributes_from_config_file;
+    $self->type($type) if (defined $type);
+    $self->file_id_type($file_id_type) if (defined $file_id_type);
+    $self->id($id) if (defined $id);
+    $self->outfile($outfile) if (defined $outfile);
+    $self->empty($empty) if (defined $empty);
+    $self->help($help) if (defined $help);
+    $self->_show_errors(!$no_errors) if (defined $no_errors);
+
+    $self->config_file($config_file) if (defined $config_file);
+    (-e $self->config_file) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find config file\n");
+    $self->_populate_attributes_from_config_file;
 }
 
-sub _populate_attributes_from_config_file
-{
-  my ($self) = @_;
-  my $file_contents = read_file($self->config_file);
-  my $config_values = eval($file_contents);
+sub _populate_attributes_from_config_file {
+    my ($self) = @_;
+    my $file_contents = read_file($self->config_file);
+    my $config_values = eval($file_contents);
 }
 
-sub check_inputs{
-    my $self = shift; 
+sub check_inputs {
+    my $self = shift;
     return(
         $self->type
-          && ( $self->type eq 'study'
+            && ($self->type eq 'study'
             || $self->type eq 'lane'
             || $self->type eq 'file'
-            || $self->type eq 'sample' )
-          && $self->id
-          && !$self->help
+            || $self->type eq 'sample')
+            && $self->id
+            && !$self->help
     );
+}
+
+sub _check_can_write {
+    my ($self, $outfile) = @_;
+    open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n");
+    close(FILE);
 }
 
 sub run {
-	my ($self) = @_;
+    my ($self) = @_;
 
-	my $outfile = $self->outfile;
+    my $outfile = $self->outfile;
 
-	# sanity checks
-	$self->check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => $self->usage_text );
-	if ( $self->type eq 'file' ){
-		my $id = $self->id;
-		( -e $id ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "File $id does not exist\n" );
-		( -r $id ) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw( error => "Cannot read $id\n" );
-	}
-	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" ) if ( defined $outfile );
+    # sanity checks
+    $self->check_inputs or Bio::ENA::DataSubmission::Exception::InvalidInput->throw(error => $self->usage_text);
+    if ($self->type eq 'file') {
+        my $id = $self->id;
+        (-e $id) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "File $id does not exist\n");
+        (-r $id) or Bio::ENA::DataSubmission::Exception::CannotReadFile->throw(error => "Cannot read $id\n");
+    }
+    $self->_check_can_write($outfile);
 
-  if ( $self->file_id_type ne 'lane' and
-       $self->file_id_type ne 'sample' ) {
-    Bio::ENA::DataSubmission::Exception::InvalidInput->throw(
-      error => "'file_id_type' must be 'lane' or 'sample'\n"
+    if ($self->file_id_type ne 'lane' and
+        $self->file_id_type ne 'sample') {
+        Bio::ENA::DataSubmission::Exception::InvalidInput->throw(
+            error => "'file_id_type' must be 'lane' or 'sample'\n"
+        );
+    }
+
+    # write data to spreadsheet
+    my $data = $self->sample_data;
+    my $manifest = Bio::ENA::DataSubmission::Spreadsheet->new(
+        data                => $data,
+        outfile             => $outfile,
+        add_manifest_header => 1
     );
-  }
-
-	# write data to spreadsheet
-	my $data = $self->sample_data;
-	my $manifest = Bio::ENA::DataSubmission::Spreadsheet->new(
-		data                => $data,
-		outfile             => $outfile,
-		add_manifest_header => 1
-	);
-	$manifest->write_xls;
-	1;
+    $manifest->write_xls;
+    1;
 }
 
 sub _build_sample_data {
-	my $self = shift;
+    my $self = shift;
 
-	return [[]] if ( $self->empty );
+    return [ [] ] if ($self->empty);
 
-	my $manifest_with_dups = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, 'assembly', $self->file_id_type, sub {
-		my($finder, $id, $data) = @_;
-		return $self->_manifest_row( $finder, $data, $id )
-	});
-	# handle duplicates - e.g. same data for plexed lanes
-	my @manifest = $self->_remove_dups($manifest_with_dups);
+    my $manifest_with_dups = Bio::ENA::DataSubmission::FindData->map($self->type, $self->id, 'assembly', $self->file_id_type, sub {
+        my ($finder, $id, $data) = @_;
+        return $self->_manifest_row($finder, $data, $id)
+    });
+    # handle duplicates - e.g. same data for plexed lanes
+    my @manifest = $self->_remove_dups($manifest_with_dups);
 
-	return \@manifest;
+    return \@manifest;
 }
 
-sub _manifest_row{
-	my ($self, $f, $lane, $k) = @_;
+sub _manifest_row {
+    my ($self, $f, $lane, $k) = @_;
 
-	# blank row for returning on errors
-	my @row = ( $k, 'not found', 'not found' );
-	@row = $self->_error_row(\@row) if ( $self->_show_errors );
+    # blank row for returning on errors
+    my @row = ($k, 'not found', 'not found');
+    @row = $self->_error_row(\@row) if ($self->_show_errors);
 
-	return \@row unless ( defined $lane );
+    return \@row unless (defined $lane);
 
-	# build data, so long as it's available
-	my $sample = $self->_get_sample_from_lane( $f->_vrtrack, $lane );
-	return \@row unless (defined $sample);
-	my $sample_name = $sample->name || '';
-	my $sample_acc = $sample->individual->acc || '';
-	
-	my $warehouse_dbh = $self->_warehouse;
-	my @sample_data = $warehouse_dbh->selectrow_array( qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid() );
-	my $supplier_name = '';
-	if(@sample_data > 0)
-	{
-	  $supplier_name = $sample_data[0] || '';
-  }
-	
-	my $sample_alias = '';
-	my $lane_name =  $lane->name || '';
-	my $sample_anonymized_name = $sample->ssid() || '';
-	my $common_name = '';
-	my $taxon_id = '';
-	
-	if(defined($sample->individual) && defined($sample->individual->species))
-	{
-	  $common_name = $sample->individual->species->name || '';
-  	$taxon_id = $sample->individual->species->taxon_id || '';
-  }
-	
-	return [ $sample_acc, $sample_name, $supplier_name, $sample_alias, $taxon_id, $common_name,$common_name, $sample_anonymized_name, $lane_name,'','','','','','1800/2014','','','NA','','NA','','','','','',$sample_name,'','','NA'];
+    # build data, so long as it's available
+    my $sample = $self->_get_sample_from_lane($f->_vrtrack, $lane);
+    return \@row unless (defined $sample);
+    my $sample_name = $sample->name || '';
+    my $sample_acc = $sample->individual->acc || '';
+
+    my $warehouse_dbh = $self->_warehouse;
+    my @sample_data = $warehouse_dbh->selectrow_array(qq[select supplier_name from current_samples where internal_id = ] . $sample->ssid());
+    my $supplier_name = '';
+    if (@sample_data > 0) {
+        $supplier_name = $sample_data[0] || '';
+    }
+
+    my $sample_alias = '';
+    my $lane_name = $lane->name || '';
+    my $sample_anonymized_name = $sample->ssid() || '';
+    my $common_name = '';
+    my $taxon_id = '';
+
+    if (defined($sample->individual) && defined($sample->individual->species)) {
+        $common_name = $sample->individual->species->name || '';
+        $taxon_id = $sample->individual->species->taxon_id || '';
+    }
+
+    return [ $sample_acc, $sample_name, $supplier_name, $sample_alias, $taxon_id, $common_name, $common_name, $sample_anonymized_name, $lane_name, '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', $sample_name, '', '', 'NA' ];
 
 }
 
 sub _error_row {
-	my ($self, $row) = @_;
+    my ($self, $row) = @_;
 
-	my @new_row;
-	for my $cell ( @{ $row } ){
-		$cell =~ s/not found/not found!!/;
-		push( @new_row, $cell );
-	}
-	return @new_row;
+    my @new_row;
+    for my $cell (@{$row}) {
+        $cell =~ s/not found/not found!!/;
+        push(@new_row, $cell);
+    }
+    return @new_row;
 }
 
 sub _remove_dups {
-	my ($self, $data) = @_;
+    my ($self, $data) = @_;
 
-	my @uniq;
+    my @uniq;
     my @acc_seen;
-    for my $d ( @{ $data } ){
-    	my $sample_acc = $d->[0];
-    	next if( grep { $_ eq $sample_acc } @acc_seen );
-    	push ( @uniq, $d );
-    	push( @acc_seen, $sample_acc );
+    for my $d (@{$data}) {
+        my $sample_acc = $d->[0];
+        next if (grep {$_ eq $sample_acc} @acc_seen);
+        push(@uniq, $d);
+        push(@acc_seen, $sample_acc);
     }
     return @uniq;
 }
 
 sub _get_sample_from_lane {
-    my ( $self, $vrtrack, $lane ) = @_;
-    my ( $library, $sample );
+    my ($self, $vrtrack, $lane) = @_;
+    my ($library, $sample);
 
-    $library = VRTrack::Library->new( $vrtrack, $lane->library_id );
-    $sample = VRTrack::Sample->new( $vrtrack, $library->sample_id )
-      if defined $library;
+    $library = VRTrack::Library->new($vrtrack, $lane->library_id);
+    $sample = VRTrack::Sample->new($vrtrack, $library->sample_id)
+        if defined $library;
 
     return $sample;
 }
 
 sub _find_missing_ids {
-	my ( $self, $l, $d ) = @_;
-	my @lanes = @{ $l };
-	my @data = @{ $d };
+    my ($self, $l, $d) = @_;
+    my @lanes = @{$l};
+    my @data = @{$d};
 
-	open( my $fh, '<', $self->id );
-	my @ids = <$fh>;
+    open(my $fh, '<', $self->id);
+    my @ids = <$fh>;
 
-	# extract IDs from lane objects
-	my @got_ids;
+    # extract IDs from lane objects
+    my @got_ids;
 
-	# detect whether lane names or sample accessions
-    if ( $ids[0] =~ /#/ ){
-    	@got_ids = $self->_extract_lane_ids(\@lanes);
+    # detect whether lane names or sample accessions
+    if ($ids[0] =~ /#/) {
+        @got_ids = $self->_extract_lane_ids(\@lanes);
     }
     else {
-    	@got_ids = $self->_extract_accessions(\@data);
+        @got_ids = $self->_extract_accessions(\@data);
     }
 
     # find differences
     my @missing;
-    for my $id (@ids){
-    	chomp $id;
-    	push( @missing, $id ) unless ( grep {$_ eq $id} @got_ids );
+    for my $id (@ids) {
+        chomp $id;
+        push(@missing, $id) unless (grep {$_ eq $id} @got_ids);
     }
 
     print STDERR "Missing data for:\n";
@@ -270,27 +273,27 @@ sub _find_missing_ids {
 }
 
 sub _extract_lane_ids {
-	my ( $self, $l ) = @_;
+    my ($self, $l) = @_;
 
-	my @lane_ids;
-	for my $lane ( @{ $l } ){
-		push( @lane_ids, $lane->{name} );
-	}
-	return @lane_ids;
+    my @lane_ids;
+    for my $lane (@{$l}) {
+        push(@lane_ids, $lane->{name});
+    }
+    return @lane_ids;
 }
 
 sub _extract_accessions {
-	my ( $self, $d ) = @_;
+    my ($self, $d) = @_;
 
-	my @accs;
-	for my $datum ( @{ $d } ){
-		push( @accs, $datum->[0] );
-	}
-	return @accs;
+    my @accs;
+    for my $datum (@{$d}) {
+        push(@accs, $datum->[0]);
+    }
+    return @accs;
 }
 
 sub usage_text {
-	return <<USAGE;
+    return <<USAGE;
 Usage: generate_sample_manifest [options]
 
   -t|type          lane|study|file|sample
