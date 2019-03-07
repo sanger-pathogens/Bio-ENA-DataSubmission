@@ -16,49 +16,59 @@ use Data::Dumper;
 
 use_ok('Bio::ENA::DataSubmission::FindData');
 
-my ($obj, %exp);
-my $find = Path::Find->new();
-my ( $pathtrack, $dbh, $root ) = $find->get_db_info( 'pathogen_prok_track' );
 
-# test lane
-%exp = ( 'key_order' => ['10665_2#90'], '10665_2#90' => VRTrack::Lane->new_by_name( $pathtrack, '10665_2#90' ) );
-$obj = Bio::ENA::DataSubmission::FindData->new(
-     type => 'lane',
-     id   => '10665_2#90'
-);
-is_deeply $obj->find, \%exp, 'lane - data correct';
+subtest "Lane retrieval", sub {
+	check_nfs_dependencies();
+	my $pathtrack = new_pathtrack();
+	my %exp = ('key_order' => [ '10665_2#90' ], '10665_2#90' => VRTrack::Lane->new_by_name($pathtrack, '10665_2#90'));
+	my $obj = Bio::ENA::DataSubmission::FindData->new(
+		type => 'lane',
+		id   => '10665_2#90'
+	);
+	is_deeply $obj->find, \%exp, 'lane - data correct';
+};
 
-# test sample
-%exp = ( 'key_order' => ['ERS311489'], 'ERS311489' => VRTrack::Lane->new_by_name( $pathtrack, '10665_2#90' ) );
-$obj = Bio::ENA::DataSubmission::FindData->new(
-     type => 'sample',
-     id   => 'ERS311489'
-);
-is_deeply $obj->find, \%exp, 'sample - data correct';
+subtest "Sample retrieval", sub {
+	check_nfs_dependencies();
+	my $pathtrack = new_pathtrack();
+	my %exp = ('key_order' => [ 'ERS311489' ], 'ERS311489' => VRTrack::Lane->new_by_name($pathtrack, '10665_2#90'));
+	my $obj = Bio::ENA::DataSubmission::FindData->new(
+		type => 'sample',
+		id   => 'ERS311489'
+	);
+	is_deeply $obj->find, \%exp, 'sample - data correct';
+};
 
-# test study
-%exp = ( 'key_order' => [ '9003_1#1', '9003_1#2' ],
-	 '9003_1#1' => VRTrack::Lane->new_by_name( $pathtrack, '9003_1#1' ),
-	 '9003_1#2' => VRTrack::Lane->new_by_name( $pathtrack, '9003_1#2' ),
-);
-$obj = Bio::ENA::DataSubmission::FindData->new(
-     type => 'study',
-     id   => '2460'
-);
-is_deeply $obj->find, \%exp, 'study - data correct';
+subtest "Study retrieval", sub {
+	check_nfs_dependencies();
+	my $pathtrack = new_pathtrack();
+	my %exp = ('key_order' => [ '9003_1#1', '9003_1#2' ],
+		'9003_1#1'      => VRTrack::Lane->new_by_name($pathtrack, '9003_1#1'),
+		'9003_1#2'      => VRTrack::Lane->new_by_name($pathtrack, '9003_1#2'),
+	);
+	my $obj = Bio::ENA::DataSubmission::FindData->new(
+		type => 'study',
+		id   => '2460'
+	);
+	is_deeply $obj->find, \%exp, 'study - data correct';
+};
 
 # test file of lane ids
-%exp = ( 'key_order'  => [ '10660_2#13', '10665_2#81', '10665_2#90', '11111_1#1' ],
-	 '10660_2#13' => VRTrack::Lane->new_by_name( $pathtrack, '10660_2#13' ),
-	 '10665_2#81' => VRTrack::Lane->new_by_name( $pathtrack, '10665_2#81' ),
-	 '10665_2#90' => VRTrack::Lane->new_by_name( $pathtrack, '10665_2#90' ),
-	 '11111_1#1'  => undef
-);
-$obj = Bio::ENA::DataSubmission::FindData->new(
-     type => 'file',
-     id   => 't/data/lanes.txt'
-);
-is_deeply $obj->find, \%exp, 'file of lane ids - data correct';
+subtest "file of lane ids retrieval", sub {
+	check_nfs_dependencies();
+	my $pathtrack = new_pathtrack();
+	my %exp = ('key_order' => [ '10660_2#13', '10665_2#81', '10665_2#90', '11111_1#1' ],
+		'10660_2#13'    => VRTrack::Lane->new_by_name($pathtrack, '10660_2#13'),
+		'10665_2#81'    => VRTrack::Lane->new_by_name($pathtrack, '10665_2#81'),
+		'10665_2#90'    => VRTrack::Lane->new_by_name($pathtrack, '10665_2#90'),
+		'11111_1#1'     => undef
+	);
+	my $obj = Bio::ENA::DataSubmission::FindData->new(
+		type => 'file',
+		id   => 't/data/lanes.txt'
+	);
+	is_deeply $obj->find, \%exp, 'file of lane ids - data correct';
+};
 
 # test file of sample accessions
 # Requires --file_id_type to be passed through to PathFind
@@ -74,3 +84,14 @@ is_deeply $obj->find, \%exp, 'file of lane ids - data correct';
 #is_deeply $obj->find, \%exp, 'file of samples - data correct';
 
 done_testing();
+
+sub check_nfs_dependencies {
+	plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+}
+
+sub new_pathtrack {
+	my $find = Path::Find->new();
+	my ( $pathtrack, $dbh, $root ) = $find->get_db_info( 'pathogen_prok_track' );
+
+	return $pathtrack;
+}
