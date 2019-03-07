@@ -54,6 +54,7 @@ subtest "Output file cannot be written to", sub {
 };
 
 subtest "Input is a lane", sub {
+    check_nfs_dependencies();
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @exp = ([ '10660_2#13',
@@ -86,6 +87,7 @@ subtest "Input is a lane", sub {
 };
 
 subtest "Input is a file", sub {
+    check_nfs_dependencies();
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @exp = (
@@ -102,6 +104,7 @@ subtest "Input is a file", sub {
 };
 
 subtest "Input is a file with spreadsheet validation", sub {
+    check_nfs_dependencies();
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @args = ('-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls", '-p', 'im_a_paper', '-c', 't/data/test_ena_data_submission.conf');
@@ -115,6 +118,7 @@ subtest "Input is a file with spreadsheet validation", sub {
 };
 
 subtest "generate empty spreadsheet", sub {
+    check_nfs_dependencies();
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @args = ("--empty", '-o', "$tmp/empty.xls", '-c', 't/data/test_ena_data_submission.conf');
@@ -129,6 +133,7 @@ subtest "generate empty spreadsheet", sub {
 };
 
 subtest "file with annotation", sub {
+    check_nfs_dependencies();
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @exp = (
@@ -163,3 +168,6 @@ sub using_temp_dir {
     $closure->($tmp);
 }
 
+sub check_nfs_dependencies {
+    plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+}

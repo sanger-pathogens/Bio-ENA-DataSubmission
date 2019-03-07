@@ -5,6 +5,7 @@ BEGIN {
     use Test::Most;
     use Test::Output;
     use Test::Exception;
+    use Test::More;
 }
 
 use Moose;
@@ -13,6 +14,7 @@ use Bio::ENA::DataSubmission::Spreadsheet;
 use File::Compare;
 use File::Path qw( remove_tree);
 use Cwd;
+
 
 my @temp_directories = ();
 
@@ -63,6 +65,8 @@ subtest "Dies if invalid file id type", sub {
 };
 
 subtest "Input is a lane", sub {
+    check_nfs_dependencies();
+
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @exp_ers = (
@@ -78,6 +82,8 @@ subtest "Input is a lane", sub {
 };
 
 subtest "Input is a file of lanes", sub {
+    check_nfs_dependencies();
+
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @exp_ers = (
@@ -100,6 +106,7 @@ subtest "Input is a file of lanes", sub {
 };
 
 subtest "Input is a file of samples", sub {
+    check_nfs_dependencies();
     using_temp_dir(sub {
         my ($tmp) = @_;
         my @exp_ers = (
@@ -128,6 +135,7 @@ subtest "Input is a file of samples", sub {
 };
 
 subtest "Input is a file of lanes with spreadsheet validation", sub {
+    check_nfs_dependencies();
     using_temp_dir(sub {
         my ($tmp) = @_;
 
@@ -155,4 +163,8 @@ sub using_temp_dir {
     my $tmp = $temp_directory_obj->dirname();
     push @temp_directories, $tmp;
     $closure->($tmp);
+}
+
+sub check_nfs_dependencies {
+    plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
 }
