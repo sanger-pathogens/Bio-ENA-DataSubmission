@@ -70,8 +70,6 @@ subtest "Should filter fastq", sub {
         }
     ];
     my @matching_lanes_edit = remove_lane_objects(\@matching_lanes);
-    @matching_lanes_edit = sort { return @$a->path cmp @$b->path } @matching_lanes_edit;
-
     is_deeply do_sort(@matching_lanes_edit), do_sort(@$expected_fastq), 'correct fastqs retrieved';
 };
 
