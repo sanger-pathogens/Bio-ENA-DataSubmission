@@ -1,0 +1,114 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  # The most common configuration options are documented and commented below.
+  # For a complete reference, please see the online documentation at
+  # https://docs.vagrantup.com.
+
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://vagrantcloud.com/search.
+  config.vm.box = "ubuntu/bionic64"
+
+  # Disable automatic box update checking. If you disable this, then
+  # boxes will only be checked for updates when the user runs
+  # `vagrant box outdated`. This is not recommended.
+  # config.vm.box_check_update = false
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine. In the example below,
+  # accessing "localhost:8080" will access port 80 on the guest machine.
+  # NOTE: This will enable public access to the opened port
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+
+  # Create a forwarded port mapping which allows access to a specific port
+  # within the machine from a port on the host machine and only allow access
+  # via 127.0.0.1 to disable public access
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+  # Create a private network, which allows host-only access to the machine
+  # using a specific IP.
+  # config.vm.network "private_network", ip: "192.168.33.10"
+
+  # Create a public network, which generally matched to bridged network.
+  # Bridged networks make the machine appear as another physical device on
+  # your network.
+  # config.vm.network "public_network"
+
+  # Share an additional folder to the guest VM. The first argument is
+  # the path on the host to the actual folder. The second argument is
+  # the path on the guest to mount the folder. And the optional third
+  # argument is a set of non-required options.
+  # config.vm.synced_folder "../data", "/vagrant_data"
+
+  #config.vm.synced_folder '../perlsetup', '/home/vagrant/perl5', type: "virtualbox"
+
+  # Provider-specific configuration so you can fine-tune various
+  # backing providers for Vagrant. These expose provider-specific options.
+  # Example for VirtualBox:
+  #
+  # config.vm.provider "virtualbox" do |vb|
+  #   # Display the VirtualBox GUI when booting the machine
+  #   vb.gui = true
+  #
+  #   # Customize the amount of memory on the VM:
+  #   vb.memory = "1024"
+  # end
+  #
+  # View the documentation for the provider you are using for more
+  # information on available options.
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
+  # documentation for more information about their specific syntax and use.
+  config.vm.provision "shell", inline: <<-SHELL
+    export HTTPS_PROXY="http://wwwcache.sanger.ac.uk:3128"
+    export http_proxy=$HTTPS_PROXY
+    export https_proxy=$HTTPS_PROXY
+    export HTTP_PROXY=$HTTPS_PROXY
+    apt-get update --quiet --assume-yes
+    apt-get install default-jdk --quiet --assume-yes
+    #apt-get install cpanminus --quiet --assume-yes
+    #apt-get install libdist-zilla-perl --quiet --assume-yes
+    apt-get install build-essential --quiet --assume-yes
+    apt-get install git --quiet --assume-yes
+    apt-get install file --quiet --assume-yes
+    apt-get install curl --quiet --assume-yes
+    apt-get install libxml2-dev --quiet --assume-yes
+    apt-get install libexpat1-dev --quiet --assume-yes
+    apt-get install libgd-dev --quiet --assume-yes
+    apt-get install libssl-dev --quiet --assume-yes
+    apt-get install libdb-dev --quiet --assume-yes
+    apt-get install libmysqlclient-dev --quiet --assume-yes
+    apt-get install perlbrew --quiet --assume-yes
+    #mkdir /vagrant/home
+    #chmod 777 /vagrant/home
+    #cpanm --notest Moose
+    #cpanm --notest YAML::XS
+    #cd /vagrant/Bio-ENA-DataSubmission
+    #dzil authordeps --missing | cpanm --notest
+    #dzil listdeps --missing | grep -v 'VRTrack::Lane' | grep -v 'Path::Find' | cpanm --notest
+  SHELL
+
+  config.vm.provision "shell", privileged: false, inline: <<-SHELL
+    cat /vagrant/.profile >> /home/vagrant/.profile
+    source /home/vagrant/.profile
+    perlbrew init
+    source /home/vagrant/.profile
+    perlbrew install --notest perl-5.14.2
+    perlbrew install-cpanm    
+    perlbrew switch perl-5.14.2
+    cpanm --notest Dist::Zilla
+    cpanm --notest Moose
+    cpanm --notest YAML::XS
+    cpanm --notest DBD::mysql
+    cd /vagrant/Bio-ENA-DataSubmission
+    dzil authordeps --missing | cpanm --notest
+    dzil listdeps --missing | grep -v 'VRTrack::Lane' | grep -v 'Path::Find' | cpanm --notest
+    #sh -c "$(curl -fsSL --proxy http://wwwcache.sanger.ac.uk:3128 https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+  SHELL
+end
