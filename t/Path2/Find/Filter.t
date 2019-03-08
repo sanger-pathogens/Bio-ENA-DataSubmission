@@ -72,7 +72,7 @@ subtest "Should filter fastq", sub {
     my @matching_lanes_edit = remove_lane_objects(\@matching_lanes);
     @matching_lanes_edit = sort { return @$a->path cmp @$b->path } @matching_lanes_edit;
 
-    is_deeply \@matching_lanes_edit, $expected_fastq, 'correct fastqs retrieved';
+    is_deeply do_sort(@matching_lanes_edit), do_sort(@$expected_fastq), 'correct fastqs retrieved';
 };
 
 
@@ -107,7 +107,7 @@ subtest "Should filter bam", sub {
         }
     ];
     my @matching_lanes_edit = remove_lane_objects(\@matching_lanes);
-    is_deeply \@matching_lanes_edit, $expected_bams, 'correct bams retrieved';
+    is_deeply do_sort(@matching_lanes_edit), do_sort(@$expected_bams), 'correct bams retrieved';
 };
 
 subtest "Should support verbose output", sub {
@@ -151,8 +151,7 @@ subtest "Should support verbose output", sub {
         }
     ];
     my @matching_lanes_edit = remove_lane_objects(\@matching_lanes);
-    @matching_lanes_edit = sort { return @$a->path cmp @$b->path } @matching_lanes_edit;
-    is_deeply \@matching_lanes_edit, $expected_verbose, 'correct verbose files recovered';
+    is_deeply do_sort(@matching_lanes_edit), do_sort(@$expected_verbose), 'correct verbose files recovered';
 };
 
 
@@ -183,7 +182,7 @@ subtest "Should filter on date", sub {
         }
     ];
     my @matching_lanes_edit = remove_lane_objects(\@matching_lanes);
-    is_deeply \@matching_lanes_edit, $expected_date, 'correctly dated files recovered';
+    is_deeply do_sort(@matching_lanes_edit), do_sort(@$expected_date), 'correctly dated files recovered';
 };
 
 done_testing();
@@ -214,5 +213,11 @@ sub remove_lane_objects {
 
 sub check_nfs_dependencies {
     plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+}
+
+sub do_sort {
+    my (@ref) = @_;
+    my @result = sort { return $a->{path} cmp $b->{path} } @ref;
+    return \@result;
 }
 
