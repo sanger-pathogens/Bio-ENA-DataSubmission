@@ -70,6 +70,8 @@ subtest "Should filter fastq", sub {
         }
     ];
     my @matching_lanes_edit = remove_lane_objects(\@matching_lanes);
+    @matching_lanes_edit = sort { return @$a->path cmp @$b->path } @matching_lanes_edit;
+
     is_deeply \@matching_lanes_edit, $expected_fastq, 'correct fastqs retrieved';
 };
 
@@ -149,6 +151,7 @@ subtest "Should support verbose output", sub {
         }
     ];
     my @matching_lanes_edit = remove_lane_objects(\@matching_lanes);
+    @matching_lanes_edit = sort { return @$a->path cmp @$b->path } @matching_lanes_edit;
     is_deeply \@matching_lanes_edit, $expected_verbose, 'correct verbose files recovered';
 };
 
