@@ -32,8 +32,8 @@ use Data::Dumper;
 use lib "../lib";
 use lib "./lib";
 
-use Path::Find;
-use Path::Find::Lanes;
+use Path2::Find;
+use Path2::Find::Lanes;
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;

@@ -9,7 +9,7 @@ BEGIN {
 }
 
 use Moose;
-use Path::Find;
+use Path2::Find;
 use VRTrack::Lane;
 
 use Data::Dumper;
@@ -101,7 +101,7 @@ sub check_nfs_dependencies {
 }
 
 sub new_pathtrack {
-	my $find = Path::Find->new();
+	my $find = Path2::Find->new();
 	my ( $pathtrack, $dbh, $root ) = $find->get_db_info( 'pathogen_prok_track' );
 
 	return $pathtrack;

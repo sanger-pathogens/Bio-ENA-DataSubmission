@@ -27,9 +27,9 @@ no warnings 'uninitialized';
 use Moose;
 use File::Slurp;
 
-use Path::Find;
-use Path::Find::Lanes;
-use Path::Find::Filter;
+use Path2::Find;
+use Path2::Find::Lanes;
+use Path2::Find::Filter;
 
 use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;

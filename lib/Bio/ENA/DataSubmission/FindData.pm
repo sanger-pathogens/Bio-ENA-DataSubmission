@@ -28,8 +28,8 @@ use Moose;
 use Moose::Util::TypeConstraints;
 use namespace::autoclean;
 
-use Path::Find;
-use Path::Find::Lanes;
+use Path2::Find;
+use Path2::Find::Lanes;
 use Data::Dumper;
 
 has 'type' => (is => 'rw', isa => 'Str', required => 1);
@@ -104,7 +104,7 @@ sub find {
 sub _get_lanes_from_db {
     my $self = shift;
     my $lanes;
-    my $find = Path::Find->new();
+    my $find = Path2::Find->new();
     my @pathogen_databases = $find->pathogen_databases;
     my ($pathtrack, $dbh, $root);
     for my $database (@pathogen_databases) {
@@ -118,7 +118,7 @@ sub _get_lanes_from_db {
             $processed_flag = 2048;
         }
 
-        my $find_lanes = Path::Find::Lanes->new(
+        my $find_lanes = Path2::Find::Lanes->new(
             search_type    => $self->type,
             search_id      => $self->id,
             file_id_type   => $self->file_id_type,
