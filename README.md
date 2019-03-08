@@ -17,6 +17,7 @@ Scripts for submitting data to the ENA.
     * [generate\_analysis\_manifest](#generate_analysis_manifest)
     * [submit\_analysis\_objects](#submit_analysis_objects)
     * [validate\_embl](#validate_embl)
+  * [Development using vagrant](#Development using vagrant)
   * [License](#license)
   * [Feedback/Issues](#feedbackissues)
 
@@ -140,6 +141,9 @@ Usage: validate_embl [options] embl_files
     --jar_path     Location of the EMBL validator jar file (defaults to /software/pathogen/external/bin/embl-client.jar)
     -h|help        This help message
 ```
+## Development using vagrant
+Follow instructions [here](vagrant/README.md)
+
 ## License
 Bio-ENA-DataSubmission is free software, licensed under [GPLv3](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE).
 

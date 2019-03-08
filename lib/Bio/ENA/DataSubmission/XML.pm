@@ -126,7 +126,7 @@ sub update_sample {
     delete $sample->{'sanger_sample_name'};
 
     my $v;
-    foreach my $k ( keys $sample ) {
+    foreach my $k ( keys %$sample ) {
         $v = $sample->{$k};
         $self->_update_fields( $sample_xml, $k, $v ) if ( defined $v && $v ne '' );
     }
@@ -352,14 +352,18 @@ sub parse_xml_metadata {
 #-----------------#
 # WRITING METHODS #
 #-----------------#
+sub _check_can_write {
+    my ($self, $outfile) = @_;
+    open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" );
+    close(FILE);
+}
 
 sub write_sample {
     my $self    = shift;
     my $outfile = $self->outfile;
     my $data    = $self->data;
 
-    system("touch $outfile &> /dev/null") == 0
-      or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write file: $outfile\n" );
+    $self->_check_can_write($outfile);
 
     my $writer = Bio::ENA::DataSubmission::XMLSimple::Sample->new(
         RootName => 'SAMPLE_SET',
@@ -378,8 +382,7 @@ sub write_submission {
     my $outfile = $self->outfile;
     my $data    = $self->data;
 
-    system("touch $outfile &> /dev/null") == 0
-      or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write file: $outfile\n" );
+    $self->_check_can_write($outfile);
 
     my $writer = Bio::ENA::DataSubmission::XMLSimple::Submission->new(
         RootName      => 'SUBMISSION',
@@ -399,8 +402,7 @@ sub write_analysis {
     my $outfile = $self->outfile;
     my $data    = $self->data;
 
-    system("touch $outfile &> /dev/null") == 0
-      or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write file: $outfile\n" );
+    $self->_check_can_write($outfile);
 
     my $writer = Bio::ENA::DataSubmission::XMLSimple::Analysis->new(
         RootName => 'ANALYSIS_SET',

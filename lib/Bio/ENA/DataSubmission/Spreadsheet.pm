@@ -110,13 +110,18 @@ sub _cleanup_whitespace {
 	return @clean;
 }
 
+sub _check_can_write {
+	my ($self, $outfile) = @_;
+	open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" );
+	close(FILE);
+}
+
 sub write_xls{
 	my ($self) = @_;
 	my @data = @{ $self->data };
 	my $outfile = $self->outfile;
 
-	# check sanity
-	system("touch $outfile &> /dev/null") == 0 or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "File $outfile cannot be written to\n");
+	$self->_check_can_write($outfile);
 	( defined $data[0] ) or Bio::ENA::DataSubmission::Exception::NoData->throw( error => "No data was supplied to the spreadsheet reader\n");
 
 	my $workbook = Spreadsheet::WriteExcel->new($outfile);

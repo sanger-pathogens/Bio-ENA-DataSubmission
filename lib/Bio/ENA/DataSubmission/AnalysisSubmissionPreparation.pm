@@ -49,6 +49,7 @@ has 'manifest_spreadsheet' => (is => 'ro', isa => 'ArrayRef', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'gff_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::GffConverter', required => 1);
 has 'manifest_for_submission' => (is => 'ro', isa => 'ArrayRef', required => 0, lazy_build => 1);
+has 'locus_tags' => (is => 'rw', isa => 'ArrayRef', required => 0);
 
 
 sub BUILD {
@@ -201,7 +202,7 @@ sub _generate_chromosome_file_for_fasta {
 
 sub _convert_gffs_to_flatfiles {
     my ($self) = @_;
-
+    $self->locus_tags([]);
     my @spreadsheet = @{$self->manifest_spreadsheet};
     for my $row (@spreadsheet) {
         next unless ($row->{file} =~ /gff$/);
@@ -218,14 +219,10 @@ sub _convert_gffs_to_flatfiles {
 sub _get_locus_tag {
     my ($self, $row) = @_;
 
-    if (defined($row->{locus_tag}) && $row->{locus_tag} ne "") {
-        return $row->{locus_tag};
-    }
-    if (defined($row->{sample}) && $row->{sample} ne "") {
-        return $row->{sample};
-    }
+    my ($locus_tag) = (defined($row->{locus_tag}) && $row->{locus_tag} ne "") ? $row->{locus_tag} : undef;
+    push @{$self->locus_tags}, $locus_tag;
 
-    return undef;
+    return $locus_tag;
 
 }
 
