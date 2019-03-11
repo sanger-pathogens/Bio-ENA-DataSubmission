@@ -26,7 +26,6 @@ use Path2::Find;
 use File::Find::Rule;
 use File::Basename;
 
-use lib "../../";
 use Path2::Find::Exception;
 
 # required

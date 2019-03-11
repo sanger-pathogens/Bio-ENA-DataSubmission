@@ -28,7 +28,6 @@ use lib "/software/pathogen/internal/pathdev/vr-codebase/modules";
 use Moose;
 use VRTrack::Lane;
 use Data::Dumper;
-use lib "../../";
 use Path2::Find::Exception;
 
 has 'search_type'    => ( is => 'ro', isa => 'Str', required => 1 );
