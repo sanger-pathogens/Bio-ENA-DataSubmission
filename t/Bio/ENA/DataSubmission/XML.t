@@ -125,7 +125,7 @@ is_deeply $obj->parse_xml_metadata('ERS001491'), \%exp, 'XML parsed correctly';
 # update_sample to check does it remove 'Strain'
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
 ok( my $updated_xml = $obj->update_sample({'sample_accession' => 'ERS486637', 'anothertag' => 'ABC', 'strain' => 'lowercase strain'}), 'Remove strain');
-my $expected = [{'SAMPLE_ATTRIBUTE' => [
+validate($updated_xml->{SAMPLE_ATTRIBUTES}, [{'SAMPLE_ATTRIBUTE' => [
     {
         'VALUE' => [{}],
         'TAG' => ['Sample Description']
@@ -138,11 +138,7 @@ my $expected = [{'SAMPLE_ATTRIBUTE' => [
         'VALUE' => ['ABC'],
         'TAG' => ['anothertag']
     }]
-}];
-sort_hash($expected);
-my $actual = $updated_xml->{SAMPLE_ATTRIBUTES};
-sort_hash($actual);
-is_deeply($actual, $expected, 'Check Strain has been removed but lowercase strain kept');
+}], 'Check Strain has been removed but lowercase strain kept');
 
 
 sub sort_hash {
@@ -173,7 +169,7 @@ is_deeply($updated_xml->{IDENTIFIERS},
           }
         ]
         , 'Check external id has been removed');
-is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
+validate($updated_xml->{SAMPLE_ATTRIBUTES},
 [
           {
             'SAMPLE_ATTRIBUTE' => [
@@ -236,7 +232,7 @@ is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
 ok( $updated_xml = $obj->update_sample({'sample_accession' => 'ERS092760','strain' => 'lowercase strain'}), 'Remove injected values');
 
-is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
+validate($updated_xml->{SAMPLE_ATTRIBUTES},
 [
           {
             'SAMPLE_ATTRIBUTE' => [
@@ -275,7 +271,7 @@ for my $country (('not available: not collected','not available: restricted acce
   # update sample should remove countries that are not available
   $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
   ok( $updated_xml = $obj->update_sample({'sample_accession' => 'ERS092760','country' =>  $country}), 'Remove country '. $country);
-  is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},
+    validate($updated_xml->{SAMPLE_ATTRIBUTES},
   [
             {
               'SAMPLE_ATTRIBUTE' => [
@@ -307,6 +303,25 @@ for my $country (('not available: not collected','not available: restricted acce
             }
           ]
           , 'check not available country removed');
+}
+
+
+sub validate {
+    my($expected, $actual, $description) = @_;
+    _sort_hash($expected);
+    _sort_hash($actual);
+
+    is_deeply($expected, $actual, $description);
+
+}
+
+sub _sort_hash {
+    my $to_sort = shift;
+    for my $hashref (@$to_sort) {
+        my $array_to_sort = $hashref->{SAMPLE_ATTRIBUTE};
+        my @sorted = sort {$a->{TAG}[0] cmp $b->{TAG}[0]} @$array_to_sort;
+        $hashref->{SAMPLE_ATTRIBUTE} = \@sorted;
+    }
 }
 
 
