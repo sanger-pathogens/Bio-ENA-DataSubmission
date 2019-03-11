@@ -50,7 +50,7 @@ Move into the directory and install all dependencies using [DistZilla](http://dz
 ```
 cd Bio-ENA-DataSubmission
 dzil authordeps --missing | cpanm
-dzil listdeps --missing | cpanm
+dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm
 ```
   
 Run the tests:   
