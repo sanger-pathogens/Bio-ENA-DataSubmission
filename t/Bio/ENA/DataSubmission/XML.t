@@ -125,38 +125,34 @@ is_deeply $obj->parse_xml_metadata('ERS001491'), \%exp, 'XML parsed correctly';
 # update_sample to check does it remove 'Strain'
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
 ok( my $updated_xml = $obj->update_sample({'sample_accession' => 'ERS486637', 'anothertag' => 'ABC', 'strain' => 'lowercase strain'}), 'Remove strain');
-is_deeply($updated_xml->{SAMPLE_ATTRIBUTES},[
-          {
-            'SAMPLE_ATTRIBUTE' => [
-                                    {
-                                      'VALUE' => [
-                                                 {}
-                                               ],
-                                      'TAG' => [
-                                                 'Sample Description'
-                                               ]
-                                    },
-                                     {
-                                       'VALUE' => [
-                                                  'lowercase strain'
-                                                ],
-                                       'TAG' => [
-                                                  'strain'
-                                                ]
-                                     },
-                                    {
-                                      'VALUE' => [
-                                                   'ABC'
-                                                 ],
-                                      'TAG' => [
-                                                 'anothertag'
-                                               ]
-                                    }
-                                  ]
-          }
-        ], 'Check Strain has been removed but lowercase strain kept');
+my $expected = [{'SAMPLE_ATTRIBUTE' => [
+    {
+        'VALUE' => [{}],
+        'TAG' => ['Sample Description']
+    },
+    {
+        'VALUE' => ['lowercase strain'],
+        'TAG' => ['strain']
+    },
+    {
+        'VALUE' => ['ABC'],
+        'TAG' => ['anothertag']
+    }]
+}];
+sort_hash($expected);
+my $actual = $updated_xml->{SAMPLE_ATTRIBUTES};
+sort_hash($actual);
+is_deeply($actual, $expected, 'Check Strain has been removed but lowercase strain kept');
 
 
+sub sort_hash {
+    my $to_sort = shift;
+    for my $hashref (@$to_sort) {
+        my $array_to_sort = $hashref->{SAMPLE_ATTRIBUTE};
+        my @sorted = sort @$array_to_sort;
+        $hashref->{SAMPLE_ATTRIBUTE} = \@sorted;
+    }
+}
 
 # update_sample to check does it remove EXTERNAL_ID and ENA-BASE-COUNT and ENA-SPOT-COUNT
 $obj = Bio::ENA::DataSubmission::XML->new( xml => 't/data/update.xml', ena_base_path => 't/data/',dataroot => 'data' );
