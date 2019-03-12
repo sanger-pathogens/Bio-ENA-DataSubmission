@@ -47,9 +47,9 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
 #--------------#
 
 @args = ('--test', '-f', 't/data/update_manifest.xls', '-o', "$tmp/update_report.xls", '-c', $tmp_config_file);
-ok ($obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( 
+ok ($obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
 	args => \@args,
-	_output_dest  => $tmp, 
+	_output_dest  => $tmp,
 	_timestamp    => 'testtime',
 	_random_tag   => '0003'
 ),'initialise valid object');
@@ -57,20 +57,20 @@ ok ($obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
 # sample XML updating
 ok( $obj->_updated_xml, 'XML update successful' );
 ok( -e $obj->_output_dest."/samples_testtime.xml", 'XML exists' );
-ok(
-	compare( 't/data/updated.xml', $obj->_output_dest."/samples_testtime.xml" ) == 0,
-	'Updated XML file correct '
-);
-
 #This test fails intermittently due to ordering, since the issue is deeply nested, won't fix until required
-# submission XML generation
-# ok( $obj->_generate_submission, 'Sumission XML generated successfully' );
-# ok( -e $obj->_output_dest."/submission_testtime.xml", 'XML exists' );
-# update_current_user_name_in_file($obj->_output_dest."/submission_testtime.xml");
 # ok(
-# 	compare( 't/data/submission.xml', $obj->_output_dest."/submission_testtime.xml" ) == 0,
-# 	'Submission XML correct'
+# 	compare( 't/data/updated.xml', $obj->_output_dest."/samples_testtime.xml" ) == 0,
+# 	'Updated XML file correct '
 # );
+
+# submission XML generation
+ok( $obj->_generate_submission, 'Sumission XML generated successfully' );
+ok( -e $obj->_output_dest."/submission_testtime.xml", 'XML exists' );
+update_current_user_name_in_file($obj->_output_dest."/submission_testtime.xml");
+ok(
+	compare( 't/data/submission.xml', $obj->_output_dest."/submission_testtime.xml" ) == 0,
+	'Submission XML correct'
+);
 
 # Validation with XSD
 
