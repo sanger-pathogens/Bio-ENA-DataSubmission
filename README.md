@@ -1,8 +1,8 @@
 # Bio-ENA-DataSubmission
 Scripts for submitting data to the ENA.   
-
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE)   
-
+[![Build Status](https://travis-ci.org/sanger-pathogens/Bio-ENA-DataSubmission.svg?branch=master)](https://travis-ci.org/sanger-pathogens/Bio-ENA-DataSubmission)  
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE)    
+[![codecov](https://codecov.io/gh/sanger-pathogens/Bio-ENA-DataSubmission/branch/master/graph/badge.svg)](https://codecov.io/gh/sanger-pathogens/Bio-ENA-DataSubmission) 
 ## Contents
   * [Introduction](#introduction)
   * [Installation](#installation)

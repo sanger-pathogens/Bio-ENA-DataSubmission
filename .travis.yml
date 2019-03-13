@@ -25,4 +25,9 @@ perl:
   - "5.26"
 install:
   - "source ./install-travis-dependencies.sh"
+before_script:
+  - cpanm --quiet --notest Dist::Zilla::App::Command::cover
+  - cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Codecov
 script: "dzil test"
+after_success:
+  - dzil cover -test -report codecov
