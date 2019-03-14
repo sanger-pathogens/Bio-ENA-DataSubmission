@@ -22,9 +22,9 @@ no warnings 'uninitialized';
 use Moose;
 use File::Slurp;
 
-use Path::Find;
-use Path::Find::Lanes;
-use Path::Find::Filter;
+use Path2::Find;
+use Path2::Find::Lanes;
+use Path2::Find::Filter;
 
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::FindData;
@@ -152,7 +152,7 @@ sub _build_path {
         $directory = $self->annotation_directories;
         $filetype = 'gff';
     }
-    my $lane_filter = Path::Find::Filter->new(
+    my $lane_filter = Path2::Find::Filter->new(
         lanes           => [ $self->lane ],
         filetype        => $filetype,
         type_extensions => \%type_extensions,

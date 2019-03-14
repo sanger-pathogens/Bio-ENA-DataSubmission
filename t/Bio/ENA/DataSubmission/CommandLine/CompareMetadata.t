@@ -71,7 +71,9 @@ my @exp = (
 	['ERS001491', '2007223', 'specific_host', 'Free living', 'Human'],
 	['ERS001491', '2007223', 'tax_id', '1496', '1111']
 );
+
 my @got = $obj->_compare_metadata(\%data1, \%data2);
+@got = sort { return @$a[2] cmp @$b[2] } @got;
 is_deeply \@exp, \@got, 'Correct fields identified as incongruous';
 
 # test reporting

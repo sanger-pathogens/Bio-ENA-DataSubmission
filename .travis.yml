@@ -1,0 +1,33 @@
+language: perl
+sudo: false
+cache:
+  directories:
+    - perl_modules
+before_install:
+  - cpanm local::lib
+  - eval "$(perl -Mlocal::lib=${PWD}/perl_modules)"
+addons:
+  apt:
+    packages:
+      - default-jdk
+      - build-essential
+      - git
+      - file
+      - curl
+      - libxml2-dev
+      - libexpat1-dev
+      - libgd-dev
+      - libssl-dev
+      - libdb-dev
+      - libmysqlclient-dev
+perl:
+  - "5.14"
+  - "5.26"
+install:
+  - "source ./install-travis-dependencies.sh"
+before_script:
+  - cpanm --quiet --notest Dist::Zilla::App::Command::cover
+  - cpanm --quiet --notest --skip-satisfied Devel::Cover::Report::Codecov
+script: "dzil test"
+after_success:
+  - dzil cover -test -report codecov

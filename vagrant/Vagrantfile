@@ -45,8 +45,6 @@ Vagrant.configure("2") do |config|
   # argument is a set of non-required options.
   # config.vm.synced_folder "../data", "/vagrant_data"
 
-  #config.vm.synced_folder '../perlsetup', '/home/vagrant/perl5', type: "virtualbox"
-
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
@@ -72,8 +70,6 @@ Vagrant.configure("2") do |config|
     export HTTP_PROXY=$HTTPS_PROXY
     apt-get update --quiet --assume-yes
     apt-get install default-jdk --quiet --assume-yes
-    #apt-get install cpanminus --quiet --assume-yes
-    #apt-get install libdist-zilla-perl --quiet --assume-yes
     apt-get install build-essential --quiet --assume-yes
     apt-get install git --quiet --assume-yes
     apt-get install file --quiet --assume-yes
@@ -85,13 +81,6 @@ Vagrant.configure("2") do |config|
     apt-get install libdb-dev --quiet --assume-yes
     apt-get install libmysqlclient-dev --quiet --assume-yes
     apt-get install perlbrew --quiet --assume-yes
-    #mkdir /vagrant/home
-    #chmod 777 /vagrant/home
-    #cpanm --notest Moose
-    #cpanm --notest YAML::XS
-    #cd /vagrant/Bio-ENA-DataSubmission
-    #dzil authordeps --missing | cpanm --notest
-    #dzil listdeps --missing | grep -v 'VRTrack::Lane' | grep -v 'Path::Find' | cpanm --notest
   SHELL
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
@@ -108,7 +97,6 @@ Vagrant.configure("2") do |config|
     cpanm --notest DBD::mysql
     cd /vagrant/Bio-ENA-DataSubmission
     dzil authordeps --missing | cpanm --notest
-    dzil listdeps --missing | grep -v 'VRTrack::Lane' | grep -v 'Path::Find' | cpanm --notest
-    #sh -c "$(curl -fsSL --proxy http://wwwcache.sanger.ac.uk:3128 https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)"
+    dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm --notest
   SHELL
 end

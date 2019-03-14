@@ -9,7 +9,7 @@ BEGIN {
 }
 
 use Moose;
-use Path::Find;
+use Path2::Find;
 use VRTrack::Lane;
 
 use Data::Dumper;
@@ -81,19 +81,6 @@ subtest "file of lane ids retrieval", sub {
 	is_deeply $obj->find, \%exp, 'file of lane ids - data correct';
 };
 
-# test file of sample accessions
-# Requires --file_id_type to be passed through to PathFind
-#%exp = ( 'key_order'  => [ 'ERS311560', 'ERS311393', 'ERS311489' ],
-#         'ERS311560' => VRTrack::Lane->new_by_name( $pathtrack, '10660_1#13' ),
-#         'ERS311393' => VRTrack::Lane->new_by_name( $pathtrack, '10665_2#81' ),
-#         'ERS311489' => VRTrack::Lane->new_by_name( $pathtrack, '10665_2#90' ),
-#    );
-#$obj = Bio::ENA::DataSubmission::FindData->new(
-#     type => 'file',
-#     id   => 't/data/samples.txt'
-#);
-#is_deeply $obj->find, \%exp, 'file of samples - data correct';
-
 done_testing();
 
 sub check_nfs_dependencies {
@@ -101,7 +88,7 @@ sub check_nfs_dependencies {
 }
 
 sub new_pathtrack {
-	my $find = Path::Find->new();
+	my $find = Path2::Find->new();
 	my ( $pathtrack, $dbh, $root ) = $find->get_db_info( 'pathogen_prok_track' );
 
 	return $pathtrack;

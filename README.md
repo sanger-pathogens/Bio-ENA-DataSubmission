@@ -1,8 +1,8 @@
 # Bio-ENA-DataSubmission
 Scripts for submitting data to the ENA.   
-
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE)   
-
+[![Build Status](https://travis-ci.org/sanger-pathogens/Bio-ENA-DataSubmission.svg?branch=master)](https://travis-ci.org/sanger-pathogens/Bio-ENA-DataSubmission)  
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-brightgreen.svg)](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE)    
+[![codecov](https://codecov.io/gh/sanger-pathogens/Bio-ENA-DataSubmission/branch/master/graph/badge.svg)](https://codecov.io/gh/sanger-pathogens/Bio-ENA-DataSubmission) 
 ## Contents
   * [Introduction](#introduction)
   * [Installation](#installation)
@@ -37,7 +37,6 @@ Bio-ENA-DataSubmission has the following dependencies:
 
 ### Required dependencies
 * [vr-codebase](https://github.com/sanger-pathogens/vr-codebase)
-* [PathFind](https://github.com/sanger-pathogens/PathFind)
 
 Details for installing Bio-ENA-DataSubmission are provided below. If you encounter an issue when installing Bio-ENA-DataSubmission please contact your local system administrator. If you encounter a bug please log it [here](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/issues) or email us at path-help@sanger.ac.uk.
 
@@ -51,7 +50,7 @@ Move into the directory and install all dependencies using [DistZilla](http://dz
 ```
 cd Bio-ENA-DataSubmission
 dzil authordeps --missing | cpanm
-dzil listdeps --missing | cpanm
+dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm
 ```
   
 Run the tests:   
@@ -123,6 +122,7 @@ Usage: generate_analysis_manifest [options]
     -h|help          this help message
 ```
 ### submit_analysis_objects
+This script does not work anymore due to changes in the interface at ENA
 ```
 Usage: submit_analysis_objects [options] -f manifest.xls
 
@@ -134,7 +134,22 @@ Usage: submit_analysis_objects [options] -f manifest.xls
     -p|processors  Number of threads to use [1]
     -h|help        This help message
 ```
+### submit_analysis_objects_via_cli.pl
+```
+Usage: submit_analysis_objects_via_cli.pl [options] -f manifest.xls
+
+	-f|file        Excel spreadsheet manifest file (required)
+	-o|output_dir  Base output directory. A subdirectory within that will be created for the submission (required)
+	-c|context     Submission context ( one of genome, transcriptome, sequence, reads. Default: genome)
+	--no_validate  Do not run validation step
+	--no_submit    Do not run submit step
+	--test         Use the ENA test submission service
+	-h|help        This help message    
+    
+    
+```
 ### validate_embl 
+This script is not longer required as embl validation is performed while submitting using submit_analysis_objects_via_cli.pl
 ```
 Usage: validate_embl [options] embl_files
 

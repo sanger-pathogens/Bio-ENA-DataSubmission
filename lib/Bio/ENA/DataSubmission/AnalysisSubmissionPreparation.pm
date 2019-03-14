@@ -30,9 +30,9 @@ use File::Basename;
 use File::Copy qw(copy);
 use File::Temp;
 
-use Path::Find;
-use Path::Find::Lanes;
-use Path::Find::Filter;
+use Path2::Find;
+use Path2::Find::Lanes;
+use Path2::Find::Filter;
 
 use Getopt::Long qw(GetOptionsFromArray);
 
