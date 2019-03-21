@@ -107,7 +107,7 @@ sub _write_transformed_sheet {
         'name', 'partial', 'coverage', 'program', 'platform', 'minimum_gap',
         'file', 'file_type', 'title', 'description', 'study', 'sample', 'run',
         'analysis_center', 'analysis_date', 'release_date', 'pubmed_id', 'tax_id', 'common_name', 'locus_tag',
-        'chromosome_list_file', 'manifest',
+        'locus_tag_used', 'chromosome_list_file', 'manifest'
     ];
     my $data = [];
     my ($self) = @_;
@@ -210,6 +210,7 @@ sub _convert_gffs_to_flatfiles {
         my $sample_name = $row->{name};
         my $output_file = $self->output_dir . "/" . $sample_name . '.embl';
         my $locus_tag = $self->_get_locus_tag($row);
+        $row->{locus_tag_used} = $locus_tag;
         $self->_populate_flat_file_chromosome_list($row);
         $self->gff_converter->convert($locus_tag, $row->{chromosome_list_file}, $output_file, $row->{file}, $row->{common_name}, $row->{tax_id}, $row->{study}, $row->{description});
         $row->{file} = $output_file;
@@ -219,12 +220,23 @@ sub _convert_gffs_to_flatfiles {
 sub _get_locus_tag {
     my ($self, $row) = @_;
 
-    my ($locus_tag) = (defined($row->{locus_tag}) && $row->{locus_tag} ne "") ? $row->{locus_tag} : undef;
-    push @{$self->locus_tags}, $locus_tag;
+    my ($locus_tag) = _non_empty($row->{locus_tag});
 
+    if (!defined($locus_tag)) {
+        $locus_tag = _non_empty($row->{sample});
+    }
+
+    push @{$self->locus_tags}, $locus_tag;
     return $locus_tag;
 
 }
+
+sub _non_empty {
+    my ($string) = @_;
+
+    return (defined($string) && $string ne "") ? $string : undef;
+}
+
 
 sub _populate_flat_file_chromosome_list {
     my ($self, $row) = @_;
