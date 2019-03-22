@@ -25,8 +25,9 @@ use Bio::ENA::DataSubmission::AnalysisSubmissionPreparation;
 use Bio::ENA::DataSubmission::AnalysisSubmissionExecution;
 use Bio::ENA::DataSubmission::AnalysisSubmissionCoordinator;
 use Bio::ENA::DataSubmission::GffConverter;
-
 use Bio::ENA::DataSubmission::ConfigReader;
+use Bio::ENA::DataSubmission::SpreadsheetEnricher;
+use Bio::ENA::DataSubmission::AccessionConverter;
 use File::Path qw(make_path);
 
 has 'config_file' => (is => 'ro', isa => 'Str', required => 1);
@@ -48,6 +49,8 @@ has 'input_dir' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_inpu
 has 'output_dir' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_output_dir');
 has 'current_user' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_current_user');
 has 'timestamp' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_timestamp');
+has 'spreadsheet_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::SpreadsheetEnricher', lazy => 1, builder => '_build_spreadsheet_converter');
+has 'accession_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::AccessionConverter', lazy => 1, builder => '_build_accession_converter');
 
 
 #TODO add all validation/ fail fast stuff...
@@ -85,7 +88,19 @@ sub _build_data_generator {
 sub _build_manifest_spreadsheet {
     my ($self) = @_;
     my $manifest_handler = Bio::ENA::DataSubmission::Spreadsheet->new(infile => $self->spreadsheet);
-    return $manifest_handler->parse_manifest;
+    my $spreadsheet = $manifest_handler->parse_manifest;
+    $self->spreadsheet_converter->enrich($spreadsheet);
+    return $spreadsheet;
+}
+
+sub _build_spreadsheet_converter {
+    my ($self) = @_;
+    return Bio::ENA::DataSubmission::SpreadsheetEnricher->new(converter => $self->accession_converter);
+}
+
+sub _build_accession_converter {
+    my ($self) = @_;
+    return Bio::ENA::DataSubmission::AccessionConverter->new(ena_base_path => $self->config->{ena_base_path});
 }
 
 

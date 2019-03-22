@@ -67,7 +67,6 @@ EXPECTED
     is_deeply \@actual_data_for_submission, [ [$temp_output_dir_name . "/10660_2#13.manifest", "SC"], [$temp_output_dir_name . "/10665_2#81.manifest", "SC"] ], 'Manifest generated';
     my @actual_manifest_content = map {$_->get_content()} @{$obj->manifest_for_submission};
     is_deeply \@actual_manifest_content, [ $expected, $expected2 ], 'Correct file data';
-    is_deeply $obj->locus_tags, [], 'Correct locus tags';
     ok(-e $temp_output_dir_name . "/10660_2#13.manifest", 'manifest file for 10660_2#13 exists');
     ok(-e $temp_output_dir_name . "/10660_2#13.fasta.gz", 'compressed fasta file for 10660_2#13 exists');
     ok(-e $temp_output_dir_name . "/10665_2#81.manifest", 'manifest file for 10665_2#81 exists');
@@ -118,7 +117,6 @@ EXPECTED
     is_deeply \@actual_data_for_submission, [ [$temp_output_dir_name . "/test_genome_1.manifest", "SC"], [$temp_output_dir_name . "/test_genome_2.manifest", "SC"] ], 'Manifest generated';
     my @actual_manifest_content = map {$_->get_content()} @{$obj->manifest_for_submission};
     is_deeply \@actual_manifest_content, [ $expected, $expected2 ], 'Correct file data';
-    is_deeply $obj->locus_tags, [], 'Correct locus tags';
     ok(-e $temp_output_dir_name . "/test_genome_1.manifest", 'manifest file for test_genome_1 exists');
     ok(-e $temp_output_dir_name . "/test_genome_1.fasta.gz", 'compressed fasta file for test_genome_1 exists');
     ok(-e $temp_output_dir_name . "/test_genome_1.chromosome_list.gz", 'compressed chromosome list file for test_genome_1 exists');
@@ -168,7 +166,6 @@ EXPECTED
     is_deeply \@actual_data_for_submission, [ [$temp_output_dir_name . "/test_genome_1.manifest", "SC"], [$temp_output_dir_name . "/test_genome_2.manifest", "SC"] ], 'Manifest generated';
     my @actual_manifest_content = map {$_->get_content()} @{$obj->manifest_for_submission};
     is_deeply \@actual_manifest_content, [ $expected, $expected2 ], 'Correct file data';
-    is_deeply $obj->locus_tags, [ "ABC123", "ERS311489" ], 'Correct locus tags';
     ok(-e $temp_output_dir_name . "/test_genome_1.manifest", 'manifest file for test_genome_1 exists');
     ok(-e $temp_output_dir_name . "/test_genome_1.embl.gz", 'compressed embl file for test_genome_1 exists');
     ok(-e $temp_output_dir_name . "/test_genome_1.chromosome_list.gz", 'compressed chromosome list file for test_genome_1 exists');
@@ -216,7 +213,6 @@ EXPECTED
     is_deeply \@actual_data_for_submission, [ [$temp_output_dir_name . "/10660_2#13.manifest", "SC"], [$temp_output_dir_name . "/10665_2#81.manifest", "SC"] ], 'Manifest generated';
     my @actual_manifest_content = map {$_->get_content()} @{$obj->manifest_for_submission};
     is_deeply \@actual_manifest_content, [ $expected, $expected2 ], 'Correct file data';
-    is_deeply $obj->locus_tags, ["ERS311560", "ERS311393"], 'Correct locus tags';
     ok(-e $temp_output_dir_name . "/10660_2#13.manifest", 'manifest file for 10660_2#13 exists');
     ok(-e $temp_output_dir_name . "/10660_2#13.embl.gz", 'compressed embl file for 10660_2#13 exists');
     ok(-e $temp_output_dir_name . "/10665_2#81.manifest", 'manifest file for 10665_2#81 exists');

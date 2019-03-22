@@ -49,7 +49,6 @@ has 'manifest_spreadsheet' => (is => 'ro', isa => 'ArrayRef', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'gff_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::GffConverter', required => 1);
 has 'manifest_for_submission' => (is => 'ro', isa => 'ArrayRef', required => 0, lazy_build => 1);
-has 'locus_tags' => (is => 'rw', isa => 'ArrayRef', required => 0);
 
 
 sub BUILD {
@@ -107,7 +106,7 @@ sub _write_transformed_sheet {
         'name', 'partial', 'coverage', 'program', 'platform', 'minimum_gap',
         'file', 'file_type', 'title', 'description', 'study', 'sample', 'run',
         'analysis_center', 'analysis_date', 'release_date', 'pubmed_id', 'tax_id', 'common_name', 'locus_tag',
-        'locus_tag_used', 'chromosome_list_file', 'manifest'
+        'chromosome_list_file', 'manifest', 'original_study', 'original_sample', 'original_locus_tag'
     ];
     my $data = [];
     my ($self) = @_;
@@ -202,39 +201,16 @@ sub _generate_chromosome_file_for_fasta {
 
 sub _convert_gffs_to_flatfiles {
     my ($self) = @_;
-    $self->locus_tags([]);
     my @spreadsheet = @{$self->manifest_spreadsheet};
     for my $row (@spreadsheet) {
         next unless ($row->{file} =~ /gff$/);
         chomp($row->{name});
         my $sample_name = $row->{name};
         my $output_file = $self->output_dir . "/" . $sample_name . '.embl';
-        my $locus_tag = $self->_get_locus_tag($row);
-        $row->{locus_tag_used} = $locus_tag;
         $self->_populate_flat_file_chromosome_list($row);
-        $self->gff_converter->convert($locus_tag, $row->{chromosome_list_file}, $output_file, $row->{file}, $row->{common_name}, $row->{tax_id}, $row->{study}, $row->{description});
+        $self->gff_converter->convert($row->{locus_tag}, $row->{chromosome_list_file}, $output_file, $row->{file}, $row->{common_name}, $row->{tax_id}, $row->{study}, $row->{description});
         $row->{file} = $output_file;
     }
-}
-
-sub _get_locus_tag {
-    my ($self, $row) = @_;
-
-    my ($locus_tag) = _non_empty($row->{locus_tag});
-
-    if (!defined($locus_tag)) {
-        $locus_tag = _non_empty($row->{sample});
-    }
-
-    push @{$self->locus_tags}, $locus_tag;
-    return $locus_tag;
-
-}
-
-sub _non_empty {
-    my ($string) = @_;
-
-    return (defined($string) && $string ne "") ? $string : undef;
 }
 
 
