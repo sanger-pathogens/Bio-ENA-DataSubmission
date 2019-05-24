@@ -89,7 +89,7 @@ sub find {
         $data{key_order} = \@ids;
 
         # match returned lane objects to their ID
-        my @found_ids = $self->_found_ids($lanes);
+        my @found_ids = $self->_found_ids($lanes, \@ids);
 
         for my $id (@ids) {
             $data{$id} = undef;
@@ -141,11 +141,8 @@ sub _get_lanes_from_db {
 }
 
 sub _found_ids {
-    my ($self, $lanes) = @_;
+    my ($self, $lanes, $existing_ids) = @_;
     my $vrtrack = $self->_vrtrack;
-
-    open(my $fh, '<', $self->id);
-    my @ids = <$fh>;
 
     # extract IDs from lane objects
     my @got_ids;
@@ -156,16 +153,21 @@ sub _found_ids {
             push @got_ids, $lane->{name};
         }
         else {
+            my %valid = map { $_ => 1 } @$existing_ids;
             my $library = VRTrack::Library->new($self->_vrtrack, $lane->library_id);
             if (not defined $library) {
                 warn q(WARNING: no sample for library ') . $lane->library_id . q(');
                 next ID;
             }
             my $sample = VRTrack::Sample->new($self->_vrtrack, $library->sample_id);
-            push @got_ids, $sample->individual->acc;
+            if (exists($valid{$sample->individual->acc})) {
+                push @got_ids, $sample->individual->acc;
+            }
+            else {
+                push @got_ids, $sample->name;
+            }
         }
     }
-
     return @got_ids;
 }
 
