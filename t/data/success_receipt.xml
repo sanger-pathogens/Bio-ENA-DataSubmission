@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="receipt.xsl"?>
-<RECEIPT receiptDate="2014-06-25T11:05:49.093+01:00" submissionFile="submission.xml" success="true"><ANALYSIS accession="ERZ020438" alias="A_lumbricoides_Ecuador_v1_5_4_001" status="PRIVATE"/><SUBMISSION accession="ERA321386" alias="ALUE"/><MESSAGES><INFO> ADD action for the following XML:     analysis.xml      </INFO></MESSAGES><ACTIONS>HOLD</ACTIONS><ACTIONS>ADD</ACTIONS></RECEIPT>
