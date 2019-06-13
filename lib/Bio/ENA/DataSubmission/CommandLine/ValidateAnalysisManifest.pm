@@ -56,7 +56,7 @@ has '_filetypes' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build =
 has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
 has 'pubmed_url_base'  => ( is => 'rw', isa => 'Str', default  => 'http://www.ncbi.nlm.nih.gov/pubmed/?term=');
 
-has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
+has 'config_file'     => ( is => 'rw', isa => 'Maybe[Str]',      required => 0, default    => $ENV{'ENA_SUBMISSION_CONFIG'});
 
 sub _build__filetypes {
 	my $self = shift;

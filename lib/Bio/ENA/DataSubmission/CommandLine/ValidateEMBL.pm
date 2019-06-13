@@ -35,7 +35,7 @@ has 'files'    => ( is => 'rw', isa => 'ArrayRef', required => 0 );
 has 'jar_path' => ( is => 'rw', isa => 'Str' );
 has 'help'     => ( is => 'rw', isa => 'Bool', required => 0 );
 
-has 'config_file' => ( is => 'rw', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf' );
+has 'config_file' => ( is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSION_CONFIG'});
 
 sub BUILD {
     my ($self) = @_;

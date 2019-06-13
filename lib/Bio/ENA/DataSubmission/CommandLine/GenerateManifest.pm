@@ -52,7 +52,7 @@ has 'file_id_type' => (is => 'rw', isa => 'Str', required => 0, default => 'lane
 has '_warehouse' => (is => 'rw', isa => 'DBI::db', required => 0, lazy_build => 1);
 has '_show_errors' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
 
-has 'config_file' => (is => 'rw', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
+has 'config_file' => (is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSION_CONFIG'});
 
 
 sub _build__warehouse {

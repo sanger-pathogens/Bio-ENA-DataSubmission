@@ -54,7 +54,7 @@ has '_show_errors' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
 has 'file_type' => (is => 'rw', isa => 'Str', required => 0, default => 'assembly');
 has 'assembly_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'annotation_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
-has 'config_file' => (is => 'rw', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
+has 'config_file' => (is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSION_CONFIG'});
 
 
 #used for mocking

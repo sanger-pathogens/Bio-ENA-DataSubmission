@@ -17,7 +17,6 @@ use File::Path qw(remove_tree);
 my $config = {
     'webin_user'    => 'user',
     'webin_pass'    => 'pass',
-    'webin_cli_jar' => 't/bin/webin-cli-1.6.0.jar',
     'proxy'         => 'http://wwwcache.sanger.ac.uk:3128',
     'jvm'           => 'customjava',
 };

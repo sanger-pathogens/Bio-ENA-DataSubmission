@@ -38,7 +38,7 @@ Usage: submit_analysis_objects_via_cli [options] -f manifest.xls
 USAGE
 
 
-has 'config_file' => (is => 'ro', isa => 'Str', required => 0, default => '/software/pathogen/config/ena_data_submission.conf');
+has 'config_file' => (is => 'ro', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSION_CONFIG'});
 has 'spreadsheet' => (is => 'ro', isa => 'Str', required => 1);
 has 'output_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'validate' => (is => 'ro', isa => 'Bool', required => 1);

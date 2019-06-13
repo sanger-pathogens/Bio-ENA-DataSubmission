@@ -65,6 +65,15 @@ The test can be run with dzil from the top level directory:
   
 `dzil test`  
 
+
+### Prerequisite
+* Java needs to be installed to run webin cli
+* environment variable ```ENA_SUBMISSION_WEBIN_CLI``` should point to the webin cli jar
+* environment variable ```ENA_SUBMISSION_CONFIG``` should point to the general configuration of ena submissions
+
+### Containers
+If running in a container, java and webin cli will be setup as well as ENA_SUBMISSION_WEBIN_CLI.
+
 ## Usage
 The following scripts are included in Bio-ENA-DataSubmission.
 

@@ -111,8 +111,8 @@ sub _build_submitter {
     return Bio::ENA::DataSubmission::AnalysisSubmissionExecution->new(
         username        => $self->config->{webin_user},
         password        => $self->config->{webin_pass},
-        jar_path        => $self->config->{webin_cli_jar},
-        jvm             => $self->config->{jvm},
+        jar_path        => $ENV{'ENA_SUBMISSION_WEBIN_CLI'},
+        jvm             => 'java',
         http_proxy_host => $host,
         http_proxy_port => $port,
         submit          => $self->submit,
