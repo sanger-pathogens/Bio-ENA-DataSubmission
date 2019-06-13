@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 BEGIN {unshift(@INC, './lib')}
-BEGIN {unshift(@INC, '/software/pathogen/internal/pathdev/vr-codebase/modules')}
 BEGIN {
     use Test::Most;
     use Test::Exception;

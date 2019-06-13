@@ -13,7 +13,6 @@ my ( $pathtrack, $dbh, $root ) = Path2::Find->get_db_info($database);
 =cut
 
 
-use lib "/software/pathogen/internal/pathdev/vr-codebase/modules";
 
 package Path2::Find;
 use DBI;

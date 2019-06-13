@@ -6,7 +6,6 @@ use File::Slurp;
 use Data::Dumper;
 
 BEGIN { unshift( @INC, './lib' ) }
-BEGIN { unshift(@INC, '/software/pathogen/internal/pathdev/vr-codebase/modules') }
 
 use VRTrack::Lane;
 use Path2::Find;

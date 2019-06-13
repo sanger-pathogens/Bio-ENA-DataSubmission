@@ -10,7 +10,6 @@ package Bio::ENA::DataSubmission::Bin::GenerateAnalysisManifest;
 
 =cut
 
-BEGIN { unshift( @INC, '/software/pathogen/internal/pathdev/vr-codebase/modules' ) }
 BEGIN { unshift( @INC, '../lib' ) }
 BEGIN { unshift( @INC, './lib' ) }
 
