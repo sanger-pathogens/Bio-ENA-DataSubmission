@@ -4,7 +4,6 @@ use warnings;
 use File::Slurp;
 use Data::Dumper;
 
-BEGIN { unshift( @INC, './lib' ) }
 
 use VRTrack::Lane;
 use Path2::Find;
@@ -19,7 +18,7 @@ subtest "Should be able to use Path2::Find::Lanes", sub {
 
 subtest "Should find by study", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
 
     ok(
@@ -44,7 +43,7 @@ subtest "Should find by study", sub {
 
 subtest "Should find lane from file", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
 
     ok(
@@ -72,7 +71,7 @@ subtest "Should find lane from file", sub {
 
 subtest "Should find lane from ID", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
     ok(
         $lanes_obj = Path2::Find::Lanes->new(
@@ -97,36 +96,9 @@ subtest "Should find lane from ID", sub {
     is_deeply $lanes, \@expected_lanes3, 'correct lanes recovered';
 };
 
-# subtest "Should find lane from species", sub {
-#     check_nfs_dependencies();
-#     my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
-#     my($lanes_obj);
-#
-#     ok(
-#         $lanes_obj = Path2::Find::Lanes->new(
-#             search_type    => 'species',
-#             search_id      => 'Blautia producta',
-#             pathtrack      => $pathtrack,
-#             dbh            => $dbh,
-#             processed_flag => 1
-#         ),
-#         'creating lanes object - search on species name'
-#     );
-#     isa_ok $lanes_obj, 'Path2::Find::Lanes';
-#
-#     my $lanes = $lanes_obj->lanes;
-#
-#     my @test_lanes4 = (
-#         '5749_8#1', '5749_8#2', '5749_8#3', '8080_1#72'
-#     );
-#     my @expected_lanes4 = generate_lane_objects($pathtrack, \@test_lanes4);
-#     is_deeply $lanes, \@expected_lanes4, 'correct lanes recovered';
-#
-# };
-
 subtest "Should find lane from file of samples", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
 
     ok(
@@ -152,7 +124,7 @@ subtest "Should find lane from file of samples", sub {
 
 subtest "Should find lane from library", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
     ok(
         $lanes_obj = Path2::Find::Lanes->new(
@@ -184,7 +156,7 @@ sub generate_lane_objects {
     my @lane_obs;
     foreach my $l (@$lanes) {
         my $l_o = VRTrack::Lane->new_by_name( $pathtrack, $l );
-        if ($l_o) {
+        if (defined $l_o) {
             push( @lane_obs, $l_o );
         }
     }

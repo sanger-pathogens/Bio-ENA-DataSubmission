@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 
-BEGIN {unshift(@INC, './lib')}
 BEGIN {
     use Test::Most;
     use Test::Exception;

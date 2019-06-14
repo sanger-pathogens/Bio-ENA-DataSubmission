@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
     use Test::Most;
@@ -56,7 +55,7 @@ subtest "Map study", sub {
 	check_nfs_dependencies();
 	my $expected = ['9003_1#1','9003_1#2'];
 	my $actual = Bio::ENA::DataSubmission::FindData->map('study', '2460', 'assembly', 'lane', sub {
-		my ($finder, $id, $data) = @_;
+		my (undef, undef, $data) = @_;
 		return $data->name;
 
 	});
@@ -88,7 +87,7 @@ sub check_nfs_dependencies {
 
 sub new_pathtrack {
 	my $find = Path2::Find->new();
-	my ( $pathtrack, $dbh, $root ) = $find->get_db_info( 'pathogen_prok_track' );
+	my ($pathtrack, undef, undef) = $find->get_db_info('pathogen_prok_track');
 
 	return $pathtrack;
 }

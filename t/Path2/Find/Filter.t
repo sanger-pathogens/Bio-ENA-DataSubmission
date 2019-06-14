@@ -5,8 +5,6 @@ use warnings;
 use File::Slurp;
 use Data::Dumper;
 
-BEGIN { unshift( @INC, './lib' ) }
-
 use VRTrack::Lane;
 use Path2::Find;
 
@@ -190,7 +188,7 @@ sub generate_lane_objects {
     my @lane_obs;
     foreach my $l (@$lanes) {
         my $l_o = VRTrack::Lane->new_by_name( $pathtrack, $l );
-        if ($l_o) {
+        if (defined $l_o) {
             push( @lane_obs, $l_o );
         }
     }

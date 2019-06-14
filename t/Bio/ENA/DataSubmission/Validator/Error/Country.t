@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
     use strict;

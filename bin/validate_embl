@@ -11,9 +11,8 @@ http://www.ebi.ac.uk/ena/software/flat-file-validator
 
 =cut
 
-BEGIN { unshift( @INC, '../lib' ) }
-BEGIN { unshift( @INC, './lib' ) }
-
+use strict;
+use warnings FATAL => 'all';
 use Bio::ENA::DataSubmission::CommandLine::ValidateEMBL;
 
 Bio::ENA::DataSubmission::CommandLine::ValidateEMBL->new( args => \@ARGV )->run;
