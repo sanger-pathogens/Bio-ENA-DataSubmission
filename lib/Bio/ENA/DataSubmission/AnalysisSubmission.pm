@@ -51,6 +51,7 @@ has 'current_user' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_c
 has 'timestamp' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_timestamp');
 has 'spreadsheet_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::SpreadsheetEnricher', lazy => 1, builder => '_build_spreadsheet_converter');
 has 'accession_converter' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::AccessionConverter', lazy => 1, builder => '_build_accession_converter');
+has 'jar_path' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_jar_path');
 
 
 #TODO add all validation/ fail fast stuff...
@@ -103,6 +104,9 @@ sub _build_accession_converter {
     return Bio::ENA::DataSubmission::AccessionConverter->new(ena_base_path => $self->config->{ena_base_path});
 }
 
+sub _build_jar_path {
+    return $ENV{'ENA_SUBMISSIONS_WEBIN_CLI'};
+}
 
 sub _build_submitter {
     my ($self) = @_;
@@ -111,7 +115,7 @@ sub _build_submitter {
     return Bio::ENA::DataSubmission::AnalysisSubmissionExecution->new(
         username        => $self->config->{webin_user},
         password        => $self->config->{webin_pass},
-        jar_path        => $ENV{'ENA_SUBMISSION_WEBIN_CLI'},
+        jar_path        => $self->jar_path,
         jvm             => 'java',
         http_proxy_host => $host,
         http_proxy_port => $port,
@@ -166,13 +170,11 @@ sub _build_output_dir {
 }
 
 sub _build_current_user {
-    my ($self) = @_;
-
     return getpwuid( $< );
 }
 
 sub _build_timestamp {
-    my ($self) = @_;
+    my (undef) = @_;
     my @timestamp = localtime(time);
     my $day  = sprintf("%04d-%02d-%02d", $timestamp[5]+1900,$timestamp[4]+1,$timestamp[3]);
     my $time = sprintf("%02d-%02d-%02d", $timestamp[2], $timestamp[1], $timestamp[0]);

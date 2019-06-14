@@ -47,12 +47,11 @@ use Email::Sender::Simple qw(sendmail);
 
 has 'args'            => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 
-has 'data_root'       => ( is => 'rw', isa => 'Maybe[Str]');
+has 'data_root'       => ( is => 'rw', isa => 'Maybe[Str]', required => 0, default    => $ENV{'ENA_SUBMISSIONS_DATA'});
 has '_output_root'    => ( is => 'rw', isa => 'Maybe[Str]');
 has '_email_to'       => ( is => 'rw', isa => 'Maybe[Str]');
 has 'auth_users'     => ( is => 'rw', isa => 'Maybe[ArrayRef]');
 has '_output_dest'    => ( is => 'rw', isa => 'Maybe[Str]');
-has 'schema'          => ( is => 'rw', isa => 'Maybe[Str]');
 has 'output_group'    => ( is => 'rw', isa => 'Maybe[Str]');
 has 'proxy'           => ( is => 'rw', isa => 'Maybe[Str]');
 has 'ena_base_path'   => ( is => 'rw', isa => 'Maybe[Str]');
@@ -68,7 +67,7 @@ has '_random_tag'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_bu
 has '_sample_xml'     => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 has '_submission_xml' => ( is => 'rw', isa => 'Str',      required => 0, lazy_build => 1 );
 
-has 'config_file'     => ( is => 'rw', isa => 'Maybe[Str]',      required => 0, default    => $ENV{'ENA_SUBMISSION_CONFIG'});
+has 'config_file'     => ( is => 'rw', isa => 'Maybe[Str]',      required => 0, default    => $ENV{'ENA_SUBMISSIONS_CONFIG'});
 
 sub _populate_attributes_from_config_file
 {
@@ -77,10 +76,8 @@ sub _populate_attributes_from_config_file
   my $config_values = eval($file_contents);
 
   $self->_output_root($config_values->{output_root});
-  $self->data_root(   $config_values->{data_root}  );
   $self->auth_users( $config_values->{auth_users} );
   $self->_email_to(   $config_values->{email_to}   );
-  $self->schema(      $config_values->{schema}     );
   $self->output_group($config_values->{output_group});
   $self->proxy($config_values->{proxy});
   $self->ena_base_path($config_values->{ena_base_path});
@@ -110,7 +107,6 @@ sub _build__output_dest{
 }
 
 sub _build__current_user {
-	my $self = shift;
 	return getpwuid( $< );
 }
 
@@ -143,13 +139,12 @@ sub _build__random_tag {
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $schema, $outfile, $test, $no_validate, $help, $config_file );
+	my ( $file, $outfile, $test, $no_validate, $help, $config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
 		$args,
 		'f|file=s'    => \$file,
-		's|schema=s'  => \$schema,
 		'o|outfile=s' => \$outfile,
 		'test'        => \$test,
 		'no_validate' => \$no_validate,
@@ -158,7 +153,6 @@ sub BUILD {
 	);
 
 	$self->manifest($file)           if ( defined $file );
-	$self->schema($schema)           if ( defined $schema );
 	$self->outfile($outfile)         if ( defined $outfile );
 	$self->test($test)               if ( defined $test );
 	$self->no_validate($no_validate) if ( defined $no_validate );
@@ -193,7 +187,6 @@ sub _check_user {
 sub run {
 	my ($self)   = @_;
 	my $manifest = $self->manifest;
-	my $schema   = $self->schema;
 	my $outfile  = $self->outfile;
 
 	# sanity checks
@@ -231,14 +224,13 @@ sub run {
 }
 
 sub _check_can_write {
-	my ($self, $outfile) = @_;
+	my (undef, $outfile) = @_;
 	open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n");
 	close(FILE);
 }
 
 sub _updated_xml {
 	my $self     = shift;
-	my $test     = $self->test;
 	my $dest     = $self->_output_dest;
 	my $manifest = $self->manifest;
 	my $samples  = $self->_sample_xml;

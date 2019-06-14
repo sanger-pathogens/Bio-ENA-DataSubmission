@@ -30,17 +30,14 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
         'ena_base_path'              => 't/data/',
         'pubmed_url_base'            => 't/data/',
         'taxon_lookup_service'       => 't/data/',
-        'data_root'                  => 'data',
         'output_root'                => 'ena_updates/',
         'auth_users'                 => [ 'root', 'pathpipe', 'maa', 'ap13', 'os7', 'pathdb', 'vagrant', 'travis' ],
         'email_to'                   => 'ap13@sanger.ac.uk',
-        'schema'                     => 'ERC000028',
         'output_group'               => 'some_group_thats_changed_as_tests_are_run',
         'proxy'                      => 'http://wwwcache.sanger.ac.uk:3128',
         'embl_jar_path'              => 't/bin/embl-client.jar',
         'assembly_directories'       => [ '/velvet_assembly', '/spades_assembly', '/iva_assembly', '/pacbio_assembly' ],
         'annotation_directories'     => [ '/velvet_assembly/annotation', '/spades_assembly/annotation', '/iva_assembly/annotation', '/pacbio_assembly/annotation' ],
-        'jvm'                        => 'customjava',
     };
 
     my $under_test = Bio::ENA::DataSubmission::AnalysisSubmission->new(
@@ -53,6 +50,7 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
         test          => 1,
         context       => 1,
         submit        => 1,
+        jar_path      => 'some_path_to_jar',
     );
     is_deeply($under_test->config, $expected_config, "Config");
     is_deeply($under_test->proxy, [ "wwwcache.sanger.ac.uk", "3128" ], "Proxy");
@@ -152,8 +150,8 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
     isa_ok($under_test->submitter, 'Bio::ENA::DataSubmission::AnalysisSubmissionExecution', "Submitter type");
     is($under_test->submitter->username, 'user', "Submitter username");
     is($under_test->submitter->password, 'pass', "Submitter password");
-    is($under_test->submitter->jar_path, 't/bin/webin-cli-1.6.0.jar', "Submitter jar_path");
-    is($under_test->submitter->jvm, 'customjava', "Submitter jvm");
+    is($under_test->submitter->jar_path, 'some_path_to_jar', "Submitter jar_path");
+    is($under_test->submitter->jvm, 'java', "Submitter jvm");
     is($under_test->submitter->http_proxy_host, 'wwwcache.sanger.ac.uk', "Submitter http_proxy_host");
     is($under_test->submitter->http_proxy_port, '3128', "Submitter http_proxy_port");
     is($under_test->submitter->submit, '1', "Submitter submit");

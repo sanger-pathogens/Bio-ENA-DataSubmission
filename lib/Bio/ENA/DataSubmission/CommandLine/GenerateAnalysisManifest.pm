@@ -54,7 +54,7 @@ has '_show_errors' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
 has 'file_type' => (is => 'rw', isa => 'Str', required => 0, default => 'assembly');
 has 'assembly_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
 has 'annotation_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
-has 'config_file' => (is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSION_CONFIG'});
+has 'config_file' => (is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSIONS_CONFIG'});
 
 
 #used for mocking
@@ -67,7 +67,6 @@ has 'laneinfo_factory' => (is => 'ro', isa => 'CodeRef', required => 0, default 
 
 
 sub _build__current_date {
-    my $self = shift;
 
     my @timestamp = localtime(time);
     my $day = sprintf("%04d-%02d-%02d", $timestamp[5] + 1900, $timestamp[4] + 1, $timestamp[3]);
@@ -135,7 +134,7 @@ sub check_inputs {
 }
 
 sub _check_can_write {
-    my ($self, $outfile) = @_;
+    my (undef, $outfile) = @_;
     open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" );
     close(FILE);
 }
@@ -221,7 +220,7 @@ sub _manifest_row {
 }
 
 sub _error_row {
-    my ($self, $row) = @_;
+    my (undef, $row) = @_;
 
     my @new_row;
     for my $cell (@{$row}) {

@@ -48,10 +48,11 @@ throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'd
 
 @args = ('--test', '-f', 't/data/update_manifest.xls', '-o', "$tmp/update_report.xls", '-c', $tmp_config_file);
 ok ($obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
-	args => \@args,
-	_output_dest  => $tmp,
-	_timestamp    => 'testtime',
-	_random_tag   => '0003'
+    args         => \@args,
+    _output_dest => $tmp,
+    _timestamp   => 'testtime',
+    _random_tag  => '0003',
+    data_root    => 'data'
 ),'initialise valid object');
 
 # sample XML updating
@@ -79,22 +80,24 @@ ok( $obj->_validate_with_xsd, 'Validation successful' );
 
 # 2. validate with incorrect sample XML
 @args = ('--test', '-f', 't/data/update_manifest.xls', '-o', "$tmp/update_report.xls", '-c', $tmp_config_file);
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( 
-	args => \@args,
-	_output_dest    => 't/data/bad_sample/', 
-	_sample_xml     => 'samples.xml', 
-	_submission_xml => 'submission.xml'
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
+    args            => \@args,
+    _output_dest    => 't/data/bad_sample/',
+    _sample_xml     => 'samples.xml',
+    _submission_xml => 'submission.xml',
+    data_root       => 'data'
 );
 $obj->_output_dest('t/data/bad_sample/');
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';
 
 @args = ('--test', '-f', 't/data/update_manifest.xls', '-o', "$tmp/update_report.xls", '-c', $tmp_config_file);
 # 3. validate with incorrect submission XML
-$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( 
-	args => \@args,
+$obj = Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new(
+    args            => \@args,
 	_output_dest    => 't/data/bad_submission/',
-	_sample_xml     => 'samples.xml', 
-	_submission_xml => 'submission.xml'
+    _sample_xml     => 'samples.xml',
+    _submission_xml => 'submission.xml',
+    data_root       => 'data'
 );
 $obj->_output_dest('t/data/bad_submission/');
 throws_ok {$obj->_validate_with_xsd} 'Bio::ENA::DataSubmission::Exception::ValidationFail', 'Validation failed correctly';

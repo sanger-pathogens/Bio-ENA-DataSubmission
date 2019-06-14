@@ -56,10 +56,9 @@ has '_filetypes' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build =
 has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
 has 'pubmed_url_base'  => ( is => 'rw', isa => 'Str', default  => 'http://www.ncbi.nlm.nih.gov/pubmed/?term=');
 
-has 'config_file'     => ( is => 'rw', isa => 'Maybe[Str]',      required => 0, default    => $ENV{'ENA_SUBMISSION_CONFIG'});
+has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => $ENV{'ENA_SUBMISSIONS_CONFIG'});
 
 sub _build__filetypes {
-	my $self = shift;
 	return [ 'tab', 'bam', 'bai', 'cram', 'vcf', 'vcf_aggregate', 'tabix',
 			'wig', 'bed', 'gff', 'fasta', 'contig_fasta', 'contig_flatfile',
 			'scaffold_fasta', 'scaffold_flatfile', 'scaffold_agp', 'chromosome_fasta',
@@ -115,7 +114,7 @@ sub check_inputs{
 }
 
 sub _check_can_write {
-	my ($self, $outfile) = @_;
+	my (undef, $outfile) = @_;
 	open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n");
 	close(FILE);
 }
@@ -126,7 +125,6 @@ sub run {
 	my $file = $self->file;
 	my $report = $self->report;
 	my $outfile = $self->outfile;
-	my $edit = $self->edit;
 
 	#---------------#
 	# sanity checks #

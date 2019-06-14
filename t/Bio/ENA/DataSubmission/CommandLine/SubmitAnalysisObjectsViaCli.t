@@ -13,14 +13,7 @@ use Bio::ENA::DataSubmission::ConfigReader;
 use File::Temp qw(tempfile);
 use File::Path qw(remove_tree);
 
-# General mocking
-my $config = {
-    'webin_user'    => 'user',
-    'webin_pass'    => 'pass',
-    'proxy'         => 'http://wwwcache.sanger.ac.uk:3128',
-    'jvm'           => 'customjava',
-};
-my ($manifest_file, $manifest_filename) = tempfile(CLEANUP => 1);
+my (undef, $manifest_filename) = tempfile(CLEANUP => 1);
 my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_output_dir_name = $temp_output_dir->dirname();
 use constant A_CONFIG_FILE => 't/data/test_ena_data_submission.conf';

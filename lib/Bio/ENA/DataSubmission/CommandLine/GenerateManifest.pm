@@ -52,11 +52,8 @@ has 'file_id_type' => (is => 'rw', isa => 'Str', required => 0, default => 'lane
 has '_warehouse' => (is => 'rw', isa => 'DBI::db', required => 0, lazy_build => 1);
 has '_show_errors' => (is => 'rw', isa => 'Bool', required => 0, default => 1);
 
-has 'config_file' => (is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSION_CONFIG'});
-
 
 sub _build__warehouse {
-    my $self = shift;
 
     my $warehouse_dbh = DBI->connect("DBI:mysql:host=seqw-db:port=3379;database=sequencescape_warehouse",
         "warehouse_ro", undef, { 'RaiseError' => 1, 'PrintError' => 0 })
@@ -67,7 +64,7 @@ sub _build__warehouse {
 sub BUILD {
     my ($self) = @_;
 
-    my ($type, $file_id_type, $id, $outfile, $empty, $no_errors, $help, $config_file);
+    my ($type, $file_id_type, $id, $outfile, $empty, $no_errors, $help);
     my $args = $self->args;
 
     GetOptionsFromArray(
@@ -78,8 +75,7 @@ sub BUILD {
         'o|outfile=s'     => \$outfile,
         'empty'           => \$empty,
         'no_errors'       => \$no_errors,
-        'h|help'          => \$help,
-        'c|config_file=s' => \$config_file
+        'h|help'          => \$help
     );
 
     $self->type($type) if (defined $type);
@@ -90,15 +86,6 @@ sub BUILD {
     $self->help($help) if (defined $help);
     $self->_show_errors(!$no_errors) if (defined $no_errors);
 
-    $self->config_file($config_file) if (defined $config_file);
-    (-e $self->config_file) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find config file\n");
-    $self->_populate_attributes_from_config_file;
-}
-
-sub _populate_attributes_from_config_file {
-    my ($self) = @_;
-    my $file_contents = read_file($self->config_file);
-    my $config_values = eval($file_contents);
 }
 
 sub check_inputs {
@@ -115,7 +102,7 @@ sub check_inputs {
 }
 
 sub _check_can_write {
-    my ($self, $outfile) = @_;
+    my (undef, $outfile) = @_;
     open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw(error => "Cannot write to $outfile\n");
     close(FILE);
 }
@@ -205,7 +192,7 @@ sub _manifest_row {
 }
 
 sub _error_row {
-    my ($self, $row) = @_;
+    my (undef, $row) = @_;
 
     my @new_row;
     for my $cell (@{$row}) {
@@ -216,7 +203,7 @@ sub _error_row {
 }
 
 sub _remove_dups {
-    my ($self, $data) = @_;
+    my (undef, $data) = @_;
 
     my @uniq;
     my @acc_seen;
@@ -230,7 +217,7 @@ sub _remove_dups {
 }
 
 sub _get_sample_from_lane {
-    my ($self, $vrtrack, $lane) = @_;
+    my (undef, $vrtrack, $lane) = @_;
     my ($library, $sample);
 
     $library = VRTrack::Library->new($vrtrack, $lane->library_id);
@@ -272,7 +259,7 @@ sub _find_missing_ids {
 }
 
 sub _extract_lane_ids {
-    my ($self, $l) = @_;
+    my (undef, $l) = @_;
 
     my @lane_ids;
     for my $lane (@{$l}) {
@@ -282,7 +269,7 @@ sub _extract_lane_ids {
 }
 
 sub _extract_accessions {
-    my ($self, $d) = @_;
+    my (undef, $d) = @_;
 
     my @accs;
     for my $datum (@{$d}) {

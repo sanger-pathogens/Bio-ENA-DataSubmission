@@ -28,7 +28,7 @@ my %type_extensions = (
 subtest "Should filter fastq", sub {
     check_nfs_dependencies();
 
-    my ( $pathtrack, $dbh, $root ) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, undef, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my @fastq_lanes =
         ('5749_8#1', '5749_8#2', '5749_8#3');
     my @fastq_obs = generate_lane_objects($pathtrack, \@fastq_lanes);
@@ -76,7 +76,7 @@ subtest "Should filter fastq", sub {
 subtest "Should filter bam", sub {
     check_nfs_dependencies();
 
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, undef, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my @bam_lanes = ('4880_8#1', '4880_8#2', '4880_8#3');
     my @bam_obs = generate_lane_objects($pathtrack, \@bam_lanes);
 
@@ -110,7 +110,7 @@ subtest "Should filter bam", sub {
 subtest "Should support verbose output", sub {
     check_nfs_dependencies();
 
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, undef, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my @verbose_lanes = ('8086_1#1', '8086_1#2', '8086_1#3');
     my @verbose_obs = generate_lane_objects($pathtrack, \@verbose_lanes);
 
@@ -154,7 +154,7 @@ subtest "Should support verbose output", sub {
 
 subtest "Should filter on date", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, undef, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my @verbose_lanes = ('8086_1#1', '8086_1#2', '8086_1#3');
     my @verbose_obs = generate_lane_objects($pathtrack, \@verbose_lanes);
 

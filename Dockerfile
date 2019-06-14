@@ -35,7 +35,7 @@ RUN mkdir -p /opt/webin-cli \
     && cd /opt/webin-cli \
     && wget -q https://github.com/enasequence/webin-cli/releases/download/v$WEBIN_CLI_VERSION/webin-cli-$WEBIN_CLI_VERSION.jar \
     && chmod 755 /opt/webin-cli/webin-cli-$WEBIN_CLI_VERSION.jar
-ENV ENA_SUBMISSION_WEBIN_CLI /opt/webin-cli/webin-cli-$WEBIN_CLI_VERSION.jar
+ENV ENA_SUBMISSIONS_WEBIN_CLI /opt/webin-cli/webin-cli-$WEBIN_CLI_VERSION.jar
 
 #vr-codebase
 RUN git clone https://github.com/sanger-pathogens/vr-codebase
@@ -45,6 +45,7 @@ ENV PERL5LIB /vr-codebase/modules:$PERL5LIB
 RUN git clone https://github.com/sanger-pathogens/Bio-ENA-DataSubmission
 ENV PATH /Bio-ENA-DataSubmission/bin:$PATH
 ENV PERL5LIB /vr-codebase/modules:/Bio-ENA-DataSubmission/lib:$PERL5LIB
+ENV ENA_SUBMISSIONS_DATA /Bio-ENA-DataSubmission/data
 RUN cd /Bio-ENA-DataSubmission && dzil authordeps --missing | cpanm --notest
 RUN cd /Bio-ENA-DataSubmission && dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm --notest
 
