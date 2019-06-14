@@ -106,7 +106,7 @@ sub BUILD {
     $self->file_type($file_type) if (defined $file_type);
 
     $self->config_file($config_file) if (defined $config_file);
-    (-e $self->config_file) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find config file\n");
+    (defined($self->config_file) && -e $self->config_file) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw(error => "Cannot find config file\n");
     $self->_populate_attributes_from_config_file;
 }
 

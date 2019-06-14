@@ -37,6 +37,7 @@ use File::Basename;
 use LWP;
 use Switch;
 use File::Slurp;
+use Data::Dumper;
 
 has 'xml'                => ( is => 'rw', isa => 'Str',                required => 0 );
 has 'url'                => ( is => 'rw', isa => 'Str',                required => 0 );
@@ -231,9 +232,20 @@ sub parse_from_url {
         return $self->_parse_from_file($url);
     }
     my $ua = LWP::UserAgent->new;
-    $ua->proxy( [ 'http', 'https' ], $self->proxy );
+    $ua->env_proxy;
+    print ($self->proxy . "\n");
+    print ($self->proxy . "\n");
+    print ($self->proxy . "\n");
+    print ($self->proxy . "\n");
+    print ($self->proxy . "\n");
+    # $ua->proxy( [ 'http', 'https' ], $self->proxy );
     my $req = HTTP::Request->new( GET => $url );
     my $res = $ua->request($req);
+    print($res."\n");
+    print($res."\n");
+    print($res."\n");
+    print($res."\n");
+    print( Dumper( $res ) );
 
     $res->is_success or Bio::ENA::DataSubmission::Exception::ConnectionFail->throw( error => "Could not connect to $url\n" );
 
