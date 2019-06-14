@@ -58,9 +58,16 @@ subtest "Dies if output file cannot be written to", sub {
 };
 
 subtest "Dies if invalid file id type", sub {
-    my @args = ('-t', 'lane', '--file_id_type', 'wrong', '-i', '10665_2#81', '-o', 'out.xls');
-    my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
-    throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+
+    using_temp_dir(sub {
+        my ($tmp) = @_;
+        my @args = ('-t', 'lane', '--file_id_type', 'wrong', '-i', '10665_2#81', '-o', $tmp . '/out.xls');
+        my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
+        throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+    });
+
+
+
 };
 
 subtest "Input is a lane", sub {

@@ -32,47 +32,36 @@ use Bio::ENA::DataSubmission::Validator::EMBL;
 
 has 'args'     => ( is => 'ro', isa => 'ArrayRef', required => 1 );
 has 'files'    => ( is => 'rw', isa => 'ArrayRef', required => 0 );
-has 'jar_path' => ( is => 'rw', isa => 'Str' );
 has 'help'     => ( is => 'rw', isa => 'Bool', required => 0 );
 
-has 'config_file' => ( is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSIONS_CONFIG'});
+has 'jar_path' => (is => 'ro', isa => 'Str', , lazy => 1, builder => '_build_jar_path');
+has 'data_root' => (is => 'ro', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSIONS_DATA'});
 
 sub BUILD {
     my ($self) = @_;
 
-    my ( $jar_path, $help, $config_file );
+    my ( $help );
     my $args = $self->args;
 
     GetOptionsFromArray(
         $args,
-        'jar_path'        => \$jar_path,
-        'h|help'          => \$help,
-        'c|config_file=s' => \$config_file
+        'h|help'          => \$help
     );
 
-    $self->jar_path($jar_path) if ( defined $jar_path );
     $self->help($help)         if ( defined $help );
-
     $self->files($args);
-
-    $self->config_file($config_file) if ( defined $config_file );
-    ( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
-    $self->_populate_attributes_from_config_file;
-
 }
+
+sub _build_jar_path {
+    my ($self) = @_;
+    return $self->data_root . '/embl-client.jar';
+}
+
 
 sub check_inputs {
     my $self = shift;
     return ( $self->files && !$self->help );
 }
-
-sub _populate_attributes_from_config_file {
-    my ($self)        = @_;
-    my $file_contents = read_file( $self->config_file );
-    my $config_values = eval($file_contents);
-    $self->jar_path( $config_values->{embl_jar_path} );
-}
-
 sub run {
     my $self = shift;
 
@@ -104,7 +93,6 @@ sub usage_text {
 	return <<USAGE;
 Usage: validate_embl [options] embl_files
 
-	--jar_path     Location of the EMBL validator jar file (defaults to /software/pathogen/external/bin/embl-client.jar)
 	-h|help        This help message
 
 USAGE

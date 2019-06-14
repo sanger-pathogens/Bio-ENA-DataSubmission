@@ -21,22 +21,14 @@ use_ok('Bio::ENA::DataSubmission::CommandLine::ValidateEMBL');
 
 my ($obj, @args);
 
-#----------------------#
-# test illegal options #
-#----------------------#
-
-@args = ('-c', 't/data/file_that_doesnt_exist');
-throws_ok {Bio::ENA::DataSubmission::CommandLine::ValidateEMBL->new( args => \@args )} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid config file';
-
-
 #--------------------------#
 # Check validation         #
 #--------------------------#
 
 
 # validate bad embl file
-@args = ('-c', 't/data/test_ena_data_submission.conf', 't/data/expected_single_feature.embl');
-ok($obj = Bio::ENA::DataSubmission::CommandLine::ValidateEMBL->new( args => \@args ),'initialise valid obj');
+@args = ('t/data/expected_single_feature.embl');
+ok($obj = Bio::ENA::DataSubmission::CommandLine::ValidateEMBL->new(args => \@args, jar_path => 'data/embl-client.jar'), 'initialise valid obj');
 is $obj->run, 1, 'Invalid EMBL file';
 ok(-e 'VAL_SUMMARY.txt', 'File created - VAL_SUMMARY');
 ok(-e 'VAL_REPORTS.txt', 'File created - VAL_REPORTS');
