@@ -164,6 +164,7 @@ sub generate_lane_objects {
 }
 
 sub check_nfs_dependencies {
-    plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+    plan(skip_all => 'E2E test requiring production like file structure and database')
+        unless (defined($ENV{'ENA_SUBMISSIONS_E2E'}));
 }
 

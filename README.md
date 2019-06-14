@@ -65,17 +65,22 @@ The test can be run with dzil from the top level directory:
   
 `dzil test`  
 
+### Running end to end tests (requires database and correct directory structure
+To enable the end 2 end tests, set the environment variable ```ENA_SUBMISSIONS_E2E``` to anything. Then run
+
+`dzil test`
 
 ### Prerequisite
-* Java needs to be installed to run webin cli
-* environment variable ```ENA_SUBMISSIONS_WEBIN_CLI``` should point to the webin cli jar
-* environment variable ```ENA_SUBMISSIONS_CONFIG``` should point to the general configuration of ena submissions
-* environment variable ```ENA_SUBMISSIONS_DATA``` should point to the folder containing
- * submission.xml
- * sample.xsd
- * submission.xsd
- * valid_countries.txt
-
+  * Java needs to be installed to run webin cli
+  * environment variable ```ENA_SUBMISSIONS_WEBIN_CLI``` should point to the webin cli jar
+  * environment variable ```ENA_SUBMISSIONS_CONFIG``` should point to the general configuration of ena submissions
+  * environment variable ```ENA_SUBMISSIONS_DATA``` should point to the folder containing
+    * SRA.common.xsd
+    * embl-client.jar
+    * sample.xsd
+    * submission.xml
+    * submission.xsd
+    * valid_countries.txt
 
 
 ### Containers
@@ -168,8 +173,6 @@ Usage: submit_analysis_objects_via_cli.pl [options] -f manifest.xls
 This script is not longer required as embl validation is performed while submitting using submit_analysis_objects_via_cli.pl
 ```
 Usage: validate_embl [options] embl_files
-
-    --jar_path     Location of the EMBL validator jar file (defaults to /software/pathogen/external/bin/embl-client.jar)
     -h|help        This help message
 ```
 ## Development using vagrant

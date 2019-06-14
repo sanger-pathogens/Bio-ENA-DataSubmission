@@ -1,6 +1,6 @@
 package Bio::ENA::DataSubmission::CommandLine::ValidateEMBL;
 
-# ABSTRACT: wrapper around ENA flatfile validator (http://www.ebi.ac.uk/ena/software/flat-file-validator)
+# ABSTRACT: wrapper around ENA flatfile validator (http://www.ebi.ac.uk/ena/software/flat-file-validator).
 
 =head1 NAME
 
