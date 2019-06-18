@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 MAINTAINER = path-help@sanger.ac.uk
 
+ARG TAG=master
 RUN apt-get update --quiet --assume-yes
 RUN apt-get upgrade --quiet --assume-yes
 RUN apt-get install --quiet --assume-yes \
@@ -42,7 +43,11 @@ RUN git clone https://github.com/sanger-pathogens/vr-codebase && rm -rf /vr-code
 ENV PERL5LIB /vr-codebase/modules:$PERL5LIB
 
 #bio-ena-datasubmission
-RUN git clone https://github.com/sanger-pathogens/Bio-ENA-DataSubmission  && rm -rf /Bio-ENA-DataSubmission/.git
+RUN git clone https://github.com/sanger-pathogens/Bio-ENA-DataSubmission \
+    && cd /Bio-ENA-DataSubmission \
+    && git checkout $TAG \
+    && cd / \
+    && rm -rf /Bio-ENA-DataSubmission/.git
 ENV PATH /Bio-ENA-DataSubmission/bin:$PATH
 ENV PERL5LIB /vr-codebase/modules:/Bio-ENA-DataSubmission/lib:$PERL5LIB
 ENV ENA_SUBMISSIONS_DATA /Bio-ENA-DataSubmission/data

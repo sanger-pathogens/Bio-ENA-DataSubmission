@@ -178,6 +178,31 @@ Usage: validate_embl [options] embl_files
 ## Development using vagrant
 Follow instructions [here](vagrant/README.md)
 
+## Building with docker:
+To build the docker immage:
+```docker build -t ena-submissions:latest --build-arg TAG=<tag or branch to use> .```
+
+## Building the singularity image using local docker repo
+Run your own local repository:
+```sudo docker run -d -p 5000:5000 --restart=always --name registry registry:2```
+To tag the local registry:
+```sudo docker tag ena-submissions localhost:5000/ena-submissions```
+To push the docker image to the repo
+```sudo docker push localhost:5000/ena-submissions```
+To build the singularity image
+```sudo SINGULARITY_NOHTTPS=1 singularity build ena-submissions.simg sing.recipe```
+If you wished to run the docker container:
+```sudo docker run --rm -it ena-submissions:latest```
+
+## Docker House keeping
+  * List images: ```sudo docker images```
+  * List containers: ```sudo docker ps -a```
+  * Delete images: ```sudo docker rmi <image_ids>```
+  * Delete containers: ```sudo docker rm <container_ids>```
+  * Stop registry: ```sudo docker container stop registry```
+  * Delete registry: ```sudo docker container rm -v registry```
+
+
 ## License
 Bio-ENA-DataSubmission is free software, licensed under [GPLv3](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE).
 
