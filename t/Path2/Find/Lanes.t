@@ -27,7 +27,6 @@ subtest "Should find by study", sub {
             search_id      => '2005',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 256
         ),
         'creating lanes object - search on study'
     );
@@ -52,7 +51,6 @@ subtest "Should find lane from file", sub {
             search_id      => 't/data/Lanes/test_lanes.txt',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 1
         ),
         'creating lanes object - search on file'
     );
@@ -79,7 +77,6 @@ subtest "Should find lane from ID", sub {
             search_id      => '8086_1',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 4
         ),
         'creating lanes object - search on lane ID'
     );
@@ -108,7 +105,6 @@ subtest "Should find lane from file of samples", sub {
             file_id_type   => 'sample',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 0
         ),
         'creating lanes object - search on sample file'
     );
@@ -132,7 +128,6 @@ subtest "Should find lane from library", sub {
             search_id      => 'TL266 1728612',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 1
         ),
         'creating lanes object - search on species name'
     );

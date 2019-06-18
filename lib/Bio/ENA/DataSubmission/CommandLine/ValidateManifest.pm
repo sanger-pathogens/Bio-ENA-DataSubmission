@@ -41,6 +41,7 @@ use Bio::ENA::DataSubmission::Validator::Error::LatLon;
 use Bio::ENA::DataSubmission::Validator::Error::SampleAccession;
 use Bio::ENA::DataSubmission::Validator::Error::TaxID;
 use Bio::ENA::DataSubmission::Validator::Error::MandatoryCells;
+use Bio::ENA::DataSubmission::Validator::Error::MandatorySampleAccession;
 
 has 'args' => (is => 'ro', isa => 'ArrayRef', required => 1);
 
@@ -149,8 +150,16 @@ sub run {
 
     my @errors_found;
     foreach my $r (0 .. $#manifest) {
-        next unless (defined $manifest[$r] && defined $manifest[$r]->[0]);
+        next unless (defined $manifest[$r]);
         my @row = @{$manifest[$r]};
+        my $missing_accessions_error = Bio::ENA::DataSubmission::Validator::Error::MandatorySampleAccession->new(
+            row       => \@row,
+            mandatory => 0,
+            rownumber => $r
+        )->validate;
+        push(@errors_found, $missing_accessions_error) if ($missing_accessions_error->triggered);
+        next unless $#errors_found == -1;
+
         my $acc = $row[0];
 
         # validate all generally

@@ -63,7 +63,17 @@ is $obj->run, 0, 'bad spreadsheet failed';
 is(
 	read_file('t/data/validator_fail.txt'),
 	read_file("$tmp/fail.txt"),
-	'validation report correct'
+    'validation report correct for fail'
+);
+
+# validate bad spreadsheet
+@args = ('-f', 't/data/Sample_manifest_for_154_Kp_assemblies.xls', '-r', "$tmp/fail2.txt", '-o', "$tmp/manifest_bad.xls.edit2.xls", '-c', 't/data/test_ena_data_submission.conf');
+$obj = Bio::ENA::DataSubmission::CommandLine::ValidateManifest->new(args => \@args, valid_countries_file => 'data/valid_countries.txt');
+is $obj->run, 0, 'bad spreadsheet failed';
+is(
+    read_file('t/data/validator_fail2.txt'),
+    read_file("$tmp/fail2.txt"),
+    'validation report correct for missing accession number'
 );
 
 remove_tree($tmp);

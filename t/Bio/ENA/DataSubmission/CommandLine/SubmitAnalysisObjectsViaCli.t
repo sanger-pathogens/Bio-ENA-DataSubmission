@@ -9,17 +9,13 @@ BEGIN {
 use Moose;
 use Bio::ENA::DataSubmission::ConfigReader;
 use File::Temp qw(tempfile);
-use File::Path qw(remove_tree);
 
 my (undef, $manifest_filename) = tempfile(CLEANUP => 1);
-my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
-my $temp_output_dir_name = $temp_output_dir->dirname();
 use constant A_CONFIG_FILE => 't/data/test_ena_data_submission.conf';
 
 my %full_args = (
     config_file => A_CONFIG_FILE,
     spreadsheet => $manifest_filename,
-    output_dir  => $temp_output_dir_name,
     context     => 'genome',
     test        => 0,
     validate    => 1,
@@ -42,7 +38,7 @@ my %full_args = (
 # Test CLI is build correctly using command line arguments
 {
     my $args = {
-        args => [ '-f', $manifest_filename, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf' ],
+        args => [ '-f', $manifest_filename, '--config_file', 't/data/test_ena_data_submission.conf' ],
     };
     can_build_cli_based_on_input($args);
 }
@@ -50,7 +46,7 @@ my %full_args = (
 # Test can suppress validation using command line parameters
 {
     my $args = {
-        args => [ '-f', $manifest_filename, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '--no_validate' ]
+        args => [ '-f', $manifest_filename, '--config_file', 't/data/test_ena_data_submission.conf', '--no_validate' ]
     };
     can_suppress_validation($args);
 }
@@ -58,7 +54,7 @@ my %full_args = (
 # Test can suppress submission using command line parameters
 {
     my $args = {
-        args => [ '-f', $manifest_filename, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '--no_submit' ]
+        args => [ '-f', $manifest_filename, '--config_file', 't/data/test_ena_data_submission.conf', '--no_submit' ]
     };
     can_suppress_submission($args);
 }
@@ -66,7 +62,7 @@ my %full_args = (
 # Test can override test using command line args
 {
     my $args = {
-        args => [ '-f', $manifest_filename, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '--test' ]
+        args => [ '-f', $manifest_filename, '--config_file', 't/data/test_ena_data_submission.conf', '--test' ]
     };
     can_override_test($args);
 }
@@ -75,7 +71,7 @@ my %full_args = (
 {
 
     my $args = {
-        args => [ '-f', $manifest_filename, '-o', $temp_output_dir_name, '--config_file', 't/data/test_ena_data_submission.conf', '-c', 'another context' ]
+        args => [ '-f', $manifest_filename, '--config_file', 't/data/test_ena_data_submission.conf', '-c', 'another context' ]
     };
     can_change_the_context($args);
 }
@@ -104,7 +100,6 @@ sub can_build_cli_based_on_input {
     my $container = $under_test->container;
     is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
     is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
-    is($container->reference_dir, $temp_output_dir_name, 'reference_dir is populated correctly');
     is($container->context, 'genome', 'context is populated correctly');
     is($container->test, 0, 'test is populated correctly');
     is($container->validate, 1, 'validate is populated correctly');
@@ -118,7 +113,6 @@ sub can_suppress_submission {
     my $container = $under_test->container;
     is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
     is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
-    is($container->reference_dir, $temp_output_dir_name, 'reference_dir is populated correctly');
     is($container->context, 'genome', 'context is populated correctly');
     is($container->test, 0, 'test is populated correctly');
     is($container->validate, 1, 'validate is populated correctly');
@@ -132,7 +126,6 @@ sub can_suppress_validation {
     my $container = $under_test->container;
     is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
     is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
-    is($container->reference_dir, $temp_output_dir_name, 'reference_dir is populated correctly');
     is($container->context, 'genome', 'context is populated correctly');
     is($container->test, 0, 'test is populated correctly');
     is($container->validate, 0, 'validate is populated correctly');
@@ -146,7 +139,6 @@ sub can_change_the_context {
     my $container = $under_test->container;
     is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
     is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
-    is($container->reference_dir, $temp_output_dir_name, 'reference_dir is populated correctly');
     is($container->context, 'another context', 'context is populated correctly');
     is($container->test, 0, 'test is populated correctly');
     is($container->validate, 1, 'validate is populated correctly');
@@ -161,7 +153,6 @@ sub can_override_test {
     my $container = $under_test->container;
     is($container->config_file, A_CONFIG_FILE, 'config_file is populated correctly');
     is($container->spreadsheet, $manifest_filename, 'spreadsheet is populated correctly');
-    is($container->reference_dir, $temp_output_dir_name, 'reference_dir is populated correctly');
     is($container->context, 'genome', 'context is populated correctly');
     is($container->test, 1, 'test is populated correctly');
     is($container->validate, 1, 'validate is populated correctly');
@@ -177,7 +168,7 @@ sub test_mandatory_args {
 
 # Check mandatory arguments
 {
-    my (@mandatory_args) = ('output_dir', 'spreadsheet', 'validate', 'test', 'context', 'submit');
+    my (@mandatory_args) = ('spreadsheet', 'validate', 'test', 'context', 'submit');
 
     foreach (@mandatory_args) {
         test_mandatory_args($_);
@@ -187,7 +178,6 @@ sub test_mandatory_args {
 
 
 
-remove_tree($temp_output_dir_name, $manifest_filename,);
 done_testing();
 
 no Moose;

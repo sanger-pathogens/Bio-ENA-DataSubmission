@@ -32,7 +32,6 @@ use File::Path qw(make_path);
 
 has 'config_file' => (is => 'ro', isa => 'Str', required => 1);
 has 'spreadsheet' => (is => 'ro', isa => 'Str', required => 1);
-has 'reference_dir' => (is => 'ro', isa => 'Str', required => 1);
 has 'validate' => (is => 'ro', isa => 'Bool', required => 1);
 has 'test' => (is => 'ro', isa => 'Bool', required => 1);
 has 'context' => (is => 'ro', isa => 'Str', required => 1);
@@ -153,7 +152,7 @@ sub _build_proxy {
 
 sub _build_input_dir {
     my ($self) = @_;
-    my ($result) = $self->reference_dir . "/" . $self->current_user . "_" . $self->timestamp  . "/input";
+    my ($result) = $self->config->{output_root} . "/" . $self->current_user . "_" . $self->timestamp  . "/input";
     make_path($result);
     (-e $result && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot create input directory at $result\n");
 
@@ -162,7 +161,7 @@ sub _build_input_dir {
 
 sub _build_output_dir {
     my ($self) = @_;
-    my ($result) = $self->reference_dir . "/" . $self->current_user . "_" . $self->timestamp  . "/output";
+    my ($result) = $self->config->{output_root} . "/" . $self->current_user . "_" . $self->timestamp  . "/output";
     make_path($result);
     (-e $result && -d _) or Bio::ENA::DataSubmission::Exception::DirectoryNotFound->throw(error => "Cannot create output directory at $result\n");
 

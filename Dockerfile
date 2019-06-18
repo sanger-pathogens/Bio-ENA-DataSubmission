@@ -38,11 +38,11 @@ RUN mkdir -p /opt/webin-cli \
 ENV ENA_SUBMISSIONS_WEBIN_CLI /opt/webin-cli/webin-cli-$WEBIN_CLI_VERSION.jar
 
 #vr-codebase
-RUN git clone https://github.com/sanger-pathogens/vr-codebase
+RUN git clone https://github.com/sanger-pathogens/vr-codebase && rm -rf /vr-codebase/.git
 ENV PERL5LIB /vr-codebase/modules:$PERL5LIB
 
 #bio-ena-datasubmission
-RUN git clone https://github.com/sanger-pathogens/Bio-ENA-DataSubmission
+RUN git clone https://github.com/sanger-pathogens/Bio-ENA-DataSubmission  && rm -rf /Bio-ENA-DataSubmission/.git
 ENV PATH /Bio-ENA-DataSubmission/bin:$PATH
 ENV PERL5LIB /vr-codebase/modules:/Bio-ENA-DataSubmission/lib:$PERL5LIB
 ENV ENA_SUBMISSIONS_DATA /Bio-ENA-DataSubmission/data

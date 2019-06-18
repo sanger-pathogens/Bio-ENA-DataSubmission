@@ -187,7 +187,7 @@ sub _manifest_row {
         $taxon_id = $sample->individual->species->taxon_id || '';
     }
 
-    return [ $sample_acc, $sample_name, $supplier_name, $sample_alias, $taxon_id, $common_name, $common_name, $sample_anonymized_name, $lane_name, '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', $sample_name, '', '', 'NA' ];
+    return [ $sample_acc, $sample_name, $supplier_name, $sample_alias, $taxon_id, $common_name, $common_name, $sample_anonymized_name, $lane_name, '', '', '', '', '', '1800/2014', '', '', 'not known', '', 'not known', '', '', '', '', '', $sample_name, '', '', 'NA' ];
 
 }
 

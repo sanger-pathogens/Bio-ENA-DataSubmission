@@ -10,7 +10,6 @@ Logic to find lanes from the tracking database
    my $obj = Path2::Find::Lanes->new(
      search_type => 'lane',
      search_id => '1234_5',
-	 processed_flag => 1
      pathtrack => $self->pathtrack,
      dbh => $dbh
    );
@@ -30,7 +29,6 @@ use Path2::Find::Exception;
 
 has 'search_type'    => ( is => 'ro', isa => 'Str', required => 1 );
 has 'search_id'      => ( is => 'ro', isa => 'Str', required => 1 );
-has 'processed_flag' => ( is => 'ro', isa => 'Int', required => 1 );
 
 has 'file_id_type'   => ( is => 'ro', isa => 'Str', required => 0, default => 'lane' );
 
@@ -52,9 +50,6 @@ sub _lookup_by_lane {
           . escaped($search_id) . '#%"'
           . ' OR lane.acc like "'
           . escaped($search_id) . '" )'
-          . ' AND lane.processed & '
-          . $self->processed_flag . ' = '
-          . $self->processed_flag
           . ' order by lane.name asc';
 
     my $lane_names =
@@ -62,7 +57,7 @@ sub _lookup_by_lane {
     for my $lane_name (@$lane_names) {
         my $lane =
           VRTrack::Lane->new_by_name( $self->pathtrack, @$lane_name[0] );
-        if ($lane) {
+        if (defined $lane) {
             push( @lanes, $lane );
         }
     }
@@ -83,15 +78,12 @@ sub _lookup_by_sample {
           . escaped($self->search_id) . '"'
           . ' OR sample.name like "'
           . escaped($self->search_id) . '" )'
-          . ' AND lane.processed & '
-          . $self->processed_flag . ' = '
-          . $self->processed_flag
           . ' order by lane.name asc'
     );
     for my $lane_name (@$lane_names) {
         my $lane =
           VRTrack::Lane->new_by_name( $self->pathtrack, @$lane_name[0] );
-        if ($lane) {
+        if (defined $lane) {
             push( @lanes, $lane );
         }
     }
@@ -112,98 +104,14 @@ sub _lookup_by_study {
           . escaped($search_id)
           . '" OR  project.name like "'
           . escaped($search_id)
-          . '") AND lane.processed & '
-          . $self->processed_flag . ' = '
-          . $self->processed_flag
-          . ' order by lane.name asc';
+          . '") order by lane.name asc';
     
     my $lane_names = $self->dbh->selectall_arrayref( $sql_query );
 
     for my $lane_name (@$lane_names) {
         my $lane =
           VRTrack::Lane->new_by_name( $self->pathtrack, @$lane_name[0] );
-        if ($lane) {
-            push( @lanes, $lane );
-        }
-    }
-    return \@lanes;
-}
-
-sub _lookup_by_library {
-    my ($self) = @_;
-    my @lanes;
-
-    my $search_id = $self->search_id;
-    my $sql_query = 'select lane.name from latest_library as library
-      inner join latest_lane as lane on lane.library_id = library.library_id
-      where ( library.name like "'
-          . escaped($search_id)
-          . '") AND lane.processed & '
-          . $self->processed_flag . ' = '
-          . $self->processed_flag
-          . ' order by lane.name asc';
-    my $lane_names = $self->dbh->selectall_arrayref( $sql_query );
-
-    for my $lane_name (@$lane_names) {
-        my $lane =
-          VRTrack::Lane->new_by_name( $self->pathtrack, @$lane_name[0] );
-        if ($lane) {
-            push( @lanes, $lane );
-        }
-    }
-    return \@lanes;
-}
-
-
-sub _lookup_by_species {
-    my ($self) = @_;
-    my @lanes;
-
-    my $lane_names = $self->dbh->selectall_arrayref(
-        'select lane.name from species as species
-        inner join individual as individual on individual.species_id = species.species_id
-        inner join latest_sample as sample on sample.individual_id = individual.individual_id
-        inner join latest_library as library on library.sample_id = sample.sample_id
-        inner join latest_lane as lane on lane.library_id = library.library_id
-      where species.name like "%'
-          . escaped($self->search_id)
-          . '%" AND lane.processed & '
-          . $self->processed_flag . ' = '
-          . $self->processed_flag
-          . ' order by lane.name asc'
-    );
-    for my $lane_name (@$lane_names) {
-        my $lane =
-          VRTrack::Lane->new_by_name( $self->pathtrack, @$lane_name[0] );
-        if ($lane) {
-            push( @lanes, $lane );
-        }
-    }
-    return \@lanes;
-}
-
-# xxxfind -t database -i pathogen_abc_track
-sub _lookup_by_database {
-    my ($self) = @_;
-    my @lanes;
-
-    my @current_database_name_row =
-      $self->dbh->selectrow_array('select DATABASE();');
-    if ( $current_database_name_row[0] ne $self->search_id ) {
-        return \@lanes;
-    }
-
-    my $lane_names = $self->dbh->selectall_arrayref(
-        'select lane.name from latest_lane as lane
-      where lane.processed & '
-          . $self->processed_flag . ' = '
-          . $self->processed_flag
-          . ' order by lane.name asc'
-    );
-    for my $lane_name (@$lane_names) {
-        my $lane =
-          VRTrack::Lane->new_by_name( $self->pathtrack, @$lane_name[0] );
-        if ($lane) {
+        if (defined $lane) {
             push( @lanes, $lane );
         }
     }
@@ -231,7 +139,7 @@ sub _lookup_by_file {
 
   for my $lane_name (@$lane_names) {
       my $lane = VRTrack::Lane->new_by_name( $self->pathtrack, @$lane_name[0] );
-      if ($lane) {
+      if (defined $lane) {
           push( @lanes, $lane );
       }
   }
@@ -253,9 +161,6 @@ sub _lane_file {
     $self->dbh->selectall_arrayref( 'select lane.name from latest_lane as lane where '
         . '( ' . $lane_name_search_query
         .  $lane_acc_search_query . ' )'
-        . ' AND lane.processed & '
-        . $self->processed_flag . ' = '
-        . $self->processed_flag
         . ' order by lane.name asc' );
 
   return $lane_names;
@@ -277,9 +182,6 @@ sub _sample_file {
         where '
         . '( ' . $sample_name_search_query
         . ' OR ' . $sample_acc_search_query . ' )'
-        . ' AND lane.processed & '
-        . $self->processed_flag . ' = '
-        . $self->processed_flag
         . ' order by lane.name asc';
     my $lane_names = $self->dbh->selectall_arrayref( $sql_query );
 
@@ -296,22 +198,12 @@ sub _build_lanes {
     elsif ( $self->search_type eq 'sample' ) {
         return $self->_lookup_by_sample;
     }
-    elsif ( $self->search_type eq 'database' ) {
-        return $self->_lookup_by_database;
-    }
     elsif ( $self->search_type eq 'study' ) {
         return $self->_lookup_by_study;
     }
     elsif ( $self->search_type eq 'file' ) {
         return $self->_lookup_by_file;
     }
-    elsif ( $self->search_type eq 'library' ) {
-        return $self->_lookup_by_library;
-    }
-    elsif ( $self->search_type eq 'species' ) {
-        return $self->_lookup_by_species;
-    }
-
     return \@lanes;
 }
 

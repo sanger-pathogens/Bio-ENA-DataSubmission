@@ -42,7 +42,7 @@ has '_root' => (is => 'rw', isa => 'Str');
 
 
 sub map {
-    my ($class, $type, $id, $file_type, $file_id_type, $mapping) = @_;
+    my (undef, $type, $id, $file_type, $file_id_type, $mapping) = @_;
 
     my $finder = Bio::ENA::DataSubmission::FindData->new(
         type         => $type,
@@ -110,21 +110,12 @@ sub _get_lanes_from_db {
     for my $database (@pathogen_databases) {
         ($pathtrack, $dbh, $root) = $find->get_db_info($database);
 
-        my $processed_flag = 0;
-        if ($self->file_type eq 'assembly') {
-            $processed_flag = 1024;
-        }
-        elsif ($self->file_type eq 'annotation') {
-            $processed_flag = 2048;
-        }
-
         my $find_lanes = Path2::Find::Lanes->new(
             search_type    => $self->type,
             search_id      => $self->id,
             file_id_type   => $self->file_id_type,
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => $processed_flag
         );
         $lanes = $find_lanes->lanes;
 
@@ -142,7 +133,6 @@ sub _get_lanes_from_db {
 
 sub _found_ids {
     my ($self, $lanes, $existing_ids) = @_;
-    my $vrtrack = $self->_vrtrack;
 
     # extract IDs from lane objects
     my @got_ids;
@@ -157,7 +147,7 @@ sub _found_ids {
             my $library = VRTrack::Library->new($self->_vrtrack, $lane->library_id);
             if (not defined $library) {
                 warn q(WARNING: no sample for library ') . $lane->library_id . q(');
-                next ID;
+                next;
             }
             my $sample = VRTrack::Sample->new($self->_vrtrack, $library->sample_id);
             if (exists($valid{$sample->individual->acc})) {

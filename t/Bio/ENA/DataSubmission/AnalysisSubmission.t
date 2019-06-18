@@ -8,12 +8,6 @@ BEGIN {
 
 }
 
-use File::Temp;
-use File::Path qw(remove_tree);
-
-my $temp_reference_dir = File::Temp->newdir(CLEANUP => 1);
-my $temp_reference_dir_name = $temp_reference_dir->dirname();
-
 # Test the module can be used
 {
 
@@ -40,7 +34,6 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
     my $under_test = Bio::ENA::DataSubmission::AnalysisSubmission->new(
         config_file   => 't/data/test_ena_data_submission.conf',
         spreadsheet   => 't/data/exp_analysis_manifest.xls',
-        reference_dir => $temp_reference_dir_name,
         current_user  => 'current_user',
         timestamp     => 'timestamp',
         validate      => 1,
@@ -125,8 +118,8 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
         run                => 'ERR369164',
     } ], "Manifest spreadsheet content");
 
-    is($under_test->input_dir, "$temp_reference_dir_name/current_user_timestamp/input");
-    is($under_test->output_dir, "$temp_reference_dir_name/current_user_timestamp/output");
+    is($under_test->input_dir, "ena_updates//current_user_timestamp/input");
+    is($under_test->output_dir, "ena_updates//current_user_timestamp/output");
 
     isa_ok($under_test->accession_converter, 'Bio::ENA::DataSubmission::AccessionConverter', "accession converter type");
     is($under_test->accession_converter->ena_base_path, 't/data/', "accession converter ena base path");
@@ -153,8 +146,8 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
     is($under_test->submitter->http_proxy_port, '3128', "Submitter http_proxy_port");
     is($under_test->submitter->submit, '1', "Submitter submit");
     is($under_test->submitter->context, '1', "Submitter context");
-    is($under_test->submitter->input_dir, "$temp_reference_dir_name/current_user_timestamp/input", "Submitter input_dir");
-    is($under_test->submitter->output_dir, "$temp_reference_dir_name/current_user_timestamp/output", "Submitter output_dir");
+    is($under_test->submitter->input_dir, "ena_updates//current_user_timestamp/input", "Submitter input_dir");
+    is($under_test->submitter->output_dir, "ena_updates//current_user_timestamp/output", "Submitter output_dir");
     is($under_test->submitter->validate, '1', "Submitter validate");
     is($under_test->submitter->test, '1', "Submitter test");
 }
@@ -168,7 +161,6 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
     my $under_test = Bio::ENA::DataSubmission::AnalysisSubmission->new(
         config_file                     => 't/data/test_ena_data_submission.conf',
         spreadsheet                     => 't/data/exp_analysis_manifest.xls',
-        reference_dir                   => $temp_reference_dir_name,
         current_user                    => 'current_user',
         timestamp                       => 'timestamp',
         validate                        => 1,
@@ -184,6 +176,5 @@ my $temp_reference_dir_name = $temp_reference_dir->dirname();
     is($coordinator->next_call(), undef, "run was called only once");
 }
 
-remove_tree($temp_reference_dir_name);
 
 done_testing();
