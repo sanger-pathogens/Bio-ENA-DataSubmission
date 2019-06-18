@@ -180,7 +180,7 @@ Follow instructions [here](vagrant/README.md)
 
 ## Building with docker:
 To build the docker immage:
-```docker build -t ena-submissions:latest --build-arg TAG=<tag or branch to use> .```
+```sudo docker build -t ena-submissions:latest --build-arg TAG=<tag or branch to use> .```
 
 ## Building the singularity image using local docker repo
 Run your own local repository:
