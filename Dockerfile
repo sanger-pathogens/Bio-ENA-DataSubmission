@@ -3,9 +3,10 @@ MAINTAINER = path-help@sanger.ac.uk
 
 
 ARG ENA_SUBMISSIONS_VERSION
-RUN apt-get update --quiet --assume-yes
-RUN apt-get upgrade --quiet --assume-yes
-RUN apt-get install --quiet --assume-yes \
+
+RUN apt-get update -qq -y
+RUN apt-get upgrade -qq -y
+RUN apt-get install -qq -y \
     default-jdk \
     build-essential \
     git \
@@ -19,19 +20,31 @@ RUN apt-get install --quiet --assume-yes \
     libdb-dev \
     libmysqlclient-dev \
     cpanminus \
-    locales
+    locales \
+    python-genometools \
+    genometools \
+    python-dev \
+    python-setuptools
 
+# locales to avoid perl warning
 RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen
 RUN locale-gen
 
-RUN cpanm --notest \
-    Dist::Zilla \
-    Moose \
-    YAML::XS \
-    DBD::mysql \
-    Config::General@2.52
+# dzil
+RUN cpanm --notest  Dist::Zilla
 
-#webin-cli
+# gff3toembl
+ENV GFF3_TO_EMBL_VERSION=1.1.4
+RUN cd /opt \
+    && wget https://github.com/sanger-pathogens/gff3toembl/archive/v${GFF3_TO_EMBL_VERSION}.tar.gz \
+    && tar xf v${GFF3_TO_EMBL_VERSION}.tar.gz \
+    && rm v${GFF3_TO_EMBL_VERSION}.tar.gz \
+    && cd /opt/gff3toembl-${GFF3_TO_EMBL_VERSION} \
+    && python setup.py install
+
+
+
+# webin-cli
 ENV WEBIN_CLI_VERSION=1.8.4
 RUN mkdir -p /opt/webin-cli \
     && cd /opt/webin-cli \
@@ -39,7 +52,7 @@ RUN mkdir -p /opt/webin-cli \
     && chmod 755 /opt/webin-cli/webin-cli-$WEBIN_CLI_VERSION.jar
 ENV ENA_SUBMISSIONS_WEBIN_CLI /opt/webin-cli/webin-cli-$WEBIN_CLI_VERSION.jar
 
-#vr-codebase
+# vr-codebase
 ENV VR_CODEBASE_VERSION=0.04
 RUN cd /opt \
     && wget -q https://github.com/sanger-pathogens/vr-codebase/archive/v${VR_CODEBASE_VERSION}.tar.gz \
@@ -47,7 +60,7 @@ RUN cd /opt \
     && rm v${VR_CODEBASE_VERSION}.tar.gz
 ENV PERL5LIB /opt/vr-codebase-${VR_CODEBASE_VERSION}/modules:$PERL5LIB
 
-#bio-ena-datasubmission
+# bio-ena-datasubmission
 RUN cd /opt \
     && wget -q https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/archive/v${ENA_SUBMISSIONS_VERSION}.tar.gz \
     && tar xf v${ENA_SUBMISSIONS_VERSION}.tar.gz \
