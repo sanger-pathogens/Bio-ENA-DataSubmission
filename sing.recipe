@@ -2,3 +2,8 @@ Bootstrap: docker
 Registry: http://localhost:5000
 Namespace:
 From: ena-submissions:latest
+
+
+%environment
+# Register usage
+[ -f /tracking/container_usage.csv ] && echo `whoami`,`date '+%Y%m%d_%H%M%S'`,ena-submissions-${ENA_SUBMISSIONS_VERSION} >> /tracking/container_usage.csv

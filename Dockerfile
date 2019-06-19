@@ -32,7 +32,7 @@ RUN cpanm --notest \
     Config::General@2.52
 
 #webin-cli
-ENV WEBIN_CLI_VERSION 1.8.4
+ENV WEBIN_CLI_VERSION=1.8.4
 RUN mkdir -p /opt/webin-cli \
     && cd /opt/webin-cli \
     && wget -q https://github.com/enasequence/webin-cli/releases/download/v$WEBIN_CLI_VERSION/webin-cli-$WEBIN_CLI_VERSION.jar \
@@ -57,6 +57,7 @@ ENV PERL5LIB /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION}/lib:$PERL5LI
 ENV ENA_SUBMISSIONS_DATA /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION}/data
 RUN cd /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION} && dzil authordeps --missing | cpanm --notest
 RUN cd /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION} && dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm --notest
+ENV ENA_SUBMISSIONS_VERSION=${ENA_SUBMISSIONS_VERSION}
 
 LABEL SHORT_NAME bio-ena-datasubmission
 LABEL org.label-schema.name "bio-ena-datasubmission-${ENA_SUBMISSIONS_VERSION}"
