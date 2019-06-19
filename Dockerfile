@@ -31,7 +31,9 @@ RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen
 RUN locale-gen
 
 # dzil
-RUN cpanm --notest  Dist::Zilla
+RUN cpanm --notest \
+    Dist::Zilla \
+    Config::General@2.52
 
 # gff3toembl
 ENV GFF3_TO_EMBL_VERSION=1.1.4
