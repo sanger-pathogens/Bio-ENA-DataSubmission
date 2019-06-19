@@ -1,7 +1,8 @@
 FROM ubuntu:18.04
 MAINTAINER = path-help@sanger.ac.uk
 
-ARG TAG=master
+
+ARG ENA_SUBMISSIONS_VERSION
 RUN apt-get update --quiet --assume-yes
 RUN apt-get upgrade --quiet --assume-yes
 RUN apt-get install --quiet --assume-yes \
@@ -39,23 +40,26 @@ RUN mkdir -p /opt/webin-cli \
 ENV ENA_SUBMISSIONS_WEBIN_CLI /opt/webin-cli/webin-cli-$WEBIN_CLI_VERSION.jar
 
 #vr-codebase
-RUN git clone https://github.com/sanger-pathogens/vr-codebase && rm -rf /vr-codebase/.git
-ENV PERL5LIB /vr-codebase/modules:$PERL5LIB
+ENV VR_CODEBASE_VERSION=0.04
+RUN cd /opt \
+    && wget -q https://github.com/sanger-pathogens/vr-codebase/archive/v${VR_CODEBASE_VERSION}.tar.gz \
+    && tar xf v${VR_CODEBASE_VERSION}.tar.gz \
+    && rm v${VR_CODEBASE_VERSION}.tar.gz
+ENV PERL5LIB /opt/vr-codebase-${VR_CODEBASE_VERSION}/modules:$PERL5LIB
 
 #bio-ena-datasubmission
-RUN git clone https://github.com/sanger-pathogens/Bio-ENA-DataSubmission \
-    && cd /Bio-ENA-DataSubmission \
-    && git checkout $TAG \
-    && cd / \
-    && rm -rf /Bio-ENA-DataSubmission/.git
-ENV PATH /Bio-ENA-DataSubmission/bin:$PATH
-ENV PERL5LIB /vr-codebase/modules:/Bio-ENA-DataSubmission/lib:$PERL5LIB
-ENV ENA_SUBMISSIONS_DATA /Bio-ENA-DataSubmission/data
-RUN cd /Bio-ENA-DataSubmission && dzil authordeps --missing | cpanm --notest
-RUN cd /Bio-ENA-DataSubmission && dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm --notest
+RUN cd /opt \
+    && wget -q https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/archive/v${ENA_SUBMISSIONS_VERSION}.tar.gz \
+    && tar xf v${ENA_SUBMISSIONS_VERSION}.tar.gz \
+    && rm v${ENA_SUBMISSIONS_VERSION}.tar.gz 
+ENV PATH /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION}/bin:$PATH
+ENV PERL5LIB /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION}/lib:$PERL5LIB
+ENV ENA_SUBMISSIONS_DATA /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION}/data
+RUN cd /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION} && dzil authordeps --missing | cpanm --notest
+RUN cd /opt/Bio-ENA-DataSubmission-${ENA_SUBMISSIONS_VERSION} && dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm --notest
 
 LABEL SHORT_NAME bio-ena-datasubmission
-LABEL org.label-schema.name "bio-ena-datasubmission-tbd"
-LABEL org.label-schema.description "Sanger pathogen image of bio-ena-datasubmission version tbd" 
+LABEL org.label-schema.name "bio-ena-datasubmission-${ENA_SUBMISSIONS_VERSION}"
+LABEL org.label-schema.description "Sanger pathogen image of bio-ena-datasubmission version ${ENA_SUBMISSIONS_VERSION}" 
 LABEL org.label-schema.schema-version "1.0"
 
