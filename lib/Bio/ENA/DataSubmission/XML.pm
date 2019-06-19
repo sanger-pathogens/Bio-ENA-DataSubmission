@@ -37,6 +37,7 @@ use File::Basename;
 use LWP;
 use Switch;
 use File::Slurp;
+use Data::Dumper;
 
 has 'xml'                => ( is => 'rw', isa => 'Str',                required => 0 );
 has 'url'                => ( is => 'rw', isa => 'Str',                required => 0 );
@@ -44,10 +45,8 @@ has 'data'               => ( is => 'rw', isa => 'HashRef',            required 
 has 'xsd'                => ( is => 'ro', isa => 'Str',                required => 0 );
 has 'outfile'            => ( is => 'rw', isa => 'Str',                required => 0 );
 has 'root'               => ( is => 'ro', isa => 'Str',                required => 0, default => 'root' );
-has 'data_root'          => ( is => 'rw', isa => 'Str',                default  => 'data' );
 has '_fields'            => ( is => 'rw', isa => 'ArrayRef',           required => 0, lazy_build => 1 );
 has 'validation_report'  => ( is => 'rw', isa => 'XML::LibXML::Error', required => 0 );
-has '_analysis_template' => ( is => 'rw', isa => 'Str',                required => 0, default => 'analysis.xml' );
 has 'ena_base_path'      => ( is => 'rw', isa => 'Str',                default  => 'http://www.ebi.ac.uk/ena/data/view/' );
 has 'proxy'              => ( is => 'rw', isa => 'Str',                default  => 'http://wwwcache.sanger.ac.uk:3128' );
 has 'attributes_to_delete' => (
@@ -91,7 +90,7 @@ sub validate {
     my $doc           = $p->parse_file($xml);
     my $xsd_validator = XML::LibXML::Schema->new( location => $xsd );
     eval { $xsd_validator->validate($doc) };
-    if ($@) {
+    if ($@ ne '') {
         $self->validation_report($@);
         return 0;
     }
@@ -154,14 +153,14 @@ sub _update_fields {
     }
 
     # if not found, then check sample attributes list
-    unless ($found) {
+    unless ($found != 0) {
         my $filtered_attributes = $self->_remove_attributes_tag( $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}, $self->attributes_to_delete );
         $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} = $filtered_attributes;
 
         my @attrs = @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} };
-        foreach my $a ( 0 .. $#attrs ) {
-            if ( $attrs[$a]->{TAG}->[0] eq $key ) {
-                $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}->[$a]->{VALUE} = [$value];
+        foreach my $index ( 0 .. $#attrs ) {
+            if ( $attrs[$index]->{TAG}->[0] eq $key ) {
+                $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE}->[$index]->{VALUE} = [$value];
                 $found = 1;
                 last;
             }
@@ -169,24 +168,24 @@ sub _update_fields {
     }
 
     # if still not found, add it
-    unless ($found) {
+    unless ($found != 0) {
         push( @{ $xml->[0]->{SAMPLE_ATTRIBUTES}->[0]->{SAMPLE_ATTRIBUTE} }, { 'TAG' => [$key], 'VALUE' => [$value] } );
     }
 
 }
 
 sub _remove_attributes_value_tag {
-    my ( $self, $attributes,$attributes_to_remove, $tag ) = @_;
+    my ( undef, $attributes,$attributes_to_remove, $tag ) = @_;
 
     my @filtered_attributes;
-    for ( my $a = 0 ; $a < @{$attributes}; $a++ ) {
-		  if($attributes->[$a]->{TAG}->[0] ne $tag)
+    for ( my $index = 0 ; $index < @{$attributes}; $index++ ) {
+		  if($attributes->[$index]->{TAG}->[0] ne $tag)
 		  {
-		  	push( @filtered_attributes, $attributes->[$a] );
+		  	push( @filtered_attributes, $attributes->[$index] );
 			next;
 		  }
-          if ( !defined( $attributes_to_remove->{ $attributes->[$a]->{VALUE}->[0] } ) ) {
-              push( @filtered_attributes, $attributes->[$a] );
+          if ( !defined( $attributes_to_remove->{ $attributes->[$index]->{VALUE}->[0] } ) ) {
+              push( @filtered_attributes, $attributes->[$index] );
           }
     }
 
@@ -194,97 +193,16 @@ sub _remove_attributes_value_tag {
 }
 
 sub _remove_attributes_tag {
-    my ( $self, $attributes,$attributes_to_remove ) = @_;
+    my ( undef, $attributes,$attributes_to_remove ) = @_;
 
     my @filtered_attributes;
-    for ( my $a = 0 ; $a < @{$attributes}; $a++ ) {
-          if ( !defined( $attributes_to_remove->{ $attributes->[$a]->{TAG}->[0] } ) ) {
-              push( @filtered_attributes, $attributes->[$a] );
+    for ( my $index = 0 ; $index < @{$attributes}; $index++ ) {
+          if ( !defined( $attributes_to_remove->{ $attributes->[$index]->{TAG}->[0] } ) ) {
+              push( @filtered_attributes, $attributes->[$index] );
           }
     }
 
     return \@filtered_attributes;
-}
-
-sub update_analysis {
-    my ( $self, $row ) = @_;
-
-    my ( $filename, $directories, $suffix ) = fileparse( $row->{file}, ('.xml') );
-    my $file = "$filename$suffix";
-
-    # read in template
-    my $template = $self->parse_from_file( $self->data_root . '/' . $self->_analysis_template );
-
-    # insert data
-    # mandatory data
-    $template->{alias}                                                         = $row->{name};
-    $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{NAME}->[0]     = $row->{name};
-    $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{PARTIAL}->[0]  = lc( $row->{partial} );
-    $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{COVERAGE}->[0] = $row->{coverage};
-    $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{PROGRAM}->[0]  = $row->{program};
-    $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{PLATFORM}->[0] = $row->{platform};
-    $template->{FILES}->[0]->{FILE}->[0]->{filename}                           = $file;
-    $template->{FILES}->[0]->{FILE}->[0]->{filetype}                           = $row->{file_type};
-    $template->{DESCRIPTION}->[0]                                              = $row->{description};
-    $template->{STUDY_REF}->[0]->{accession}                                   = $row->{study};
-    $template->{SAMPLE_REF}->[0]->{accession}                                  = $row->{sample};
-    $template->{RUN_REF}->[0]->{accession} = $row->{run} if ( defined( $row->{run} ) );
-
-    if ( defined( $row->{chromosome_list_file} ) ) {
-        my ( $cl_filename, $d, $s ) = fileparse( $row->{chromosome_list_file} );
-
-        $template->{FILES}->[0]->{FILE}->[1]->{filename}        = $cl_filename;
-        $template->{FILES}->[0]->{FILE}->[1]->{filetype}        = 'chromosome_list';
-        $template->{FILES}->[0]->{FILE}->[1]->{checksum}        = $row->{chromosome_list_file_checksum};
-        $template->{FILES}->[0]->{FILE}->[1]->{checksum_method} = "MD5";
-    }
-
-    # optional data
-    if ( defined $row->{minimum_gap} ) {
-        $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{MIN_GAP_LENGTH}->[0] = $row->{minimum_gap};
-    }
-    else {
-        delete $template->{ANALYSIS_TYPE}->[0]->{SEQUENCE_ASSEMBLY}->[0]->{MIN_GAP_LENGTH};
-    }
-
-    if ( defined $row->{title} ) {
-        $template->{TITLE}->[0] = $row->{title};
-    }
-    else {
-        delete $template->{TITLE};
-    }
-
-    if ( defined $row->{analysis_center} ) {
-        $template->{analysis_center}              = $row->{analysis_center};
-        $template->{center_name}                  = $row->{analysis_center};
-        $template->{STUDY_REF}->[0]->{refcenter}  = $row->{analysis_center};
-        $template->{SAMPLE_REF}->[0]->{refcenter} = $row->{analysis_center};
-        $template->{RUN_REF}->[0]->{refcenter}    = $row->{analysis_center};
-    }
-    else {
-        delete $template->{analysis_center};
-        delete $template->{center_name};
-        delete $template->{STUDY_REF}->[0]->{refcenter};
-        delete $template->{SAMPLE_REF}->[0]->{refcenter};
-        delete $template->{RUN_REF}->[0]->{refcenter};
-    }
-
-    if ( defined $row->{analysis_date} ) {
-        my $fulldate = $row->{analysis_date} . 'T00:00:00';
-        $template->{analysis_date} = $fulldate;
-    }
-    else {
-        delete $template->{analysis_date};
-    }
-
-    unless ( defined( $row->{run} ) ) {
-        delete $template->{RUN_REF};
-    }
-
-    # add file checksum
-    $template->{FILES}->[0]->{FILE}->[0]->{checksum} = $row->{checksum};
-
-    return $template;
 }
 
 #-----------------#
@@ -302,7 +220,7 @@ sub parse_from_file {
 }
 
 sub _parse_from_file {
-    my ( $self, $filename ) = @_;
+    my ( undef, $filename ) = @_;
     my $file_contents = read_file($filename);
     return ( XML::Simple->new( ForceArray => 1 )->XMLin($file_contents) );
 }
@@ -353,7 +271,7 @@ sub parse_xml_metadata {
 # WRITING METHODS #
 #-----------------#
 sub _check_can_write {
-    my ($self, $outfile) = @_;
+    my (undef, $outfile) = @_;
     open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" );
     close(FILE);
 }

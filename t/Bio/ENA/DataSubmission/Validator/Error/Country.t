@@ -1,7 +1,9 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
+    use strict;
+    use warnings FATAL => 'all';
+
     use Test::Most;
 	use Test::Output;
 	use Test::Exception;
@@ -21,7 +23,8 @@ my @valid_countries = ("Afghanistan",
 
 for my $country (@valid_countries)
 {
-  ok(my $obj = Bio::ENA::DataSubmission::Validator::Error::Country->new(country => $country, identifier => 'ABC'), "initialise object for $country");
+    ok(my $obj = Bio::ENA::DataSubmission::Validator::Error::Country->new(country => $country, identifier => 'ABC',
+        valid_countries_file                                                      => "data/valid_countries.txt"), "initialise object for $country");
   ok($obj->validate,"validate $country");
   is($obj->triggered, 0, "no errors for $country");
 }
@@ -29,7 +32,8 @@ for my $country (@valid_countries)
 my @invalid_date_format = ('USA1','USA*','1USA','USA:MD');
 for my $country (@invalid_date_format)
 {
-    ok(my $obj = Bio::ENA::DataSubmission::Validator::Error::Country->new(country => $country, identifier => 'ABC'), "initialise object for $country");
+    ok(my $obj = Bio::ENA::DataSubmission::Validator::Error::Country->new(country => $country, identifier => 'ABC',
+        valid_countries_file                                                      => "data/valid_countries.txt"), "initialise object for $country");
     ok($obj->validate,"validate $country");
     is($obj->triggered, 1, "errors for $country");
 	is($obj->fix_it, 0, "Country cant be corrected");
@@ -38,7 +42,8 @@ for my $country (@invalid_date_format)
 my @invalid_but_fixable = ('UK','Great Britain','England', 'Scotland',  'Wales',  'London',  'Cambridge',  'US', 'UK', 'Vietnam' );
 for my $country (@invalid_but_fixable)
 {
-    ok(my $obj = Bio::ENA::DataSubmission::Validator::Error::Country->new(country => $country, identifier => 'ABC'), "initialise object for $country");
+    ok(my $obj = Bio::ENA::DataSubmission::Validator::Error::Country->new(country => $country, identifier => 'ABC',
+        valid_countries_file                                                      => "data/valid_countries.txt"), "initialise object for $country");
     ok($obj->validate,"validate $country");
     is($obj->triggered, 1, "errors for $country");
 	is($obj->fix_it, 1, "Country corrected to ".$obj->country);

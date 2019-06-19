@@ -65,6 +65,27 @@ The test can be run with dzil from the top level directory:
   
 `dzil test`  
 
+### Running end to end tests (requires database and correct directory structure
+To enable the end 2 end tests, set the environment variable ```ENA_SUBMISSIONS_E2E``` to anything. Then run
+
+`dzil test`
+
+### Prerequisite
+  * Java needs to be installed to run webin cli
+  * environment variable ```ENA_SUBMISSIONS_WEBIN_CLI``` should point to the webin cli jar
+  * environment variable ```ENA_SUBMISSIONS_CONFIG``` should point to the general configuration of ena submissions
+  * environment variable ```ENA_SUBMISSIONS_DATA``` should point to the folder containing
+    * SRA.common.xsd
+    * embl-client.jar
+    * sample.xsd
+    * submission.xml
+    * submission.xsd
+    * valid_countries.txt
+
+
+### Containers
+If running in a container, java and webin cli will be setup as well as ENA_SUBMISSIONS_WEBIN_CLI.
+
 ## Usage
 The following scripts are included in Bio-ENA-DataSubmission.
 
@@ -152,12 +173,35 @@ Usage: submit_analysis_objects_via_cli.pl [options] -f manifest.xls
 This script is not longer required as embl validation is performed while submitting using submit_analysis_objects_via_cli.pl
 ```
 Usage: validate_embl [options] embl_files
-
-    --jar_path     Location of the EMBL validator jar file (defaults to /software/pathogen/external/bin/embl-client.jar)
     -h|help        This help message
 ```
 ## Development using vagrant
 Follow instructions [here](vagrant/README.md)
+
+## Building with docker:
+To build the docker immage:
+```sudo docker build -t ena-submissions:latest --build-arg TAG=<tag or branch to use> .```
+
+## Building the singularity image using local docker repo
+Run your own local repository:
+```sudo docker run -d -p 5000:5000 --restart=always --name registry registry:2```
+To tag the local registry:
+```sudo docker tag ena-submissions localhost:5000/ena-submissions```
+To push the docker image to the repo
+```sudo docker push localhost:5000/ena-submissions```
+To build the singularity image
+```sudo SINGULARITY_NOHTTPS=1 singularity build ena-submissions.simg sing.recipe```
+If you wished to run the docker container:
+```sudo docker run --rm -it ena-submissions:latest```
+
+## Docker House keeping
+  * List images: ```sudo docker images```
+  * List containers: ```sudo docker ps -a```
+  * Delete images: ```sudo docker rmi <image_ids>```
+  * Delete containers: ```sudo docker rm <container_ids>```
+  * Stop registry: ```sudo docker container stop registry```
+  * Delete registry: ```sudo docker container rm -v registry```
+
 
 ## License
 Bio-ENA-DataSubmission is free software, licensed under [GPLv3](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE).

@@ -10,9 +10,8 @@ package Bio::ENA::DataSubmission::Bin::GenerateManifest;
 
 =cut
 
-BEGIN { unshift( @INC, '../lib' ) }
-BEGIN { unshift( @INC, './lib' ) }
-
+use strict;
+use warnings FATAL => 'all';
 use Bio::ENA::DataSubmission::CommandLine::GenerateManifest;
 
 Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new( args => \@ARGV )->run;

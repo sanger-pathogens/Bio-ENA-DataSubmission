@@ -40,11 +40,10 @@ use Getopt::Long qw(GetOptionsFromArray);
 has 'args'     => ( is => 'ro', isa => 'ArrayRef',   required => 1 );
 
 has 'manifest' => ( is => 'rw', isa => 'Str',        required => 0 );
-has 'schema'   => ( is => 'rw', isa => 'Str',        required => 0, default => 'data/ERC000028.xml' );
 has 'outfile'  => ( is => 'rw', isa => 'Maybe[Str]', required => 0 );
 has 'help'     => ( is => 'rw', isa => 'Bool',       required => 0 );
 
-has 'config_file' => ( is => 'rw', isa => 'Str',      required => 0, default    => '/software/pathogen/config/ena_data_submission.conf');
+has 'config_file' => ( is => 'rw', isa => 'Maybe[Str]',      required => 0, default => $ENV{'ENA_SUBMISSIONS_CONFIG'});
 has 'proxy'           => ( is => 'rw', isa => 'Maybe[Str]');
 has 'ena_base_path'   => ( is => 'rw', isa => 'Maybe[Str]');
 
@@ -52,20 +51,18 @@ has 'ena_base_path'   => ( is => 'rw', isa => 'Maybe[Str]');
 sub BUILD {
 	my ( $self ) = @_;
 
-	my ( $file, $schema, $outfile, $help,$config_file );
+	my ( $file, $outfile, $help,$config_file );
 	my $args = $self->args;
 
 	GetOptionsFromArray(
 		$args,
 		'f|file=s'    => \$file,
-		's|schema=s'  => \$schema,
 		'o|outfile=s' => \$outfile,
 		'h|help'      => \$help,
 		'c|config_file=s' => \$config_file
 	);
 
 	$self->manifest($file)   if ( defined $file );
-	$self->schema($schema)   if ( defined $schema );
 	$self->outfile($outfile) if ( defined $outfile );
 	$self->help($help)       if ( defined $help );
 	
@@ -92,7 +89,7 @@ sub check_inputs{
 }
 
 sub _check_can_write {
-	my ($self, $outfile) = @_;
+	my (undef, $outfile) = @_;
 	open(FILE, ">", $outfile) or Bio::ENA::DataSubmission::Exception::CannotWriteFile->throw( error => "Cannot write to $outfile\n" );
 	close(FILE);
 }
@@ -100,7 +97,6 @@ sub _check_can_write {
 sub run{
 	my ($self) = @_;
 	my $manifest = $self->manifest;
-	my $schema = $self->schema;
 	my $outfile = $self->outfile;
 
 	# sanity checks
@@ -125,7 +121,7 @@ sub run{
 }
 
 sub _compare_metadata{
-	my ($self, $man_hr, $ena_hr) = @_;
+	my (undef, $man_hr, $ena_hr) = @_;
 	my %ena_data = %{ $ena_hr };
 	my %man_data = %{ $man_hr };
 
@@ -166,7 +162,7 @@ sub _report{
 
 sub usage_text {
 	return <<USAGE;
-Usage: validate_sample_manifest [options]
+Usage: compare_sample_metadata [options]
 
 	-f|file       input manifest for comparison
 	-o|outfile    output path for comparison report

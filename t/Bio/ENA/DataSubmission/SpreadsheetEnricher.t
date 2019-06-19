@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-BEGIN {unshift(@INC, './lib')}
 
 BEGIN {
     use strict;
@@ -35,12 +34,12 @@ subtest "Can convert the ids", sub {
     my $converter = Test::MockObject->new();
     $converter->set_isa('Bio::ENA::DataSubmission::AccessionConverter');
     $converter->mock('convert_secondary_project_accession_to_primary' => sub {
-        my ($self, $accession) = @_;
+        my (undef, $accession) = @_;
 
         return $accession eq A_STUDY ? A_STUDY_PRIMARY_ID : ($accession eq ANOTHER_STUDY ? ANOTHER_STUDY_PRIMARY_ID : undef);
     });
     $converter->mock('convert_secondary_sample_accession_to_biosample' => sub {
-        my ($self, $accession) = @_;
+        my (undef, $accession) = @_;
         return $accession eq A_SAMPLE ? A_SAMPLE_PRIMARY_ID : ($accession eq ANOTHER_SAMPLE ? ANOTHER_SAMPLE_PRIMARY_ID : undef);
     });
 
@@ -143,12 +142,12 @@ sub identity_converter {
     my $converter = Test::MockObject->new();
     $converter->set_isa('Bio::ENA::DataSubmission::AccessionConverter');
     $converter->mock('convert_secondary_project_accession_to_primary' => sub {
-        my ($self, $accession) = @_;
+        my (undef, $accession) = @_;
 
         return $accession;
     });
     $converter->mock('convert_secondary_sample_accession_to_biosample' => sub {
-        my ($self, $accession) = @_;
+        my (undef, $accession) = @_;
         return $accession;
     });
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
     use Test::Most;
@@ -19,7 +18,7 @@ my $tmp = $temp_directory_obj->dirname();
 
 use_ok('Bio::ENA::DataSubmission::XML');
 
-my ($obj, @args);
+my ($obj);
 
 #-----------------#
 # test validation #

@@ -4,9 +4,6 @@ use warnings;
 use File::Slurp;
 use Data::Dumper;
 
-BEGIN { unshift( @INC, './lib' ) }
-BEGIN { unshift( @INC, '/software/pathogen/internal/pathdev/vr-codebase/modules' ) }
-
 
 use VRTrack::Lane;
 use Path2::Find;
@@ -21,7 +18,7 @@ subtest "Should be able to use Path2::Find::Lanes", sub {
 
 subtest "Should find by study", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
 
     ok(
@@ -30,7 +27,6 @@ subtest "Should find by study", sub {
             search_id      => '2005',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 256
         ),
         'creating lanes object - search on study'
     );
@@ -46,7 +42,7 @@ subtest "Should find by study", sub {
 
 subtest "Should find lane from file", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
 
     ok(
@@ -55,7 +51,6 @@ subtest "Should find lane from file", sub {
             search_id      => 't/data/Lanes/test_lanes.txt',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 1
         ),
         'creating lanes object - search on file'
     );
@@ -74,7 +69,7 @@ subtest "Should find lane from file", sub {
 
 subtest "Should find lane from ID", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
     ok(
         $lanes_obj = Path2::Find::Lanes->new(
@@ -82,7 +77,6 @@ subtest "Should find lane from ID", sub {
             search_id      => '8086_1',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 4
         ),
         'creating lanes object - search on lane ID'
     );
@@ -99,36 +93,9 @@ subtest "Should find lane from ID", sub {
     is_deeply $lanes, \@expected_lanes3, 'correct lanes recovered';
 };
 
-# subtest "Should find lane from species", sub {
-#     check_nfs_dependencies();
-#     my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
-#     my($lanes_obj);
-#
-#     ok(
-#         $lanes_obj = Path2::Find::Lanes->new(
-#             search_type    => 'species',
-#             search_id      => 'Blautia producta',
-#             pathtrack      => $pathtrack,
-#             dbh            => $dbh,
-#             processed_flag => 1
-#         ),
-#         'creating lanes object - search on species name'
-#     );
-#     isa_ok $lanes_obj, 'Path2::Find::Lanes';
-#
-#     my $lanes = $lanes_obj->lanes;
-#
-#     my @test_lanes4 = (
-#         '5749_8#1', '5749_8#2', '5749_8#3', '8080_1#72'
-#     );
-#     my @expected_lanes4 = generate_lane_objects($pathtrack, \@test_lanes4);
-#     is_deeply $lanes, \@expected_lanes4, 'correct lanes recovered';
-#
-# };
-
 subtest "Should find lane from file of samples", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
 
     ok(
@@ -138,7 +105,6 @@ subtest "Should find lane from file of samples", sub {
             file_id_type   => 'sample',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 0
         ),
         'creating lanes object - search on sample file'
     );
@@ -154,7 +120,7 @@ subtest "Should find lane from file of samples", sub {
 
 subtest "Should find lane from library", sub {
     check_nfs_dependencies();
-    my ($pathtrack, $dbh, $root) = Path2::Find->new->get_db_info('pathogen_prok_track');
+    my ($pathtrack, $dbh, undef) = Path2::Find->new->get_db_info('pathogen_prok_track');
     my($lanes_obj);
     ok(
         $lanes_obj = Path2::Find::Lanes->new(
@@ -162,7 +128,6 @@ subtest "Should find lane from library", sub {
             search_id      => 'TL266 1728612',
             pathtrack      => $pathtrack,
             dbh            => $dbh,
-            processed_flag => 1
         ),
         'creating lanes object - search on species name'
     );
@@ -186,7 +151,7 @@ sub generate_lane_objects {
     my @lane_obs;
     foreach my $l (@$lanes) {
         my $l_o = VRTrack::Lane->new_by_name( $pathtrack, $l );
-        if ($l_o) {
+        if (defined $l_o) {
             push( @lane_obs, $l_o );
         }
     }
@@ -194,6 +159,7 @@ sub generate_lane_objects {
 }
 
 sub check_nfs_dependencies {
-    plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+    plan(skip_all => 'E2E test requiring production like file structure and database')
+        unless (defined($ENV{'ENA_SUBMISSIONS_E2E'}));
 }
 

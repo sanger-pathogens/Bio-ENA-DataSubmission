@@ -10,9 +10,8 @@ package Bio::ENA::DataSubmission::Bin::CompareMetadata;
 
 =cut
 
-BEGIN { unshift( @INC, '../lib' ) }
-BEGIN { unshift( @INC, './lib' ) }
-
+use strict;
+use warnings FATAL => 'all';
 use Bio::ENA::DataSubmission::CommandLine::CompareMetadata;
 
 Bio::ENA::DataSubmission::CommandLine::CompareMetadata->new( args => \@ARGV )->run;

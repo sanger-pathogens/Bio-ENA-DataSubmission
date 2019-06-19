@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-BEGIN {unshift(@INC, './lib')}
 
 BEGIN {
     use Test::Most;
@@ -169,5 +168,6 @@ sub using_temp_dir {
 }
 
 sub check_nfs_dependencies {
-    plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+    plan(skip_all => 'E2E test requiring production like file structure and database')
+        unless (defined($ENV{'ENA_SUBMISSIONS_E2E'}));
 }

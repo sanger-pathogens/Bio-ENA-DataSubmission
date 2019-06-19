@@ -10,9 +10,8 @@ package Bio::ENA::DataSubmission::Bin::SubmitAnalysisObjects;
 
 =cut
 
-BEGIN { unshift( @INC, '../lib' ) }
-BEGIN { unshift( @INC, './lib' ) }
-
+use strict;
+use warnings FATAL => 'all';
 use Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli;
 
 Bio::ENA::DataSubmission::CommandLine::SubmitAnalysisObjectsViaCli->new( args => \@ARGV )->run;

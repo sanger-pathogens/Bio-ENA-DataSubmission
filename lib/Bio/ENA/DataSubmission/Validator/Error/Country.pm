@@ -15,14 +15,13 @@ extends "Bio::ENA::DataSubmission::Validator::Error";
 has 'country'              => ( is => 'rw', isa => 'Str', required => 1 );
 has 'identifier'           => ( is => 'ro', isa => 'Str', required => 1 );
 has 'valid_countries'      => ( is => 'ro', isa => 'ArrayRef', lazy => 1, builder => '_build_valid_countries');
-has 'valid_countries_file' => ( is => 'ro', isa => 'Str', default => 'valid_countries.txt' );
-has 'data_root'            => ( is => 'ro', isa => 'Str', default => './data' );
+has 'valid_countries_file' => ( is => 'ro', isa => 'Str', required => 1 );
 
 
 sub _build_valid_countries
 {
 	my($self) = @_;
-	my @countries = read_lines($self->data_root.'/'.$self->valid_countries_file, chomp => 1);
+	my @countries = read_lines($self->valid_countries_file, chomp => 1);
 	return \@countries;
 }
 
@@ -34,7 +33,7 @@ sub validate {
 	my $format = (
 		   $country =~ m/^[^:\d*]+(: .+)?$/ 
 	);
-	$self->set_error_message( $acc, "Incorrect country format. Must match country: region, locality. E.G. United Kingdom: England, Norfolk, Blakeney Point" ) unless ( $format );
+	$self->set_error_message( $acc, "Incorrect country format. Must match country: region, locality. E.G. United Kingdom: England, Norfolk, Blakeney Point" ) unless ($format ne '');
 
     my $found_valid_country = 0;
     for my $valid_country(@{$self->valid_countries})

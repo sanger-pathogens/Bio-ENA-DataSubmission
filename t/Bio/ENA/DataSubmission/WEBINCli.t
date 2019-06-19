@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 
-BEGIN {unshift(@INC, './lib')}
 
 BEGIN {
     use Test::Most;
@@ -17,11 +16,11 @@ my $temp_input_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_input_dir_name = $temp_input_dir->dirname();
 my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_output_dir_name = $temp_output_dir->dirname();
-my ($fh, $filename) = tempfile(CLEANUP => 1);
-my ($manifest_file, $manifest_filename) = tempfile(CLEANUP => 1);
+my (undef, $filename) = tempfile(CLEANUP => 1);
+my (undef, $manifest_filename) = tempfile(CLEANUP => 1);
 my $temp_dir = File::Temp->newdir(CLEANUP => 1);
 my $temp_dir_name = $temp_dir->dirname();
-my ($unreadable_manifest_handle, $unreadable_manifest) = tempfile(CLEANUP => 1);
+my (undef, $unreadable_manifest) = tempfile(CLEANUP => 1);
 chmod 0333, ($unreadable_manifest);
 use constant WEB_IN_CLIENT_JAR => "WEB_IN_CLIENT_JAR";
 use constant A_PROXY_HOST => "A_HOST";

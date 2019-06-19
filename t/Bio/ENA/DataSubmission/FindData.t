@@ -1,6 +1,4 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
-BEGIN { unshift( @INC, '/software/pathogen/internal/pathdev/vr-codebase/modules' ) }
 
 BEGIN {
     use Test::Most;
@@ -57,7 +55,7 @@ subtest "Map study", sub {
 	check_nfs_dependencies();
 	my $expected = ['9003_1#1','9003_1#2'];
 	my $actual = Bio::ENA::DataSubmission::FindData->map('study', '2460', 'assembly', 'lane', sub {
-		my ($finder, $id, $data) = @_;
+		my (undef, undef, $data) = @_;
 		return $data->name;
 
 	});
@@ -84,12 +82,13 @@ subtest "file of lane ids retrieval", sub {
 done_testing();
 
 sub check_nfs_dependencies {
-	plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+	plan(skip_all => 'E2E test requiring production like file structure and database')
+		unless (defined($ENV{'ENA_SUBMISSIONS_E2E'}));
 }
 
 sub new_pathtrack {
 	my $find = Path2::Find->new();
-	my ( $pathtrack, $dbh, $root ) = $find->get_db_info( 'pathogen_prok_track' );
+	my ($pathtrack, undef, undef) = $find->get_db_info('pathogen_prok_track');
 
 	return $pathtrack;
 }

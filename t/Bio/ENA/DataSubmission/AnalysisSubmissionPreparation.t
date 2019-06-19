@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-BEGIN {unshift(@INC, './lib')}
 
 BEGIN {
     use strict;
@@ -18,13 +17,13 @@ use File::Copy qw(copy);
 use_ok('Bio::ENA::DataSubmission::AnalysisSubmissionPreparation');
 
 my @temp_dirs_to_clean = ();
-my ($fh, $filename) = tempfile(CLEANUP => 1);
-my $temp_output_dir = File::Temp->newdir(CLEANUP => 1);
-my $temp_output_dir_name = $temp_output_dir->dirname();
-push @temp_dirs_to_clean, $temp_output_dir_name;
+my (undef, $filename) = tempfile(CLEANUP => 1);
+my $temp_output_dir_global = File::Temp->newdir(CLEANUP => 1);
+my $temp_output_dir_name_global = $temp_output_dir_global->dirname();
+push @temp_dirs_to_clean, $temp_output_dir_name_global;
 my %full_args = (
     manifest_spreadsheet => [],
-    output_dir           => $temp_output_dir_name,
+    output_dir           => $temp_output_dir_name_global,
     gff_converter        => build_mock_gff_converter(),
 );
 
@@ -293,7 +292,7 @@ sub build_mock_gff_converter {
     my $mock_gff_converter = Test::MockObject->new();
     $mock_gff_converter->set_isa('Bio::ENA::DataSubmission::GffConverter');
     $mock_gff_converter->mock('convert' => sub {
-        my ($self, $locus_tag, $chromosome_list_file, $output_file, $input_file, $common_name, $tax_id, $study, $description) = @_;
+        my (undef, undef, $chromosome_list_file, $output_file, $input_file, undef, undef, undef, undef) = @_;
         copy($input_file, $output_file) or die 1;
         if (defined($chromosome_list_file)) {
             copy($input_file, $chromosome_list_file) or die 1;

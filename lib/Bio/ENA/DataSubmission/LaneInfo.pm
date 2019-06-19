@@ -54,7 +54,7 @@ has 'description' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_de
 
 #vrtrack injected codebase
 has 'seq_tech' => (is => 'ro', isa => 'VRTrack::Seq_tech', required => 1);
-has 'study' => (is => 'ro', isa => 'VRTrack::Study', required => 1);
+has 'study' => (is => 'ro', isa => 'Maybe[VRTrack::Study]', required => 1);
 has 'species' => (is => 'ro', isa => 'Maybe[VRTrack::Species]', required => 0);
 has 'sample' => (is => 'ro', isa => 'VRTrack::Sample', required => 1);
 
@@ -67,7 +67,7 @@ around BUILDARGS => sub {
     my ($seq_tech) = VRTrack::Seq_tech->new($vrtrack, $library->seq_tech_id) if defined $library;
     my ($sample) = VRTrack::Sample->new($vrtrack, $library->sample_id) if defined $library;
     my ($project) = VRTrack::Project->new($vrtrack, $sample->project_id) if defined $sample;
-    my ($study) = VRTrack::Study->new($vrtrack, $project->study_id) if defined $project;
+    my ($study) = VRTrack::Study->new($vrtrack, $project->study_id) if defined $project && defined $project->study_id;
     my ($individual) = VRTrack::Individual->new($vrtrack, $sample->individual_id) if defined $sample;
     my ($species) = VRTrack::Species->new($vrtrack, $individual->species_id) if defined $individual;
 
@@ -97,7 +97,7 @@ sub _build_seq_tech_name {
 sub _build_study_name {
     my ($self) = @_;
 
-    return $self->study->acc;
+    return defined($self->study) ? $self->study->acc : '';
 }
 
 sub _build_species_name {

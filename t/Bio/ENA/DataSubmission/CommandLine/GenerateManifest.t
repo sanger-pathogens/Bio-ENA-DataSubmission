@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
     use Test::Most;
@@ -23,45 +22,52 @@ subtest "Can use the package", sub {
 };
 
 subtest "Dies without arguments", sub {
-    my @args = ('-c', 't/data/test_ena_data_submission.conf');
+    my @args = ();
     my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
     throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies without arguments';
 };
 
 subtest "Dies with invalid type", sub {
-    my @args = ('-t', 'rex', '-c', 't/data/test_ena_data_submission.conf');
+    my @args = ('-t', 'rex');
     my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
     throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
 };
 
 subtest "Dies if type and output are missing", sub {
-    my @args = ('-i', 'pod', '-c', 't/data/test_ena_data_submission.conf');
+    my @args = ('-i', 'pod');
     my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
     throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
 };
 
 subtest "Dies if type invalid and output are missing", sub {
-    my @args = ('-t', 'rex', '-i', '10665_2#81', '-c', 't/data/test_ena_data_submission.conf');
+    my @args = ('-t', 'rex', '-i', '10665_2#81');
     my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
     throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
 };
 
 subtest "Dies if input file does not exist", sub {
-    my @args = ('-t', 'file', '-i', 'not/a/file', '-c', 't/data/test_ena_data_submission.conf');
+    my @args = ('-t', 'file', '-i', 'not/a/file');
     my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
     throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::FileNotFound', 'dies with invalid arguments';
 };
 
 subtest "Dies if output file cannot be written to", sub {
-    my @args = ('-t', 'lane', '-i', '10665_2#81', '-o', 'not/a/file', '-c', 't/data/test_ena_data_submission.conf');
+    my @args = ('-t', 'lane', '-i', '10665_2#81', '-o', 'not/a/file');
     my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
     throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::CannotWriteFile', 'dies with invalid arguments';
 };
 
 subtest "Dies if invalid file id type", sub {
-    my @args = ('-t', 'lane', '--file_id_type', 'wrong', '-i', '10665_2#81', '-o', 'out.xls', '-c', 't/data/test_ena_data_submission.conf');
-    my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
-    throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+
+    using_temp_dir(sub {
+        my ($tmp) = @_;
+        my @args = ('-t', 'lane', '--file_id_type', 'wrong', '-i', '10665_2#81', '-o', $tmp . '/out.xls');
+        my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
+        throws_ok {$obj->run} 'Bio::ENA::DataSubmission::Exception::InvalidInput', 'dies with invalid arguments';
+    });
+
+
+
 };
 
 subtest "Input is a lane", sub {
@@ -74,7 +80,7 @@ subtest "Input is a lane", sub {
                 'ERS311393', '2047STDY5552104', 'RVI551', '', '36809', 'Mycobacterium abscessus', 'Mycobacterium abscessus', '1648513', '10665_2#81', '', '', '', '', '', '1800/2014', '', '', 'NA', '', 'NA', '', '', '', '', '', '2047STDY5552104', '', '', 'NA'
             ]
         );
-        my @args = ('-t', 'lane', '-i', '10665_2#81', '-o', "$tmp/manifest.xls", '-c', 't/data/test_ena_data_submission.conf');
+        my @args = ('-t', 'lane', '-i', '10665_2#81', '-o', "$tmp/manifest.xls");
         my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
         ok($obj->run, 'Manifest generated');
         is_deeply $obj->sample_data, \@exp_ers, 'Correct lane ERS';
@@ -98,7 +104,7 @@ subtest "Input is a file of lanes", sub {
             ],
             [ '11111_1#1', 'not found', 'not found' ]
         );
-        my @args = ('-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls", '--no_errors', '-c', 't/data/test_ena_data_submission.conf');
+        my @args = ('-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls", '--no_errors');
         my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
         ok($obj->run, '"run" successful');
         is_deeply $obj->sample_data, \@exp_ers, 'Correct file ERSs with lane IDs';
@@ -139,7 +145,7 @@ subtest "Input is a file of lanes with spreadsheet validation", sub {
     using_temp_dir(sub {
         my ($tmp) = @_;
 
-        my @args = ('-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls", '-c', 't/data/test_ena_data_submission.conf');
+        my @args = ('-t', 'file', '-i', 't/data/lanes.txt', '-o', "$tmp/manifest.xls");
         my $obj = Bio::ENA::DataSubmission::CommandLine::GenerateManifest->new(args => \@args);
         ok($obj->run, 'Manifest generated');
         is_deeply(diff_xls('t/data/exp_manifest.xls', "$tmp/manifest.xls"), 'Manifest file correct');
@@ -166,5 +172,6 @@ sub using_temp_dir {
 }
 
 sub check_nfs_dependencies {
-    plan( skip_all => 'Dependency on path /software missing' ) unless ( -e "/software" );
+    plan(skip_all => 'E2E test requiring production like file structure and database')
+        unless (defined($ENV{'ENA_SUBMISSIONS_E2E'}));
 }

@@ -1,7 +1,9 @@
 #!/usr/bin/env perl
-BEGIN { unshift( @INC, './lib' ) }
 
 BEGIN {
+    use strict;
+    use warnings FATAL => 'all';
+
     use Test::Most;
 	use Test::Output;
 	use Test::Exception;

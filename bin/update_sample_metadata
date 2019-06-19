@@ -10,9 +10,8 @@ package Bio::ENA::DataSubmission::Bin::UpdateMetadata;
 
 =cut
 
-BEGIN { unshift( @INC, '../lib' ) }
-BEGIN { unshift( @INC, './lib' ) }
-
+use strict;
+use warnings FATAL => 'all';
 use Bio::ENA::DataSubmission::CommandLine::UpdateMetadata;
 
 Bio::ENA::DataSubmission::CommandLine::UpdateMetadata->new( args => \@ARGV )->run;
