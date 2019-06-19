@@ -21,6 +21,7 @@ use warnings;
 no warnings 'uninitialized';
 use Moose;
 use File::Slurp;
+use Try::Tiny;
 
 use Path2::Find;
 use Path2::Find::Lanes;
@@ -172,15 +173,18 @@ sub _build_description {
 
 sub _calculate_coverage {
     my ($self) = @_;
-    if (!defined($self->path)) {
-        return 0;
+    my $coverage;
+    try {
+        open(my $fh, '<', $self->path . '.stats');
+        my $line = <$fh>;
+        $line = <$fh>;
+        $line =~ /sum = (\d+)/;
+        my $assembly = int($1);
+        $coverage = int($self->lane->raw_bases / $assembly);
     }
-    open(my $fh, '<', $self->path . '.stats');
-    my $line = <$fh>;
-    $line = <$fh>;
-    $line =~ /sum = (\d+)/;
-    my $assembly = int($1);
-    my $coverage = int($self->lane->raw_bases / $assembly);
+    catch {
+        $coverage = 0;
+    };
     return $coverage;
 }
 
