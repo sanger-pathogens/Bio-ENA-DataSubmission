@@ -38,7 +38,7 @@ RUN cpanm --notest \
 # gff3toembl
 ENV GFF3_TO_EMBL_VERSION=1.1.4
 RUN cd /opt \
-    && wget https://github.com/sanger-pathogens/gff3toembl/archive/v${GFF3_TO_EMBL_VERSION}.tar.gz \
+    && wget -q https://github.com/sanger-pathogens/gff3toembl/archive/v${GFF3_TO_EMBL_VERSION}.tar.gz \
     && tar xf v${GFF3_TO_EMBL_VERSION}.tar.gz \
     && rm v${GFF3_TO_EMBL_VERSION}.tar.gz \
     && cd /opt/gff3toembl-${GFF3_TO_EMBL_VERSION} \
