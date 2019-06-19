@@ -48,7 +48,7 @@ has 'sample_name' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_sa
 has 'run' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_run');
 has 'coverage' => (is => 'ro', isa => 'Int', lazy => 1, builder => '_build_coverage');
 has 'program' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_program');
-has 'path' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_path');
+has 'path' => (is => 'ro', isa => 'Maybe[Str]', lazy => 1, builder => '_build_path');
 has 'type' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_type');
 has 'description' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_description');
 
@@ -172,7 +172,9 @@ sub _build_description {
 
 sub _calculate_coverage {
     my ($self) = @_;
-
+    if (!defined($self->path)) {
+        return 0;
+    }
     open(my $fh, '<', $self->path . '.stats');
     my $line = <$fh>;
     $line = <$fh>;
@@ -185,7 +187,7 @@ sub _calculate_coverage {
 sub _assembly_program {
     my ($self) = @_;
 
-    return ($self->path =~ /\/(\w+)_assembly/) ? $1 : 'velvet';
+    return (defined($self->path) && $self->path =~ /\/(\w+)_assembly/) ? $1 : 'velvet';
 }
 
 __PACKAGE__->meta->make_immutable;
