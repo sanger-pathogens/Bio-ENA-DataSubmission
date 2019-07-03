@@ -144,12 +144,16 @@ sub _calculate_coverage {
     my ($self) = @_;
     my $coverage;
     try {
-        open(my $fh, '<', $self->path . '.stats');
-        my $line = <$fh>;
-        $line = <$fh>;
-        $line =~ /sum = (\d+)/;
-        my $assembly = int($1);
-        $coverage = int($self->lane->raw_bases / $assembly);
+        if (defined($self->path) && open(my $fh, '<', $self->path . '.stats')) {
+          my $line = <$fh>;
+          $line = <$fh>;
+          $line =~ /sum = (\d+)/;
+          my $assembly = int($1);
+          $coverage = int($self->lane->raw_bases / $assembly);
+        }
+        else {
+          $coverage = 0;
+        }
     }
     catch {
         $coverage = 0;
