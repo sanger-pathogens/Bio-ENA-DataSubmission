@@ -35,7 +35,7 @@ use Getopt::Long qw(GetOptionsFromArray);
 use Bio::ENA::DataSubmission::Exception;
 use Bio::ENA::DataSubmission::Spreadsheet;
 use Bio::ENA::DataSubmission::FindData;
-use Bio::ENA::DataSubmission::LaneInfo;
+use Bio::ENA::DataSubmission::MultiLaneInfo;
 use List::MoreUtils qw(uniq);
 
 has 'args' => (is => 'ro', isa => 'ArrayRef', required => 1);
@@ -61,7 +61,7 @@ has 'config_file' => (is => 'rw', isa => 'Maybe[Str]', required => 0, default =>
 has 'laneinfo_factory' => (is => 'ro', isa => 'CodeRef', required => 0, default => sub {
     return sub {
         my %hash = @_;
-        return Bio::ENA::DataSubmission::LaneInfo->new(%hash);
+        return Bio::ENA::DataSubmission::MultiLaneInfo->new(%hash);
     }
 });
 
@@ -188,8 +188,13 @@ sub _build_manifest_data {
             vrtrack                => $finder->_vrtrack,
             lane                   => $data,
         );
-
-        return $self->_manifest_row($lane, $id);
+        my @results;
+        if (defined($lane)) {
+            foreach my $lane_info (@{$lane->lane_infos}) {
+                push @results, $self->_manifest_row($lane_info, $id)
+            }
+        }
+        return @results;
     });
     return $manifest;
 }
@@ -202,12 +207,11 @@ sub _manifest_row {
     unless (defined $lane) {
         return \@row;
     }
-
     $row[0] = $lane->lane_name;
     $row[2] = $lane->coverage;
     $row[3] = $lane->program;
     $row[4] = $lane->seq_tech_name;
-    $row[6] = $lane->path;
+    $row[6] = defined($lane->path) ? $lane->path : "";
     $row[7] = $lane->type;
     $row[8] = $lane->description;
     $row[9] = $lane->description;
