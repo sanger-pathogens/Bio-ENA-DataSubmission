@@ -1,0 +1,4 @@
+export PATH=$(pwd)/bin:$PATH
+export PERL5LIB=$(pwd)/lib:$(dirname $(pwd))/vr-codebase/modules:$PERL5LIB
+export ENA_SUBMISSIONS_CONFIG=/software/pathogen/config/ena_data_submission.conf
+export ENA_SUBMISSIONS_DATA=$(pwd)/data

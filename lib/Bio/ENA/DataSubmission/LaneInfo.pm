@@ -33,11 +33,8 @@ use Bio::ENA::DataSubmission::FindData;
 
 #inputs
 has 'file_type' => (is => 'rw', isa => 'Str', required => 1);
-has 'assembly_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
-has 'annotation_directories' => (is => 'rw', isa => 'Maybe[ArrayRef]');
-has 'finder' => (is => 'ro', isa => 'Bio::ENA::DataSubmission::FindData', required => 1);
-has 'vrtrack' => (is => 'ro', isa => 'VRTrack::VRTrack', required => 1);
 has 'lane' => (is => 'ro', isa => 'VRTrack::Lane', required => 1);
+has 'path' => (is => 'ro', isa => 'Maybe[Str]', required => 0, default => undef);
 
 #calculated
 has 'lane_name' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_lane_name');
@@ -49,7 +46,6 @@ has 'sample_name' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_sa
 has 'run' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_run');
 has 'coverage' => (is => 'ro', isa => 'Int', lazy => 1, builder => '_build_coverage');
 has 'program' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_program');
-has 'path' => (is => 'ro', isa => 'Maybe[Str]', lazy => 1, builder => '_build_path');
 has 'type' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_type');
 has 'description' => (is => 'ro', isa => 'Str', lazy => 1, builder => '_build_description');
 
@@ -114,7 +110,7 @@ sub _build_taxid {
 sub _build_sample_name {
     my ($self) = @_;
 
-    return $self->sample->individual->acc;
+    return defined($self->sample->individual->acc) ? $self->sample->individual->acc : '';
 }
 
 sub _build_run {
@@ -136,33 +132,6 @@ sub _build_coverage {
 sub _build_program {
     my ($self) = @_;
     return ($self->file_type eq "assembly") ? $self->_assembly_program() : 'Prokka';
-}
-
-sub _build_path {
-    my ($self) = @_;
-    my (%type_extensions, $directory, $filetype);
-    if ($self->file_type eq "assembly") {
-
-        %type_extensions = (assembly => 'contigs.fa');
-        $directory = $self->assembly_directories;
-        $filetype = 'assembly';
-    }
-    else {
-
-        %type_extensions = (gff => '*.gff');
-        $directory = $self->annotation_directories;
-        $filetype = 'gff';
-    }
-    my $lane_filter = Path2::Find::Filter->new(
-        lanes           => [ $self->lane ],
-        filetype        => $filetype,
-        type_extensions => \%type_extensions,
-        root            => $self->finder->_root,
-        pathtrack       => $self->vrtrack,
-        subdirectories  => $directory,
-    );
-    my @matching_lanes = $lane_filter->filter;
-    return defined $matching_lanes[0] ? $matching_lanes[0]->{path} : undef;
 }
 
 sub _build_description {
