@@ -131,6 +131,7 @@ sub _compare_metadata{
 	my @conflicts;
 	foreach my $k ( keys %ena_data ){
 		my $ena_v = $ena_data{$k};
+		next if (!defined($ena_v));
 		chomp $ena_v;
 		my $man_v = $man_data{$k};
 		if( defined $man_v ){
