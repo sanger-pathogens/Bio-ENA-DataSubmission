@@ -15,8 +15,9 @@ Scripts for submitting data to the ENA.
     * [compare\_sample\_metadata](#compare_sample_metadata)
     * [update\_sample\_metadata](#update_sample_metadata)
     * [generate\_analysis\_manifest](#generate_analysis_manifest)
-    * [submit\_analysis\_objects](#submit_analysis_objects)
+    * [submit\_analysis\_objects\_via\_cli.pl](#submit_analysis_objects_via_cli.pl)
     * [validate\_embl](#validate_embl)
+    * [extract_erz.sh](#extract_erz.sh)
   * [Development using vagrant](#Development using vagrant)
   * [License](#license)
   * [Feedback/Issues](#feedbackissues)
@@ -29,8 +30,9 @@ Bio-ENA-DataSubmission provides tools for generating, validating and submitting 
 * **compare_sample_metadata**    Compare sample manifest to the existing data on the ENA public records
 * **update_sample_metadata**    Convert the sample manifest to an xml file and send it to datahose to submit to ENA
 * **generate_analysis_manifest**    Generate an analysis manifest for preparation of genome assemblies to the ENA
-* **submit_analysis_objects**    Submit genome assemblies or annotated assemblies to the ENA
+* **submit_analysis_objects_via_cli.pl**    Submit genome assemblies or annotated assemblies to the ENA
 * **validate_embl**    Run the ENA EMBL validator to check for issues with the EMBL file before submission
+* **extract_erz.sh**    Extract ERZ numbers out of the webin cli output
 
 ## Installation
 Bio-ENA-DataSubmission has the following dependencies:
@@ -82,9 +84,6 @@ To enable the end 2 end tests, set the environment variable ```ENA_SUBMISSIONS_E
     * submission.xsd
     * valid_countries.txt
 
-
-### Containers
-If running in a container, java and webin cli will be setup as well as ENA_SUBMISSIONS_WEBIN_CLI.
 
 ## Usage
 The following scripts are included in Bio-ENA-DataSubmission.
@@ -142,19 +141,6 @@ Usage: generate_analysis_manifest [options]
     -a|file_type     [assembly|annotation] defaults to assembly
     -h|help          this help message
 ```
-### submit_analysis_objects
-This script does not work anymore due to changes in the interface at ENA
-```
-Usage: submit_analysis_objects [options] -f manifest.xls
-
-    -f|file        Input file in .xls format (required)
-    -a|action      Add a new or modify an existing assembly (ADD|MODIFY) [ADD]
-    -o|outfile     Output file for report ( .xls format )
-    -t|type        Type of assembly [sequence_assembly]
-    --no_validate  Do not run manifest validation step [FALSE]
-    -p|processors  Number of threads to use [1]
-    -h|help        This help message
-```
 ### submit_analysis_objects_via_cli.pl
 ```
 Usage: submit_analysis_objects_via_cli.pl [options] -f manifest.xls
@@ -175,33 +161,12 @@ This script is not longer required as embl validation is performed while submitt
 Usage: validate_embl [options] embl_files
     -h|help        This help message
 ```
+
+### extract_erz.sh
+This scripts take no arguments put needs to be run from the webincli output (ie the standard ena output directory for this run)
+
 ## Development using vagrant
 Follow instructions [here](vagrant/README.md)
-
-## Building with docker:
-To build the docker immage:
-```sudo docker build -t ena-submissions:latest --build-arg TAG=<tag or branch to use> .```
-
-## Building the singularity image using local docker repo
-Run your own local repository:
-```sudo docker run -d -p 5000:5000 --restart=always --name registry registry:2```
-To tag the local registry:
-```sudo docker tag ena-submissions localhost:5000/ena-submissions```
-To push the docker image to the repo
-```sudo docker push localhost:5000/ena-submissions```
-To build the singularity image
-```sudo SINGULARITY_NOHTTPS=1 singularity build ena-submissions.simg sing.recipe```
-If you wished to run the docker container:
-```sudo docker run --rm -it ena-submissions:latest```
-
-## Docker House keeping
-  * List images: ```sudo docker images```
-  * List containers: ```sudo docker ps -a```
-  * Delete images: ```sudo docker rmi <image_ids>```
-  * Delete containers: ```sudo docker rm <container_ids>```
-  * Stop registry: ```sudo docker container stop registry```
-  * Delete registry: ```sudo docker container rm -v registry```
-
 
 ## License
 Bio-ENA-DataSubmission is free software, licensed under [GPLv3](https://github.com/sanger-pathogens/Bio-ENA-DataSubmission/blob/master/GPL-LICENCE).
