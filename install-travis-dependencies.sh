@@ -10,8 +10,15 @@ cpanm --notest Moose
 cpanm --notest YAML::XS
 cpanm --notest DBD::mysql
 
+VR_CODEBASE_VERSION=0.04
+VRCODEBASE_GIT_URL='https://github.com/sanger-pathogens/vr-codebase/archive/v${VR_CODEBASE_VERSION}.tar.gz'
 
-VRCODEBASE_GIT_URL='https://github.com/sanger-pathogens/vr-codebase.git'
+         RUN cd /opt \
+            && wget -q  \
+            && tar xf v${VR_CODEBASE_VERSION}.tar.gz \
+            && rm v${VR_CODEBASE_VERSION}.tar.gz
+         ENV PERL5LIB /opt/vr-codebase-${VR_CODEBASE_VERSION}/modules:$PERL5LIB
+
 
 # Make an install location
 if [ ! -d 'git_repos' ]; then
@@ -19,10 +26,10 @@ if [ ! -d 'git_repos' ]; then
 fi
 cd git_repos
 
-git clone $VRCODEBASE_GIT_URL
+wget -O- ${VRCODEBASE_GIT_URL} | tar xzvf -
 
 #Add locations to PERL5LIB
-VRCODEBASE_LIB=${start_dir}'/git_repos/vr-codebase/modules'
+VRCODEBASE_LIB="${start_dir}/git_repos/vr-codebase-${VR_CODEBASE_VERSION}/modules"
 
 export PERL5LIB=${VRCODEBASE_LIB}:$PERL5LIB
 
