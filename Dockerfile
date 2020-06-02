@@ -24,9 +24,6 @@ RUN apt-get install -qq -y \
     locales \
     genometools
     
-# locales to avoid perl warning
-# RUN cp /usr/share/i18n/SUPPORTED /etc/locale.gen
-# RUN locale-gen
 RUN   sed -i -e 's/# \(en_GB\.UTF-8 .*\)/\1/' /etc/locale.gen && \
       touch /usr/share/locale/locale.alias && \
       locale-gen

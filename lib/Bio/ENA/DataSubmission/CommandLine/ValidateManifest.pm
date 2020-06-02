@@ -159,8 +159,6 @@ sub run {
             mandatory => 0,
             rownumber => $r
         )->validate;
-        # push(@errors_found, $missing_accessions_error) if ($missing_accessions_error->triggered);
-        # next MANIFEST_ROW unless $#errors_found == -1;
         if($missing_accessions_error->triggered) {
           push(@errors_found, $missing_accessions_error);
           warn "Manifest row $row_num has a missing accession number: NO FURTHER CHECKS will be done on this row";
