@@ -188,11 +188,15 @@ sub test_directory_not_a_directory {
 
 # Check manifest validation when file is not readable
 {
-    my $args = { %full_args };
-    $args->{'manifest'} = $unreadable_manifest;
-    my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
-    throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::CannotReadFile', "dies if manifest is not a readable file";
-
+   SKIP: {
+      skip "running as root, so disabled the test \"Check manifest validation when file is not readable\"", 1
+         if ('root' eq scalar(getpwuid $>));
+   
+      my $args = { %full_args };
+      $args->{'manifest'} = $unreadable_manifest;
+      my $under_test = Bio::ENA::DataSubmission::WEBINCli->new(%$args);
+      throws_ok {$under_test->run()} 'Bio::ENA::DataSubmission::Exception::CannotReadFile', "dies if manifest is not a readable file";
+   }
 }
 
 remove_tree($temp_input_dir_name, $temp_output_dir_name, $filename, $manifest_filename, $temp_dir_name, $unreadable_manifest);
