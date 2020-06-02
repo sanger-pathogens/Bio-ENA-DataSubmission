@@ -1,9 +1,6 @@
 FROM ubuntu:18.04
 MAINTAINER = path-help@sanger.ac.uk
 
-# version of ena-submissions -- SHOULD specify this at build time
-ARG TAG=1.0.8
-
 # dependency versions -- COULD specify these at build time
 ARG VR_CODEBASE_VERSION=0.04
 ARG CONFIG_GENERAL_VERSION=2.52
