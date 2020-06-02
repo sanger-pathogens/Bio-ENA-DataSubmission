@@ -11,7 +11,7 @@ cpanm --notest YAML::XS
 cpanm --notest DBD::mysql
 
 VR_CODEBASE_VERSION=0.04
-VRCODEBASE_GIT_URL='https://github.com/sanger-pathogens/vr-codebase/archive/v${VR_CODEBASE_VERSION}.tar.gz'
+VRCODEBASE_GIT_URL="https://github.com/sanger-pathogens/vr-codebase/archive/v${VR_CODEBASE_VERSION}.tar.gz"
 
 # Make an install location
 if [ ! -d 'git_repos' ]; then
