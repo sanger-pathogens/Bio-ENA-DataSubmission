@@ -13,13 +13,6 @@ cpanm --notest DBD::mysql
 VR_CODEBASE_VERSION=0.04
 VRCODEBASE_GIT_URL='https://github.com/sanger-pathogens/vr-codebase/archive/v${VR_CODEBASE_VERSION}.tar.gz'
 
-         RUN cd /opt \
-            && wget -q  \
-            && tar xf v${VR_CODEBASE_VERSION}.tar.gz \
-            && rm v${VR_CODEBASE_VERSION}.tar.gz
-         ENV PERL5LIB /opt/vr-codebase-${VR_CODEBASE_VERSION}/modules:$PERL5LIB
-
-
 # Make an install location
 if [ ! -d 'git_repos' ]; then
   mkdir git_repos
