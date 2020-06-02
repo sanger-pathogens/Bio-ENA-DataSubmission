@@ -30,5 +30,7 @@ cd $start_dir
 dzil authordeps --missing | cpanm --notest
 dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm --notest
 
+dzil test
+      
 set +eu
 set +x

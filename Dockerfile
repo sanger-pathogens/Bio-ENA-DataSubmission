@@ -51,3 +51,6 @@ ENV PERL5LIB /opt/Bio-ENA-DataSubmission/lib:$PERL5LIB
 ENV ENA_SUBMISSIONS_DATA /opt/Bio-ENA-DataSubmission/data
 RUN cd /opt/Bio-ENA-DataSubmission && dzil authordeps --missing | cpanm --notest
 RUN cd /opt/Bio-ENA-DataSubmission && dzil listdeps --missing | grep -v 'VRTrack::Lane' | cpanm --notest
+
+RUN   cd /opt/Bio-ENA-DataSubmission && \
+      dzil test
