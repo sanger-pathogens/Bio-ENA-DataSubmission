@@ -149,17 +149,23 @@ sub run {
     my %taxon_id_to_ncbi_taxon_name;
 
     my @errors_found;
-    foreach my $r (0 .. $#manifest) {
-        next unless (defined $manifest[$r]);
+    my $row_num = 0;
+    MANIFEST_ROW: foreach my $r (0 .. $#manifest) {
+        next MANIFEST_ROW unless (defined $manifest[$r]);
         my @row = @{$manifest[$r]};
+        ++$row_num;
         my $missing_accessions_error = Bio::ENA::DataSubmission::Validator::Error::MandatorySampleAccession->new(
             row       => \@row,
             mandatory => 0,
             rownumber => $r
         )->validate;
-        push(@errors_found, $missing_accessions_error) if ($missing_accessions_error->triggered);
-        next unless $#errors_found == -1;
-
+        # push(@errors_found, $missing_accessions_error) if ($missing_accessions_error->triggered);
+        # next MANIFEST_ROW unless $#errors_found == -1;
+        if($missing_accessions_error->triggered) {
+          push(@errors_found, $missing_accessions_error);
+          warn "Manifest row $row_num has a missing accession number: NO FURTHER CHECKS will be done on this row";
+          next MANIFEST_ROW;
+        }
         my $acc = $row[0];
 
         # validate all generally
@@ -175,7 +181,7 @@ sub run {
             }
         }
 
-        # validate more specific cells separately
+        # validate mo re specific cells separately
 
         # mandatory cells
         my $mandatory = [ 4, 5, 14, 15, 16, 17, 19, 25, 28 ];
