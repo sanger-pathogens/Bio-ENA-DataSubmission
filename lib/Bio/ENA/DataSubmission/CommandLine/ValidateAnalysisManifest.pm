@@ -9,7 +9,7 @@ Bio::ENA::DataSubmission::CommandLine::ValidateManifest
 =head1 SYNOPSIS
 
 	use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
-	
+
 
 =head1 METHODS
 
@@ -53,7 +53,7 @@ has 'outfile'    => ( is => 'rw', isa => 'Str',      required => 0 );
 has 'edit'       => ( is => 'rw', isa => 'Bool',     required => 0 );
 has 'help'       => ( is => 'rw', isa => 'Bool',     required => 0 );
 has '_filetypes' => ( is => 'rw', isa => 'ArrayRef', required => 0, lazy_build => 1 );
-has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/data/view/');
+has 'ena_base_path'    => ( is => 'rw', isa => 'Str', default  => 'http://www.ebi.ac.uk/ena/browser/api/xml/');
 has 'pubmed_url_base'  => ( is => 'rw', isa => 'Str', default  => 'http://www.ncbi.nlm.nih.gov/pubmed/?term=');
 
 has 'config_file'     => ( is => 'rw', isa => 'Str',      required => 0, default    => $ENV{'ENA_SUBMISSIONS_CONFIG'});
@@ -106,7 +106,7 @@ sub _populate_attributes_from_config_file
 }
 
 sub check_inputs{
-    my $self = shift; 
+    my $self = shift;
     return(
         $self->file
         && !$self->help
@@ -162,7 +162,7 @@ sub run {
 		for my $c ( 0..$#row ) {
 			my $cell = $row[$c];
 			if ( defined $cell ){
-				my $gen_error = Bio::ENA::DataSubmission::Validator::Error::General->new( 
+				my $gen_error = Bio::ENA::DataSubmission::Validator::Error::General->new(
 					identifier => $name,
 					cell       => $cell,
 					field      => $header[$c]
@@ -175,8 +175,8 @@ sub run {
 
 		# mandatory cells
 		my $mandatory = [ 0, 1, 2, 3, 4, 6, 7, 9, 10, 11 ];
-		my $mandatory_error = Bio::ENA::DataSubmission::Validator::Error::MandatoryCells->new( 
-			row => \@row, 
+		my $mandatory_error = Bio::ENA::DataSubmission::Validator::Error::MandatoryCells->new(
+			row => \@row,
 			mandatory => $mandatory
 		)->validate;
 		push( @errors_found, $mandatory_error ) if ( $mandatory_error->triggered );
@@ -274,7 +274,7 @@ sub run {
 			push( @errors_found, $pubmed_id_error ) if ( $pubmed_id_error->triggered );
 		}
 	}
-		
+
 	#--------------#
 	# write report #
 	#--------------#
@@ -289,7 +289,7 @@ sub run {
 	# edit/fix where possible #
 	#-------------------------#
 
-	
+
 	return (scalar(@errors_found) > 0) ? 0 : 1;
 }
 

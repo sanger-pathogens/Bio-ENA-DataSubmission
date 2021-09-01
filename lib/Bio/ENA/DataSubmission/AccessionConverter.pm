@@ -27,7 +27,7 @@ sub convert_secondary_project_accession_to_primary {
     my ($self, $accession) = @_;
 
     if (defined($accession) && $accession =~ /ERP/) {
-        my $xml = Bio::ENA::DataSubmission::XML->new(url => $self->ena_base_path . "$accession&display=xml", ena_base_path => $self->ena_base_path)->parse_from_url;
+        my $xml = Bio::ENA::DataSubmission::XML->new(url => $self->ena_base_path . "$accession", ena_base_path => $self->ena_base_path)->parse_from_url;
         if (defined($xml) &&
             defined($xml->{STUDY}) &&
             defined($xml->{STUDY}->[0]) &&
@@ -44,7 +44,7 @@ sub convert_secondary_project_accession_to_primary {
 sub convert_secondary_sample_accession_to_biosample {
     my ($self, $accession) = @_;
     if (defined($accession) && $accession =~ /ERS/) {
-        my $xml = Bio::ENA::DataSubmission::XML->new(url => $self->ena_base_path . "$accession&display=xml", ena_base_path => $self->ena_base_path)->parse_from_url;
+        my $xml = Bio::ENA::DataSubmission::XML->new(url => $self->ena_base_path . "$accession", ena_base_path => $self->ena_base_path)->parse_from_url;
         if (defined($xml) &&
             defined($xml->{SAMPLE}) &&
             defined($xml->{SAMPLE}->[0]) &&
