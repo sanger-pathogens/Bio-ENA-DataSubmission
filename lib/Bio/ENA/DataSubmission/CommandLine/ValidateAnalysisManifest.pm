@@ -1,4 +1,4 @@
-ena/browser/api/xmlpackage Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest;
+package Bio::ENA::DataSubmission::CommandLine::ValidateAnalysisManifest;
 
 # ABSTRACT: module for validation of manifest files for ENA metadata update
 
