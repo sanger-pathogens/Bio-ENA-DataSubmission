@@ -9,7 +9,7 @@ Bio::ENA::DataSubmission::CommandLine::ValidateManifest
 =head1 SYNOPSIS
 
 	use Bio::ENA::DataSubmission::CommandLine::ValidateManifest;
-	
+
 
 =head1 METHODS
 
@@ -52,7 +52,7 @@ has 'edit' => (is => 'rw', isa => 'Bool', required => 0);
 has 'help' => (is => 'rw', isa => 'Bool', required => 0);
 has 'config_file' => (is => 'rw', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSIONS_CONFIG'});
 
-has 'ena_base_path' => (is => 'rw', isa => 'Str', default => 'http://www.ebi.ac.uk/ena/data/view/');
+has 'ena_base_path' => (is => 'rw', isa => 'Str', default => 'http://www.ebi.ac.uk/ena/browser/api/xml/');
 has 'taxon_lookup_service' => (is => 'rw', isa => 'Str', default => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&report=xml&id=');
 has 'data_root' => (is => 'ro', isa => 'Maybe[Str]', required => 0, default => $ENV{'ENA_SUBMISSIONS_DATA'});
 has 'valid_countries_file' => (is => 'ro', isa => 'Str', , lazy => 1, builder => '_build_valid_countries_file');

@@ -9,8 +9,8 @@ Bio::ENA::DataSubmission::CommandLine::CompareMetadata
 =head1 SYNOPSIS
 
 	use Bio::ENA::DataSubmission::CommandLine::CompareMetadata;
-	
-	1. pull XML from ENA using http://www.ebi.ac.uk/ena/data/view/ERS*****&display=xml
+
+	1. pull XML from ENA using http://www.ebi.ac.uk/ena/browser/api/xml/ERS*****
 	2. parse to data structure
 	3. parse manifest to same data structure
 	4. compare data structures
@@ -65,7 +65,7 @@ sub BUILD {
 	$self->manifest($file)   if ( defined $file );
 	$self->outfile($outfile) if ( defined $outfile );
 	$self->help($help)       if ( defined $help );
-	
+
 	$self->config_file($config_file) if ( defined $config_file );
 	( -e $self->config_file ) or Bio::ENA::DataSubmission::Exception::FileNotFound->throw( error => "Cannot find config file\n" );
 	$self->_populate_attributes_from_config_file;
@@ -81,7 +81,7 @@ sub _populate_attributes_from_config_file
 }
 
 sub check_inputs{
-    my $self = shift; 
+    my $self = shift;
     return(
         $self->manifest
         && !$self->help
@@ -155,7 +155,7 @@ sub _report{
 		unshift(@data, ['Total Conflicts', $#data]);
 	}
 	else{
-		unshift(@data, ['Total Conflicts', 0]);	
+		unshift(@data, ['Total Conflicts', 0]);
 	}
 	my $xls = Bio::ENA::DataSubmission::Spreadsheet->new( data => \@data, outfile => $outfile );
 	$xls->write_xls;

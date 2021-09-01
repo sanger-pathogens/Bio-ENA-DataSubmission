@@ -9,7 +9,7 @@ Bio::ENA::DataSubmission::XML
 =head1 SYNOPSIS
 
 	use Bio::ENA::DataSubmission::XML;
-	
+
 
 
 =head1 METHODS
@@ -47,7 +47,7 @@ has 'outfile'            => ( is => 'rw', isa => 'Str',                required 
 has 'root'               => ( is => 'ro', isa => 'Str',                required => 0, default => 'root' );
 has '_fields'            => ( is => 'rw', isa => 'ArrayRef',           required => 0, lazy_build => 1 );
 has 'validation_report'  => ( is => 'rw', isa => 'XML::LibXML::Error', required => 0 );
-has 'ena_base_path'      => ( is => 'rw', isa => 'Str',                default  => 'http://www.ebi.ac.uk/ena/data/view/' );
+has 'ena_base_path'      => ( is => 'rw', isa => 'Str',                default  => 'http://www.ebi.ac.uk/ena/browser/api/xml/' );
 has 'proxy'              => ( is => 'rw', isa => 'Str',                default  => 'http://wwwcache.sanger.ac.uk:3128' );
 has 'attributes_to_delete' => (
     is      => 'ro',
@@ -108,7 +108,7 @@ sub update_sample {
 
     my $acc = $sample->{'sample_accession'};
     ( defined $acc ) or Bio::ENA::DataSubmission::Exception::InvalidInput->throw( error => "Accession number data not present\n" );
-    $self->url( $self->ena_base_path . "$acc&display=xml" );
+    $self->url( $self->ena_base_path . "$acc" );
 
     my $xml = $self->parse_from_url;
 
@@ -244,7 +244,7 @@ sub parse_from_url {
 sub parse_xml_metadata {
     my ( $self, $acc ) = @_;
 
-    $self->url( $self->ena_base_path . $acc . "&display=xml" );
+    $self->url( $self->ena_base_path . $acc );
     my $xml    = $self->parse_from_url;
     my @fields = @{ $self->_fields };
 
